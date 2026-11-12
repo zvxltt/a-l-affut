@@ -18,7 +18,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap">
 <link rel="preconnect" href="https://cdn-images.dzcdn.net">
-<link rel="preload" href="data/releases.json" as="fetch" crossorigin>
 <style>
 :root {
   /* Direction : noir et blanc strict, comme le logo ; seules les pochettes apportent la couleur.
@@ -540,7 +539,7 @@ function mapItem(x) {
 }
 async function loadData(first) {
   try {
-    const r = await fetch(DATA_URL, { cache: first ? 'default' : 'no-cache' });
+    const r = await fetch(DATA_URL, { cache: 'no-cache' });   // revalidation : toujours la dernière version publiée
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const j = await r.json();
     loadError = false;
