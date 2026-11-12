@@ -553,7 +553,8 @@ async function main() {
     for (const ka of keyArtists) {
       const k = keyOf(ka, it.t);
       const p = index.get(k);
-      if (p) {
+      // deux sorties Deezer distinctes (album et réédition « Deluxe », « Bonus »…) restent séparées
+      if (p && !(p.s.includes('dz') && it.s.includes('dz'))) {
         for (const s of it.s) if (!p.s.includes(s)) p.s.push(s);
         if (!p.am && it.am) p.am = it.am;
         if (!p.cu && !p.cv && it.cu) p.cu = it.cu;
@@ -562,7 +563,7 @@ async function main() {
         return p;
       }
     }
-    for (const ka of keyArtists) index.set(keyOf(ka, it.t), it);
+    for (const ka of keyArtists) { const k = keyOf(ka, it.t); if (!index.has(k)) index.set(k, it); }
     items.push(it);
     return it;
   };
