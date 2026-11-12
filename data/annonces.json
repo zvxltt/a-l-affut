@@ -1,1 +1,21 @@
-{"note":"Annonces de sorties relevées dans les médias (artiste, titre, date, type, genre, source). Les dates passées sont ignorées automatiquement.","items":[]}
+{
+  "note": "Annonces de sorties relevées dans les médias (artiste, titre, date, type, genre, source). Les dates passées sont ignorées automatiquement.",
+  "items": [
+    {
+      "artist": "Ambre",
+      "title": "Victoria",
+      "date": "2026-12-04",
+      "type": "album",
+      "cat": "mfr",
+      "source": "https://www.parismatch.be/culture/musique/2026/09/29/ambre-derniere-gagnante-de-la-star-academy-met-fin-au-suspense-je-suis-tellement-heureuse-de-vous-annoncer-la-sortie-de-mon-premier-album-S5UP3FW56JDWTO47LWH56QWMGM/"
+    },
+    {
+      "artist": "JID",
+      "title": "Live From NPR's Tiny Desk",
+      "date": "2026-11-27",
+      "type": "album",
+      "cat": "rus",
+      "source": "https://www.hotnewhiphop.com/1015363-hip-hop-albums-november-2026"
+    }
+  ]
+}
