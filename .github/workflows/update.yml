@@ -1,0 +1,48 @@
+name: Mise à jour des sorties
+
+on:
+  schedule:
+    - cron: '7 * * * *'            # toutes les heures
+    - cron: '5,25,45 23 * * 4'     # jeudi 23 h UTC : minuit à Paris, les sorties du vendredi tombent
+    - cron: '25,45 0-5 * * 5'      # nuit de jeudi à vendredi : toutes les 20 minutes
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publier:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Préparer le site
+        run: |
+          mkdir -p site/data
+          cp index.html .nojekyll site/
+          cp -r logo site/logo
+      - name: Collecter les sorties
+        run: node scripts/build-data.mjs
+        env:
+          SITE_URL: https://zvxltt.github.io/a-l-affut
+          OUT_DIR: site/data
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4
