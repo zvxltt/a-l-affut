@@ -9,18 +9,19 @@ Un robot (GitHub Actions, gratuit) prépare toutes les données **toutes les heu
 
 Le robot (`scripts/build-data.mjs`) :
 
-1. suit environ 700 artistes : la liste de départ (`scripts/artists.txt`), plus les artistes « similaires » trouvés sur Deezer chaque semaine, plus les artistes cités dans les annonces Wikipédia ;
-2. lit leur discographie Deezer pour repérer les sorties et les pré-sorties ;
+1. suit plusieurs milliers d’artistes : la liste de départ (`scripts/artists.txt`), les artistes « similaires » sur Deezer (sur deux niveaux), les catégories Wikipédia des rappeurs français, belges, suisses, québécois et américains et des chanteurs et chanteuses français, et les artistes cités dans les annonces ;
+2. lit leur discographie Deezer pour repérer les sorties et les pré-sorties (les artistes actifs à chaque passage, les autres toutes les 6 ou 24 heures) ;
 3. récupère pour chaque sortie la tracklist, la durée de chaque titre, le label et les featurings exacts ;
-4. cherche les sorties annoncées dans quatre autres sources : précommandes Apple Music, MusicBrainz, la section « Upcoming releases » des pages Wikipédia « 2026 in hip-hop » et « 2027 in hip-hop », et le fichier `data/annonces.json` ;
-5. publie le tout sur GitHub Pages dans `data/releases.json` et `data/details.json`.
+4. cherche les sorties annoncées : précommandes Apple Music, MusicBrainz, section « Upcoming releases » des pages Wikipédia « 20xx in hip-hop », fichier `data/annonces.json` ;
+5. lit la presse (Google Actualités et les flux des médias rap) pour repérer les annonces faites sur Instagram et reprises par les médias, du type « X annonce son album pour le 4 décembre » ; l’article est cité comme source ;
+6. publie le tout sur GitHub Pages dans `data/releases.json` et `data/details.json`.
 
 Chaque passage réutilise le résultat précédent : seules les nouveautés sont téléchargées.
 
 ## Le site
 
+- **À venir** (page d’accueil) : toutes les sorties annoncées, par mois et par date, avec leur source.
 - **Cette semaine** : tout ce qui est sorti depuis vendredi, et les 8 semaines précédentes (flèches ou touches ← →).
-- **À venir** : toutes les sorties annoncées, par mois et par date, avec leur source.
 - **Fiche** au clic : pochette, durée, nombre de titres, label, featurings, tracklist avec la durée de chaque titre, extraits de 30 secondes, liens Deezer, Spotify, Apple Music et YouTube.
 - Filtres Rap FR / Rap US / Musique FR et Albums / EP / Singles, recherche, pastille « Nouveau », thème clair et sombre.
 
