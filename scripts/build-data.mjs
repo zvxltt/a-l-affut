@@ -18,7 +18,7 @@ const T0 = Date.now();
 // au-delà, les étapes facultatives (Apple, MusicBrainz, presse) s’arrêtent pour que la publication passe toujours
 const DEADLINE = T0 + (Number(process.env.BUDGET_MIN) || 38) * 60e3;
 // découverte élargie (rap underground, petits artistes) ; DRY=1 : essai sans rien publier, avec le résumé de ce qui serait ajouté
-const UG_ON = process.env.UG === '1';
+const UG_ON = process.env.UG !== '0';   // UG=0 : revenir à l’ancienne découverte
 const DRY = process.env.DRY === '1';
 const UG_V = 1;   // changer ce numéro relance toutes les découvertes au passage suivant
 const log =(...a) => console.log(`[${String(Math.round((Date.now() - T0) / 1000)).padStart(4)} s]`, ...a);
@@ -246,7 +246,9 @@ async function discoverRelated(state) {
     const minFans = ug ? (cat === 'rus' ? 25000 : 1500) : (cat === 'rus' ? 60000 : cat === 'frx' ? 40000 : 10000);
     if (v.f < minFans) continue;
     if (v.total < 2 && v.f < (ug && cat === 'rfr' ? 30000 : 250000)) continue;
-    artists[v.id] = { n: v.n, c: cat, f: v.f, src: 'rel', it: 0, ...(ug ? { ro: 1 } : {}) };
+    // variété : avec la découverte élargie, deux voisins suivis au moins (une star étrangère voisine d’un seul artiste n’est pas de la musique FR)
+    if (UG_ON && cat === 'fr' && v.total < 2) continue;
+    artists[v.id] = { n: v.n, c: cat, f: v.f, src: 'rel', it: 0, ...(ug ? { ro: 1 } : UG_ON && cat === 'fr' ? { nw: 1 } : {}) };
     if (++added >= (UG_ON ? 4000 : 1500)) break;
   }
   state.relAt = Date.now();
@@ -493,6 +495,9 @@ async function fetchDiscographies(state) {
     } else if (a.src !== 'seed') {
       if (a.c === 'rus' && ((known >= 3 && a.rp < 30) || a.ls >= 30)) a.c = 'int';
       const top = a.src === 'top' || a.top;
+      // variété découverte depuis la découverte élargie (nw) : titres étrangers → International (caché sous 2 millions de fans)
+      const n = fr + en + es + xo;
+      if (!top && a.nw && a.c === 'fr' && ((n >= 5 && (es + xo) / n >= 0.35) || (tot >= 6 && frs / tot < 0.1 && en / tot >= 0.3))) a.c = 'int';
       if (top && a.c === 'fr' && typeof a.lf === 'number' && a.lf < 15) a.c = 'int';
       else if (top && a.c === 'int' && a.lf >= 60) a.c = 'fr';
     }
