@@ -23,7 +23,10 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap">
 <link rel="preconnect" href="https://cdn-images.dzcdn.net">
 <script>
-try { const s = JSON.parse(localStorage.getItem('affut:settings') || '{}'), t = JSON.parse(localStorage.getItem('affut:theme') || '"auto"'), r = document.documentElement;
+try {
+  // le thème suit l'appareil par défaut : on oublie une seule fois le choix fait avec l'ancien bouton de l'en-tête
+  if (!localStorage.getItem('affut:themeV2')) { localStorage.setItem('affut:theme', '"auto"'); localStorage.setItem('affut:themeV2', '1'); }
+  const s = JSON.parse(localStorage.getItem('affut:settings') || '{}'), t = JSON.parse(localStorage.getItem('affut:theme') || '"auto"'), r = document.documentElement;
   if (t !== 'auto') r.dataset.theme = t; if (s.text && s.text !== 'normal') r.dataset.text = s.text; if (s.motion === 'reduce') r.dataset.motion = 'reduce'; if (!s.zoom) r.classList.add('nozoom'); } catch (e) {}
 </script>
 <style>
