@@ -174,6 +174,12 @@ function catOf(a, genreId, genreName, title) {
   if (rap) return EN_RE.test(t) && !FR_RE.test(t) ? 'rus' : 'rfr';
   return FR_RE.test(t) ? 'mfr' : null;
 }
+// Popularité « en France » pour l’ordre d’affichage : le top 150 France passe devant, l’international après.
+function pop(a) {
+  if (!a) return 0;
+  const top = a.top ? 1 + (151 - a.top) / 50 : 1;   // n° 1 : ×4, n° 150 : ×1
+  return (a.f || 0) * top * (a.c === 'int' ? 0.4 : 1);
+}
 // Sortie dont on ignore le genre (annonce presse, MusicBrainz) : on suit la discographie de l’artiste.
 function leanCat(a) {
   if (a.c === 'int') return minorInt(a) ? null : 'int';
@@ -1230,7 +1236,7 @@ async function main() {
       k: `dz${r.id}`, t: sp.clean || r.title, a: mainName, f: uniqBy(feats, norm).filter(f => !mainsN.includes(norm(f))), d: r.date,
       rt: ['album', 'ep', 'single', 'compile'].includes(r.rt) ? r.rt : 'album', c: r.cat, cv: r.md5,
       n: meta ? meta.n : 0, du: meta ? meta.du : 0, lb: meta ? meta.lb : '', g: meta ? meta.g : '', ex: r.ex,
-      p: r.arts[0].f + (r.fans || 0) * 4, s: ['dz'], dz: r.id,
+      p: Math.round(Math.max(...r.arts.map(pop)) + (r.fans || 0) * 4), s: ['dz'], dz: r.id,
     };
     add(it, [mainName.split(' & ')[0], r.arts[0].n]);
   }
@@ -1240,14 +1246,14 @@ async function main() {
     const c = catOf(a, null, x.genre, x.title);
     if (!c) continue;
     const sp = splitFeat(x.title);
-    add({ k: `it${x.id}`, t: sp.clean, a: x.artist || a.n, f: sp.feats, d: x.date, rt: x.rt, c, cu: x.cover, n: x.n, du: 0, lb: x.label || '', g: x.genre, ex: x.ex, p: a.f, s: ['it'], am: x.link }, [x.artist, a.n]);
+    add({ k: `it${x.id}`, t: sp.clean, a: x.artist || a.n, f: sp.feats, d: x.date, rt: x.rt, c, cu: x.cover, n: x.n, du: 0, lb: x.label || '', g: x.genre, ex: x.ex, p: Math.round(pop(a)), s: ['it'], am: x.link }, [x.artist, a.n]);
   }
   for (const x of (state.mb && state.mb.items) || []) {
     const a = artists[x.aid];
     if (!a || x.date <= TODAY) continue;
     const c = leanCat(a);
     if (!c) continue;
-    add({ k: `mb${x.id}`, t: x.title, a: x.artist || a.n, f: [], d: x.date, rt: x.rt, c, n: 0, du: 0, lb: x.label || '', g: '', ex: 0, p: a.f * 0.9, s: ['mb'], mb: x.id }, [a.n, x.artist]);
+    add({ k: `mb${x.id}`, t: x.title, a: x.artist || a.n, f: [], d: x.date, rt: x.rt, c, n: 0, du: 0, lb: x.label || '', g: '', ex: 0, p: Math.round(pop(a) * 0.9), s: ['mb'], mb: x.id }, [a.n, x.artist]);
   }
   for (const x of (state.wiki && state.wiki.items) || []) {
     if (x.date <= TODAY) continue;
@@ -1283,7 +1289,7 @@ async function main() {
     }
     const c = leanCat(a);
     if (!c) continue;
-    const it = { k: `pr${x.aid}${x.date.replace(/-/g, '')}`, t: x.title, a: a.n, f: [], d: x.date, rt: x.rt, c, n: 0, du: 0, lb: '', g: '', ex: 0, p: a.f * 0.95, s: ['pr'], pl: x.link, po: x.outlet };
+    const it = { k: `pr${x.aid}${x.date.replace(/-/g, '')}`, t: x.title, a: a.n, f: [], d: x.date, rt: x.rt, c, n: 0, du: 0, lb: '', g: '', ex: 0, p: Math.round(pop(a) * 0.95), s: ['pr'], pl: x.link, po: x.outlet };
     items.push(it);
     list.push(it);
     byArtist.set(norm(a.n), list);
