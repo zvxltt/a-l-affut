@@ -1440,6 +1440,7 @@ function fb() {
       ]);
       const a = app.initializeApp(FB_CONFIG);
       FB = { A, F, auth: A.getAuth(a), db: F.getFirestore(a) };
+      FB.auth.languageCode = 'fr';   // e-mails de Firebase (mot de passe oublié) en français
       A.onAuthStateChanged(FB.auth, onUser);
       return FB;
     })().catch(e => { fbLoading = null; ME.ready = true; paintAcct(); throw e; });
