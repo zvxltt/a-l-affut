@@ -550,7 +550,9 @@ async function linksStep(state, items) {
   const cache = state.links = state.links || {};
   const attach = it => { const l = cache[it.dz]; if (l) { if (l.sp) it.su = l.sp; if (l.yt) it.yu = l.yt; } };
   items.forEach(it => it.dz && attach(it));
-  if (FAST) return;
+  // song.link n’accepte plus les appels sans clé (401) : l’étape ne tourne que si le secret ODESLI_KEY existe
+  const KEY = process.env.ODESLI_KEY || '';
+  if (FAST || !KEY) return;
   const from = addDays(TODAY, -14);
   const todo = items.filter(it => it.dz && it.d >= from && (!cache[it.dz] || (!cache[it.dz].sp && Date.now() - cache[it.dz].t > (cache[it.dz].err || !cache[it.dz].yt ? 6 * HOUR : 2 * DAY))))
     .sort((a, b) => b.p - a.p).slice(0, 25);
@@ -558,7 +560,7 @@ async function linksStep(state, items) {
   for (const it of todo) {
     if (Date.now() > DEADLINE - 3 * MIN) break;
     try {
-      const j = await odesliGap(() => getJson(`https://api.song.link/v1-alpha.1/links?userCountry=FR&url=${encodeURIComponent(`https://www.deezer.com/album/${it.dz}`)}`));
+      const j = await odesliGap(() => getJson(`https://api.song.link/v1-alpha.1/links?userCountry=FR&key=${encodeURIComponent(KEY)}&url=${encodeURIComponent(`https://www.deezer.com/album/${it.dz}`)}`));
       const L = j.linksByPlatform || {};
       cache[it.dz] = { sp: (L.spotify && L.spotify.url) || '', yt: (L.youtubeMusic && L.youtubeMusic.url) || (L.youtube && L.youtube.url) || '', t: Date.now() };
       attach(it); n++;
