@@ -17,6 +17,10 @@ const MIN = 60e3, HOUR = 36e5, DAY = 864e5;
 const T0 = Date.now();
 // au-delà, les étapes facultatives (Apple, MusicBrainz, presse) s’arrêtent pour que la publication passe toujours
 const DEADLINE = T0 + (Number(process.env.BUDGET_MIN) || 38) * 60e3;
+// découverte élargie (rap underground, petits artistes) ; DRY=1 : essai sans rien publier, avec le résumé de ce qui serait ajouté
+const UG_ON = process.env.UG === '1';
+const DRY = process.env.DRY === '1';
+const UG_V = 1;   // changer ce numéro relance toutes les découvertes au passage suivant
 const log =(...a) => console.log(`[${String(Math.round((Date.now() - T0) / 1000)).padStart(4)} s]`, ...a);
 
 /* ------------------------------------------------------------------ dates */
@@ -165,6 +169,8 @@ async function loadAnnonces() {
 const minorInt = a => a.c === 'int' && !a.top && a.src !== 'seed' && (a.f || 0) < 2e6;
 function catOf(a, genreId, genreName, title) {
   if (a.c === 'int') return minorInt(a) ? null : 'int';
+  // petit artiste découvert autour du rap (ro) : ses sorties rangées dans un autre genre ne sont pas gardées
+  if (a.ro && ((genreId > 0 && genreId !== 116) || (!(genreId > 0) && genreName && !/rap|hip/i.test(genreName)))) return null;
   if (a.c === 'rfr' || a.c === 'rus' || a.c === 'mfr') return a.c;
   const gid = genreId > 0 ? genreId : null;
   const known = gid != null || !!genreName;
@@ -190,13 +196,20 @@ function leanCat(a) {
 
 /* ------------------------------------------------------------------ découverte d’artistes */
 // 1) Artistes « similaires » sur Deezer, sur deux niveaux (les artistes de départ, puis les plus suivis des découverts).
+const isRapCat = c => c === 'rfr' || c === 'fr' || c === 'rus';
+// en dessous de ces fans, un artiste découvert autour du rap n’apporte que ses sorties rap (ro)
+const RAP_ONLY_FANS = { rfr: 10000, fr: 10000, rus: 60000 };
+const roFor = (c, f) => (UG_ON && RAP_ONLY_FANS[c] && f < RAP_ONLY_FANS[c] ? { ro: 1 } : {});
 async function discoverRelated(state) {
-  if (state.relAt && Date.now() - state.relAt < 6 * DAY) return;
+  const due = !state.relAt || Date.now() - state.relAt >= 6 * DAY || (UG_ON && state.relV !== UG_V);
+  if (!due) return;
   const artists = state.artists;
+  // points de départ : la liste de départ, les artistes très suivis et, avec la découverte élargie, tout le rap déjà suivi
+  // à partir de 12 000 fans (60 000 en rap US) : leurs voisins font remonter la scène underground
   const base = Object.entries(artists)
-    .filter(([, a]) => a.c !== 'int' && (a.src === 'seed' || a.f >= 120000))
+    .filter(([, a]) => a.c !== 'int' && (a.src === 'seed' || a.f >= 120000 || (UG_ON && isRapCat(a.c) && a.f >= (a.c === 'rus' ? 60000 : 12000))))
     .sort((x, y) => (x[1].src === 'seed' ? -1 : 0) - (y[1].src === 'seed' ? -1 : 0) || y[1].f - x[1].f)
-    .slice(0, 1200);
+    .slice(0, UG_ON ? 2600 : 1200);
   log(`découverte : artistes similaires de ${base.length} artistes…`);
   const votes = new Map();
   await Promise.all(base.map(([id, s]) => dz(`/artist/${id}/related?limit=40`).then(res => {
@@ -217,31 +230,39 @@ async function discoverRelated(state) {
   }).sort((a, b) => b.total - a.total || b.f - a.f);
   for (const v of cands) {
     const cat = v.top === 'mfr' ? 'frx' : v.top;
-    const minFans = cat === 'rus' ? 60000 : cat === 'frx' ? 40000 : 10000;
+    // découverte élargie : le rap FR jusqu’à 1 500 fans s’il est voisin d’au moins deux artistes suivis
+    const minFans = UG_ON ? (cat === 'rus' ? 25000 : cat === 'frx' ? 40000 : cat === 'fr' ? 5000 : 1500) : (cat === 'rus' ? 60000 : cat === 'frx' ? 40000 : 10000);
     if (v.f < minFans) continue;
-    if (v.total < 2 && v.f < 250000) continue;
-    artists[v.id] = { n: v.n, c: cat, f: v.f, src: 'rel', it: 0 };
-    if (++added >= 1500) break;
+    if (v.total < 2 && v.f < (UG_ON && cat === 'rfr' ? 30000 : 250000)) continue;
+    artists[v.id] = { n: v.n, c: cat, f: v.f, src: 'rel', it: 0, ...roFor(cat, v.f) };
+    if (++added >= (UG_ON ? 4000 : 1500)) break;
   }
   state.relAt = Date.now();
+  if (UG_ON) state.relV = UG_V;
   log(`découverte : ${added} artistes similaires ajoutés (${Object.keys(artists).length} suivis)`);
 }
 
 // 2) Catégories Wikipédia : rappeurs français, belges, suisses, québécois, chanteurs français, rappeurs américains.
+// ug : seuil de la découverte élargie (rap underground) ; ugOnly : catégorie lue seulement avec elle
 const WIKI_CATS = [
-  { lang: 'fr', cat: 'Catégorie:Rappeur français', depth: 2, c: 'rfr', min: 8000 },
-  { lang: 'fr', cat: 'Catégorie:Rappeuse française', depth: 1, c: 'rfr', min: 8000 },
-  { lang: 'fr', cat: 'Catégorie:Groupe français de hip-hop', depth: 1, c: 'rfr', min: 8000 },
-  { lang: 'fr', cat: 'Catégorie:Rappeur belge', depth: 1, c: 'rfr', min: 8000 },
-  { lang: 'fr', cat: 'Catégorie:Rappeuse belge', depth: 1, c: 'rfr', min: 8000 },
-  { lang: 'fr', cat: 'Catégorie:Rappeur suisse', depth: 1, c: 'rfr', min: 8000 },
-  { lang: 'fr', cat: 'Catégorie:Rappeur québécois', depth: 1, c: 'rfr', min: 10000 },
+  { lang: 'fr', cat: 'Catégorie:Rappeur français', depth: 2, c: 'rfr', min: 8000, ug: 1500 },
+  { lang: 'fr', cat: 'Catégorie:Rappeuse française', depth: 1, c: 'rfr', min: 8000, ug: 1500 },
+  { lang: 'fr', cat: 'Catégorie:Groupe français de hip-hop', depth: 1, c: 'rfr', min: 8000, ug: 1500 },
+  { lang: 'fr', cat: 'Catégorie:Rappeur belge', depth: 1, c: 'rfr', min: 8000, ug: 1500 },
+  { lang: 'fr', cat: 'Catégorie:Rappeuse belge', depth: 1, c: 'rfr', min: 8000, ug: 1500 },
+  { lang: 'fr', cat: 'Catégorie:Rappeur suisse', depth: 1, c: 'rfr', min: 8000, ug: 1500 },
+  { lang: 'fr', cat: 'Catégorie:Rappeuse suisse', depth: 1, c: 'rfr', min: 8000, ug: 1500, ugOnly: true },
+  { lang: 'fr', cat: 'Catégorie:Groupe belge de hip-hop', depth: 1, c: 'rfr', min: 8000, ug: 1500, ugOnly: true },
+  { lang: 'fr', cat: 'Catégorie:Groupe suisse de hip-hop', depth: 1, c: 'rfr', min: 8000, ug: 1500, ugOnly: true },
+  { lang: 'fr', cat: 'Catégorie:Rappeur québécois', depth: 1, c: 'rfr', min: 10000, ug: 3000 },
+  { lang: 'fr', cat: 'Catégorie:Rappeuse québécoise', depth: 1, c: 'rfr', min: 10000, ug: 3000, ugOnly: true },
   { lang: 'fr', cat: 'Catégorie:Chanteuse française du XXIe siècle', depth: 0, c: 'fr', min: 50000 },
   { lang: 'fr', cat: 'Catégorie:Chanteur français du XXIe siècle', depth: 0, c: 'fr', min: 50000 },
   { lang: 'fr', cat: 'Catégorie:Auteur-compositeur-interprète français', depth: 0, c: 'fr', min: 50000 },
   { lang: 'fr', cat: 'Catégorie:Chanteuse française de pop', depth: 0, c: 'fr', min: 40000 },
   { lang: 'fr', cat: 'Catégorie:Chanteur français de pop', depth: 0, c: 'fr', min: 40000 },
-  { lang: 'en', cat: 'Category:21st-century American rappers', depth: 1, c: 'rus', min: 60000 },
+  { lang: 'en', cat: 'Category:21st-century American rappers', depth: 1, c: 'rus', min: 60000, ug: 25000 },
+  { lang: 'en', cat: 'Category:Underground rappers', depth: 0, c: 'rus', min: 60000, ug: 15000, ugOnly: true },
 ];
 async function wikiCategoryMembers(lang, cat, depth) {
   const names = [];
@@ -266,12 +287,20 @@ async function wikiCategoryMembers(lang, cat, depth) {
 }
 async function discoverWikiCategories(state) {
   state.searched = state.searched || {};
+  if (UG_ON && state.catV !== UG_V) {
+    // nouveaux seuils : les noms trouvés sur Deezer mais trop peu suivis jusqu’ici sont revérifiés
+    // (les valeurs de « searched » sont des identifiants Deezer, 0, ou une date pour les noms tirés des annonces)
+    for (const [k, v] of Object.entries(state.searched)) if (typeof v === 'number' && v > 0 && v < 1e11 && !state.artists[v]) delete state.searched[k];
+    state.catPending = []; state.catAt = 0; state.catV = UG_V;
+  }
+  if (UG_ON && !DRY && Date.now() - T0 > 14 * MIN) { log('découverte Wikipédia : remise au passage suivant'); return; }
   let pending = state.catPending || [];
   if (!pending.length && (!state.catAt || Date.now() - state.catAt > 6 * DAY)) {
     for (const def of WIKI_CATS) {
+      if (def.ugOnly && !UG_ON) continue;
       try {
         const names = await wikiCategoryMembers(def.lang, def.cat, def.depth);
-        for (const n of names) pending.push([n, def.c, def.min]);
+        for (const n of names) pending.push([n, def.c, UG_ON && def.ug ? def.ug : def.min]);
       } catch (e) { log(`catégorie Wikipédia illisible : ${def.cat}`); }
     }
     state.catAt = Date.now();
@@ -291,12 +320,90 @@ async function discoverWikiCategories(state) {
     const m = (res.data || []).filter(a => norm(a.name) === norm(name)).sort((a, b) => b.nb_fan - a.nb_fan)[0];
     state.searched[norm(name)] = m ? m.id : 0;
     if (m && m.nb_fan >= min && !state.artists[m.id] && !IGNORE.has(m.id)) {
-      state.artists[m.id] = { n: m.name, c, f: m.nb_fan, src: 'cat', it: 0 };
+      state.artists[m.id] = { n: m.name, c, f: m.nb_fan, src: 'cat', it: 0, ...roFor(c, m.nb_fan) };
       added++;
     }
   }).catch(() => {})));
   state.catPending = pending.slice(2500);
   log(`découverte Wikipédia : ${batch.length} noms vérifiés, ${added} artistes ajoutés, ${state.catPending.length} restants`);
+}
+
+// 3) Liste de noms (scripts/underground.txt) : rap underground, indé, classiques, retrouvés sur Deezer par leur nom exact.
+async function loadUnderground() {
+  try {
+    const raw = await readFile('scripts/underground.txt', 'utf8');
+    return raw.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#')).map(l => l.split('|'))
+      .filter(([n, c]) => n && (c === 'rfr' || c === 'rus'));
+  } catch (e) { return []; }
+}
+async function discoverUnderground(state, list) {
+  state.ug = state.ug || {};   // nom normalisé -> { id (0 : introuvable ou ambigu), t } ; relu au bout de 30 jours
+  const known = new Set(Object.values(state.artists).map(a => norm(a.n)));
+  const todo = uniqBy(list, ([n]) => norm(n)).filter(([n]) => {
+    const k = norm(n), e = state.ug[k];
+    if (!k || known.has(k)) return false;
+    return !e || (Date.now() - e.t > 30 * DAY && !(e.id && state.artists[e.id]));
+  }).slice(0, 400);
+  if (!todo.length) return;
+  let added = 0, unsure = 0;
+  await Promise.all(todo.map(([name, c]) => dz(`/search/artist?limit=15&q=${encodeURIComponent(name)}`).then(res => {
+    const ms = (res.data || []).filter(a => norm(a.name) === norm(name)).sort((a, b) => b.nb_fan - a.nb_fan);
+    // deux homonymes de taille comparable : on ne devine pas
+    const m = ms.length > 1 && ms[1].nb_fan > ms[0].nb_fan * 0.35 ? null : ms[0];
+    if (!m && ms.length > 1) unsure++;
+    state.ug[norm(name)] = { id: m ? m.id : 0, t: Date.now() };
+    if (!m || state.artists[m.id] || IGNORE.has(m.id) || m.nb_fan < (c === 'rus' ? 1000 : 200)) return;
+    state.artists[m.id] = { n: m.name, c, f: m.nb_fan, src: 'ug', it: 0, ...roFor(c, m.nb_fan) };
+    added++;
+  }).catch(() => {})));
+  log(`découverte liste underground : ${todo.length} noms cherchés, ${added} artistes ajoutés${unsure ? `, ${unsure} homonymes écartés` : ''}`);
+}
+
+// 4) Playlists Deezer du rap underground et de la nouvelle scène : les artistes présents dans au moins deux playlists.
+const PL_QUERIES = [
+  ...['rap fr underground', 'rap français underground', 'underground rap français', 'rap underground fr', 'rap fr indé', 'rap indépendant',
+    'nouvelle scène rap fr', 'nouvelle école rap fr', 'rap fr pépites', 'pépites rap', 'rap fr découvertes', 'rap fr à découvrir', 'rap fr fresh',
+    'drill fr', 'trap fr', 'cloud rap fr', 'boom bap fr', 'rap conscient', 'rap fr old school', 'rap belge', 'rap suisse', 'rap québécois',
+    'rap marseille', 'rap lyon', 'rap toulouse', 'rap lille'].map(q => [q, 'rfr']),
+  ...['underground hip hop', 'underground rap', 'boom bap', 'rap us underground', 'abstract hip hop', 'jazz rap', 'plugg', 'rage rap'].map(q => [q, 'rus']),
+];
+async function discoverPlaylists(state) {
+  const due = !state.plAt || Date.now() - state.plAt >= 6 * DAY || state.plV !== UG_V;
+  if (!due) return;
+  if (!DRY && Date.now() - T0 > 12 * MIN) { log('découverte playlists : remise au passage suivant'); return; }
+  const artists = state.artists;
+  const seenPl = new Set(), pls = [];
+  await Promise.all(PL_QUERIES.map(([q, c]) => dz(`/search/playlist?limit=12&q=${encodeURIComponent(q)}`).then(res => {
+    let n = 0;
+    for (const p of res.data || []) {
+      if (n >= 6 || seenPl.has(p.id) || (p.nb_tracks || 0) < 15) continue;
+      seenPl.add(p.id); pls.push({ id: p.id, c }); n++;
+    }
+  }).catch(() => {})));
+  const votes = new Map();
+  await Promise.all(pls.map(p => dz(`/playlist/${p.id}/tracks?limit=400`).then(res => {
+    const inThis = new Set();
+    for (const t of res.data || []) {
+      const ar = t && t.artist;
+      if (!ar || !ar.id || inThis.has(ar.id)) continue;
+      inThis.add(ar.id);
+      if (artists[ar.id] || IGNORE.has(ar.id) || NOT_ARTIST.has(spacedNorm(ar.name))) continue;
+      const v = votes.get(ar.id) || { id: ar.id, n: ar.name, pl: 0, cats: {} };
+      v.pl++; v.cats[p.c] = (v.cats[p.c] || 0) + 1;
+      votes.set(ar.id, v);
+    }
+  }).catch(() => {})));
+  const cands = [...votes.values()].filter(v => v.pl >= 2).sort((a, b) => b.pl - a.pl).slice(0, 1500);
+  let added = 0;
+  await Promise.all(cands.map(v => dz(`/artist/${v.id}`).then(ar => {
+    const c = (v.cats.rus || 0) > (v.cats.rfr || 0) ? 'rus' : 'rfr';
+    const f = ar.nb_fan || 0;
+    if (artists[v.id] || f < (c === 'rus' ? 5000 : 800)) return;
+    artists[v.id] = { n: ar.name || v.n, c, f, src: 'pl', it: 0, ...roFor(c, f) };
+    added++;
+  }).catch(() => {})));
+  state.plAt = Date.now(); state.plV = UG_V;
+  log(`découverte playlists : ${pls.length} playlists, ${votes.size} artistes non suivis, ${cands.length} dans 2 playlists ou plus, ${added} ajoutés`);
 }
 
 // Les artistes cités dans les annonces Wikipédia sont ajoutés s’ils existent sur Deezer.
@@ -374,6 +481,30 @@ async function fetchDiscographies(state) {
   for (const id of Object.keys(state.disco)) if (!artists[id]) delete state.disco[id];
   log(`Deezer : ${todo.length} discographies relues sur ${ids.length} artistes (${fails} échecs)`);
   return { map: out, fails, total: todo.length };
+}
+
+// Essai (DRY=1) : ce que la découverte ajouterait, et les sorties que ces artistes apporteraient.
+async function dryRunReport(state, before) {
+  const added = Object.entries(state.artists).filter(([id]) => !before.has(id));
+  const groups = {};
+  for (const [id, a] of added) (groups[`${a.src}/${a.c}${a.ro ? '/ro' : ''}`] = groups[`${a.src}/${a.c}${a.ro ? '/ro' : ''}`] || []).push([id, a]);
+  log(`ESSAI : ${added.length} artistes ajoutés (${before.size} → ${Object.keys(state.artists).length})`);
+  for (const [g, list] of Object.entries(groups).sort((x, y) => y[1].length - x[1].length)) {
+    list.sort((x, y) => y[1].f - x[1].f);
+    const pick = list.length <= 60 ? list : [...list.slice(0, 45), ...list.slice(-15)];
+    log(`  ${g} : ${list.length} — ${pick.map(([, a]) => `${a.n} (${a.f})`).join(', ')}`);
+  }
+  const sub = { artists: Object.fromEntries(added), disco: {}, discoV: 2 };
+  const discos = await fetchDiscographies(sub);
+  const rel = buildDeezerReleases(sub.artists, discos.map, {});
+  const ws = weekStartOf(TODAY), we = addDays(ws, 6), lw = addDays(ws, -7);
+  const count = list => { const o = {}; for (const r of list) o[`${r.cat}/${r.rt}`] = (o[`${r.cat}/${r.rt}`] || 0) + 1; return JSON.stringify(o); };
+  const thisWeek = rel.filter(r => r.date >= ws && r.date <= we), lastWeek = rel.filter(r => r.date >= lw && r.date < ws), future = rel.filter(r => r.date > TODAY);
+  log(`ESSAI : ${rel.length} sorties apportées ; cette semaine ${thisWeek.length} ${count(thisWeek)} ; semaine dernière ${lastWeek.length} ${count(lastWeek)} ; à venir ${future.length} ${count(future)}`);
+  const active = Object.values(sub.artists).filter(a => a.last && (Date.parse(TODAY) - Date.parse(a.last)) / DAY <= 150).length;
+  log(`ESSAI : ${active} de ces artistes ont sorti quelque chose depuis 5 mois (relus à chaque passage)`);
+  log(`ESSAI : cette semaine — ${thisWeek.sort((a, b) => b.fans - a.fans).slice(0, 40).map(r => `${r.arts[0].n} – ${r.title} [${r.rt}/${r.cat}]`).join(' ; ')}`);
+  log(`ESSAI : requêtes ${JSON.stringify(stats)}`);
 }
 
 function buildDeezerReleases(artists, discos, albums) {
@@ -771,6 +902,7 @@ function makeMatchers(artists) {
   for (const [id, a] of Object.entries(artists)) {
     const key = spacedNorm(a.n);
     if (!key || key.length < 2 || NOT_ARTIST.has(key)) continue;
+    if (a.ro && !key.includes(' ') && key.length <= 6) continue;   // petit artiste au nom court : trop de faux positifs
     const strict = key.replace(/ /g, '').length <= 5 || COMMON.has(key);
     const m = { id, a, key, strict, re: strict ? new RegExp(`(^|[^\\p{L}\\p{N}])${escRe(a.n)}(?=$|[^\\p{L}\\p{N}])`, 'u') : null };
     const first = key.split(' ')[0];
@@ -1256,7 +1388,7 @@ async function concertsStep(state) {
   const byName = new Map();
   for (const [id, a] of Object.entries(state.artists)) {
     const k = norm(a.n);
-    if (k.length >= 3 && !NOT_ARTIST.has(spacedNorm(a.n))) byName.set(k, { id, ...a });
+    if (k.length >= (a.ro ? 5 : 3) && !NOT_ARTIST.has(spacedNorm(a.n))) byName.set(k, { id, ...a });
   }
   const items = [];
   const seen = new Set();
@@ -1315,10 +1447,16 @@ async function main() {
   for (const [id, a] of Object.entries(state.artists)) if (a.src === 'seed' && !seeds[id]) delete state.artists[id];
   KNOWN = new Set(Object.values(state.artists).map(a => norm(a.n)));
 
+  const before = new Set(Object.keys(state.artists));
   await chartsStep(state);
   await wikipediaStep(state);
   await discoverRelated(state);
+  if (UG_ON) {
+    try { await discoverUnderground(state, await loadUnderground()); } catch (e) { log(`liste underground : ${e.message}`); }
+    try { await discoverPlaylists(state); } catch (e) { log(`playlists : ${e.message}`); }
+  }
   await discoverWikiCategories(state);
+  if (DRY) { await dryRunReport(state, before); return; }
   if (state.wiki) await discoverFromNames(state, state.wiki.items.map(x => x.artist).filter(n => n !== 'Divers artistes'));
   KNOWN = new Set(Object.values(state.artists).map(a => norm(a.n)));
   const artists = state.artists;

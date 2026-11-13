@@ -1,0 +1,26 @@
+name: Essai de la découverte d'artistes
+
+# Lancement à la main : montre les artistes que la découverte élargie ajouterait, sans rien publier.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  essai:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Essai sans publier
+        run: node scripts/build-data.mjs
+        env:
+          SITE_URL: https://zvxltt.github.io/a-l-affut
+          OUT_DIR: /tmp/essai
+          UG: '1'
+          DRY: '1'
+          BUDGET_MIN: '45'

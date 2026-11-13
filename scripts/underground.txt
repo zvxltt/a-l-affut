@@ -1,0 +1,206 @@
+# Rap underground, indépendant, classiques et nouvelle scène à suivre en plus de la découverte automatique.
+# Une ligne par artiste : Nom exact sur Deezer|catégorie (rfr : rap FR, BE, CH, QC ; rus : rap US et anglophone).
+# Le robot retrouve chaque nom sur Deezer (nom identique, sans homonyme aussi suivi) ; pour les petits artistes,
+# seules les sorties rangées en rap sont gardées. Les noms trop courants (Loud, Wiki, Blu…) sont évités exprès.
+
+# --- France : underground, indé, classiques
+Lucio Bukowski|rfr
+Anton Serra|rfr
+Swift Guad|rfr
+Al'Tarba|rfr
+Furax Barbarossa|rfr
+Despo Rutti|rfr
+Ol Kainry|rfr
+Dany Dan|rfr
+Zekwé Ramos|rfr
+Gros Mo|rfr
+Dooz Kawa|rfr
+Nakk Mendosa|rfr
+Sameer Ahmad|rfr
+Rocé|rfr
+Hugo TSR|rfr
+Demi Portion|rfr
+Nemir|rfr
+Grems|rfr
+La Rumeur|rfr
+Hocus Pocus|rfr
+Psykick Lyrikah|rfr
+Kohndo|rfr
+Keny Arkana|rfr
+Rockin' Squat|rfr
+Mac Tyer|rfr
+Kacem Wapalek|rfr
+Tengo John|rfr
+Esso Luxueux|rfr
+2Zer Washington|rfr
+Areno Jaz|rfr
+Eff Gee|rfr
+Doums|rfr
+Népal|rfr
+Jewel Usain|rfr
+Rowjay|rfr
+Bekar|rfr
+Benjamin Epps|rfr
+Ichon|rfr
+Loveni|rfr
+Vicky R|rfr
+Lala &ce|rfr
+Davinhor|rfr
+Joysad|rfr
+Ateyaba|rfr
+Rad Cartier|rfr
+404Billy|rfr
+Prinzly|rfr
+Zikxo|rfr
+Tedax Max|rfr
+Ashe 22|rfr
+Osirus Jack|rfr
+8ruki|rfr
+Houdi|rfr
+Hiro Le Coq|rfr
+Youv Dee|rfr
+Lesram|rfr
+Doumams|rfr
+JRK 19|rfr
+Djamsy|rfr
+BB Jacques|rfr
+Elh Kmer|rfr
+Kpoint|rfr
+Amine Farsi|rfr
+Diddi Trix|rfr
+Anfa Rose|rfr
+Coyote Jo Bastard|rfr
+Venus VNL|rfr
+Leon Faun|rfr
+Rilès|rfr
+47Ter|rfr
+Sinik|rfr
+Sefyu|rfr
+Tunisiano|rfr
+Kenyon|rfr
+Zoxea|rfr
+Nysay|rfr
+Akhenaton|rfr
+Shurik'n|rfr
+Fababy|rfr
+Mokobé|rfr
+Alkpote|rfr
+Arsenik|rfr
+Mafia K'1 Fry|rfr
+Pit Baccardi|rfr
+Kool Shen|rfr
+Suprême NTM|rfr
+Diam's|rfr
+Sexion d'Assaut|rfr
+L'Entourage|rfr
+Bon Gamin|rfr
+13 Block|rfr
+4Keus|rfr
+Jeff Le Nerf|rfr
+Mister You|rfr
+
+# --- Belgique et Suisse
+Senamo|rfr
+Le Motif|rfr
+Makala|rfr
+Di-Meh|rfr
+Varnish La Piscine|rfr
+Rounhaa|rfr
+KT Gorique|rfr
+Danitsa|rfr
+Roméo Elvis|rfr
+JeanJass|rfr
+
+# --- Québec
+Lary Kidd|rfr
+FouKi|rfr
+Souldia|rfr
+Koriass|rfr
+Alaclair Ensemble|rfr
+Dead Obies|rfr
+Shreez|rfr
+Enima|rfr
+Imposs|rfr
+Manu Militari|rfr
+Connaisseur Ticaso|rfr
+Rymz|rfr
+Sans Pression|rfr
+Tizzo|rfr
+5sang14|rfr
+
+# --- États-Unis et Royaume-Uni : underground et indé
+Earl Sweatshirt|rus
+billy woods|rus
+Armand Hammer|rus
+Mach-Hommy|rus
+Westside Gunn|rus
+Conway the Machine|rus
+Benny The Butcher|rus
+Boldy James|rus
+Roc Marciano|rus
+Danny Brown|rus
+JPEGMAFIA|rus
+Freddie Gibbs|rus
+Madlib|rus
+MF DOOM|rus
+Aesop Rock|rus
+Open Mike Eagle|rus
+Quelle Chris|rus
+Pink Siifu|rus
+Fly Anakin|rus
+Medhane|rus
+Maxo|rus
+Jay Worthy|rus
+Larry June|rus
+Curren$y|rus
+Smino|rus
+Mick Jenkins|rus
+Joey Bada$$|rus
+Flatbush Zombies|rus
+ZelooperZ|rus
+Bktherula|rus
+Destroy Lonely|rus
+Homixide Gang|rus
+Nettspend|rus
+OsamaSon|rus
+Xaviersobased|rus
+Lazer Dim 700|rus
+BabyChiefDoit|rus
+Kenny Mason|rus
+redveil|rus
+Rome Streetz|rus
+Black Thought|rus
+Run The Jewels|rus
+Little Simz|rus
+slowthai|rus
+Isaiah Rashad|rus
+Ab-Soul|rus
+Your Old Droog|rus
+Elcamino|rus
+Stove God Cook$|rus
+The Alchemist|rus
+Oddisee|rus
+Apollo Brown|rus
+Jedi Mind Tricks|rus
+Immortal Technique|rus
+Brother Ali|rus
+Talib Kweli|rus
+Pharoahe Monch|rus
+Kool Keith|rus
+R.A.P. Ferreira|rus
+Injury Reserve|rus
+clipping.|rus
+Death Grips|rus
+Lil Ugly Mane|rus
+Ghostemane|rus
+Xavier Wulf|rus
+Night Lovell|rus
+City Morgue|rus
+EARTHGANG|rus
+Cordae|rus
+Denzel Curry|rus
+Vince Staples|rus
+JID|rus
+Joey Valence & Brae|rus
+Fakemink|rus
+EsDeeKid|rus
