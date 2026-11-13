@@ -1,15 +1,17 @@
 rules_version = '2';
 // Règles de la base Firestore du site À l'affût (notes, critiques, profils).
 // Tout est public en lecture ; on n'écrit que ses propres données.
-// Une sortie se note à partir de sa sortie, sans limite ; sa semaine de sortie (w) sert au classement.
+// Une sortie ne se note que pendant sa semaine de sortie (du vendredi au jeudi).
 service cloud.firestore {
   match /databases/{database}/documents {
 
     function signedIn() { return request.auth != null; }
     function dateOf(s) { return timestamp.date(int(s[0:4]), int(s[5:7]), int(s[8:10])); }
     function weekStartOf(s) { return dateOf(s) - duration.value((dateOf(s).dayOfWeek() + 2) % 7, 'd'); }
-    // sortie parue (2 h de marge pour le fuseau horaire)
-    function released(d) { return request.time >= dateOf(d) - duration.value(2, 'h'); }
+    function inReleaseWeek(d) {
+      return request.time >= dateOf(d) - duration.value(2, 'h')
+        && request.time < weekStartOf(d) + duration.value(7, 'd') + duration.value(2, 'h');
+    }
     function isDate(s) { return s is string && s.matches('^20[0-9]{2}-[0-1][0-9]-[0-3][0-9]$'); }
     function okStr(m, k, max) { return !(k in m) || (m[k] is string && m[k].size() <= max); }
     // photo de profil : vide, adresse https (photo Google) ou petite image intégrée (choisie par la personne)
@@ -42,13 +44,13 @@ service cloud.firestore {
         && id == request.resource.data.k + '__' + request.auth.uid
         && validReview(request.resource.data)
         && request.resource.data.at == request.time
-        && released(request.resource.data.d);
+        && inReleaseWeek(request.resource.data.d);
       allow update: if signedIn()
         && resource.data.uid == request.auth.uid
         && validReview(request.resource.data)
         && request.resource.data.k == resource.data.k
         && request.resource.data.at == resource.data.at
-        && ((request.resource.data.d == resource.data.d && released(resource.data.d))
+        && ((request.resource.data.d == resource.data.d && inReleaseWeek(resource.data.d))
           || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['h', 'n', 'ph', 'up']));
       allow delete: if signedIn() && resource.data.uid == request.auth.uid;
     }

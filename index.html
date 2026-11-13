@@ -2013,7 +2013,7 @@ async function deleteAccount(btn) {
 /* ---------- note et critique dans la fiche ---------- */
 function windowOf(r) {
   const t = today(), ws = weekStartOf(r.date), we = addDays(ws, 6);
-  return { ws, we, from: r.date > ws ? r.date : ws, state: r.date > t ? 'soon' : 'open', late: r.date <= t && t > we };
+  return { ws, we, from: r.date > ws ? r.date : ws, state: r.date > t ? 'soon' : t <= we ? 'open' : 'closed' };
 }
 const tracksOf = r => (DETAILS ? DETAILS[r.key] || [] : null);
 const multiTrack = rows => !!(rows && rows.length >= 2);
@@ -2034,13 +2034,13 @@ function meHtml(r, w, mine, rows) {
   const multi = multiTrack(rows) && !tracksOff;
   const d = DRAFT.get(r.key) || { r: mine ? mine.r || 0 : 0, tx: mine ? mine.tx || '' : '' };
   const delBtn = `<button class="btn" type="button" data-act="rv-del" data-k="${esc(r.key)}">${d.del ? 'Confirmer la suppression' : 'Supprimer'}</button>`;
-  if (w.state === 'soon') return `<p class="rb-note">La note ouvrira le ${esc(fmtDay(r.date))}, jour de sa sortie.</p>`;
+  if (w.state === 'soon') return `<p class="rb-note">La note ouvrira le ${esc(fmtDay(r.date))}, jour de sa sortie, jusqu’au ${esc(fmtDay(w.we))}.</p>`;
   if (w.state === 'closed') {
     return `<p class="rb-note">La note était ouverte la semaine de sa sortie, du ${esc(fmtDay(w.from))} au ${esc(fmtDay(w.we))}.</p>
       ${mine ? `<div class="rb-mine">${mine.r ? `<span>Ta note</span>${noteStars(mine.r, 'sm')}` : '<span>Tu as noté des sons de cette sortie</span>'}${delBtn}</div>` : ''}`;
   }
   if (!ME.ready) return '<div class="sk" style="height:46px"></div>';
-  if (!ME.user) return `<div class="rb-cta"><p>Note cette sortie${multi ? ' et chacun de ses sons' : ''} et écris ta critique.</p><button class="btn solid" type="button" data-act="signin">Se connecter pour noter</button></div>`;
+  if (!ME.user) return `<div class="rb-cta"><p>Note cette sortie${multi ? ' et chacun de ses sons' : ''}, écris ta critique, jusqu’au ${esc(fmtDay(w.we))}.</p><button class="btn solid" type="button" data-act="signin">Se connecter pour noter</button></div>`;
   if (!ME.profile) return `<div class="rb-cta"><p>Crée ton profil pour noter cette sortie.</p><button class="btn solid" type="button" data-act="onboard">Créer mon profil</button></div>`;
   const noted = !!(mine && mine.r);
   return `<div class="rb-form">
@@ -2053,7 +2053,7 @@ function meHtml(r, w, mine, rows) {
       <button class="btn solid" type="button" data-act="rv-save" data-k="${esc(r.key)}">${noted ? 'Mettre à jour' : 'Publier'}</button>
       ${noted ? delBtn : ''}
       ${noted && mine.r >= 1 ? `<button class="btn" type="button" data-act="share-note" data-k="${esc(r.key)}">${I.share}Partager</button>` : ''}
-      <span class="rb-hint">${w.late ? 'Note donnée après sa semaine de sortie : elle compte dans la moyenne' : `Compte pour « Les mieux notés » jusqu’au ${esc(fmtDay(w.we))}`}</span>
+      <span class="rb-hint">Ouvert jusqu’au ${esc(fmtDay(w.we))}</span>
     </div>
     ${multi ? '<p class="rb-tip">Tu peux aussi noter chaque son, dans la tracklist juste en dessous.</p>' : ''}
   </div>`;
@@ -2150,8 +2150,6 @@ function setTrack(k, i, v) {
   clearTimeout(TRT.get(k));
   TRT.set(k, setTimeout(() => saveTracks(k), 900));
 }
-// Refus du serveur : pour une sortie passée, les notes tardives ne sont peut-être pas encore ouvertes côté règles.
-function deniedMsg(k) { const rel = relOf(k); return rel && windowOf(rel).late ? 'Les notes après la semaine de sortie ne sont pas encore ouvertes, réessaie plus tard' : 'La note de cette sortie est fermée'; }
 function flushTrackSave(k) { if (TRT.has(k)) { clearTimeout(TRT.get(k)); TRT.delete(k); } }
 async function saveTracks(k) {
   TRT.delete(k);
@@ -2162,7 +2160,7 @@ async function saveTracks(k) {
   } catch (e) {
     TRDRAFT.delete(k);
     trkStatus(k, '');
-    toast(e && e.code === 'permission-denied' ? deniedMsg(k) : 'Enregistrement impossible pour le moment, réessaie');
+    toast(e && e.code === 'permission-denied' ? 'La note de cette sortie est fermée' : 'Enregistrement impossible pour le moment, réessaie');
   }
   const r = detailRelease();
   if (r && r.key === k) paintTrackRatings(r);
@@ -2359,7 +2357,7 @@ async function saveReview(k) {
     await queueWrite(k, () => writeReview(k, { r: v, tx }));
   } catch (e) {
     if (btn) btn.disabled = false;
-    toast(e && e.code === 'permission-denied' ? deniedMsg(k) : 'Publication impossible pour le moment, réessaie');
+    toast(e && e.code === 'permission-denied' ? 'La note de cette sortie est fermée' : 'Publication impossible pour le moment, réessaie');
     return;
   }
   DRAFT.delete(k);
@@ -2428,7 +2426,7 @@ function topRatedHtml(list) {
 }
 function rateCtaHtml() {
   if (!FB_CONFIG || !ME.ready || (ME.user && ME.profile) || store.get('ctaOff', false)) return '';
-  return `<div class="cta"><p><b>Note les sorties de la semaine.</b> Albums, EP, singles et chaque son se notent dès leur sortie ; les notes de la semaine font le classement « Les mieux notés ».</p>
+  return `<div class="cta"><p><b>Note les sorties de la semaine.</b> Albums, EP, singles et chaque son se notent pendant leur semaine de sortie, du vendredi au jeudi.</p>
     <button class="btn solid" type="button" data-act="${ME.user ? 'onboard' : 'signin'}">${ME.user ? 'Créer mon profil' : 'Se connecter'}</button>
     <button class="icon-btn cta-x" type="button" data-act="cta-x" aria-label="Masquer ce message" title="Masquer">${I.x}</button></div>`;
 }
@@ -3100,7 +3098,7 @@ function viewProfile() {
       + (songs.length > shown.length ? `<p class="more-row"><button class="btn" type="button" data-act="songs-all" data-h="${esc(u.h)}">Afficher les ${songs.length} sons notés</button></p>` : ''));
   }
   if (texts.length) html += section(own ? 'Mes critiques' : 'Ses critiques', texts.length, `<div class="rv-list wide">${texts.map(x => reviewHtml(x, true)).join('')}</div>`);
-  if (!reviews.length) html += `<div class="empty"><strong>${own ? 'Tu n’as encore rien noté.' : 'Aucune note pour l’instant.'}</strong>${own ? 'Albums, EP, singles et chaque son se notent dès leur sortie : ouvre une fiche dans « Cette semaine ».<br><a class="btn" href="#semaine">Voir les sorties de la semaine</a>' : ''}</div>`;
+  if (!reviews.length) html += `<div class="empty"><strong>${own ? 'Tu n’as encore rien noté.' : 'Aucune note pour l’instant.'}</strong>${own ? 'Albums, EP, singles et chaque son se notent pendant leur semaine de sortie : ouvre une fiche dans « Cette semaine ».<br><a class="btn" href="#semaine">Voir les sorties de la semaine</a>' : ''}</div>`;
   $content.innerHTML = html;
 }
 let PROFILE_VIEW = [], PROFILE_SC = [];
