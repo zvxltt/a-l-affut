@@ -236,7 +236,6 @@ main {
 .day-d { font-family: var(--font-display); font-weight: 800; font-stretch: 112%; font-size: 24px; line-height: 1.05; letter-spacing: -0.02em; }
 .day-r { font: 500 12px var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-top: 6px; }
 .day-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); column-gap: 36px; }
-.src { font: 500 10.5px var(--font-mono); color: var(--muted); letter-spacing: .04em; }
 
 /* ---------- messages ---------- */
 .note {
@@ -649,7 +648,7 @@ function rowHtml(r, upcoming) {
   INDEX.set(r.key, r);
   const len = r.n > 1 ? `${r.n} titres` : r.dur ? fmtDur(r.dur) : '';
   const side = upcoming
-    ? `<span class="pill ${esc(r.rt)}">${esc(TYPE_LABEL[r.rt])}</span><span class="src">${esc(srcText(r))}</span>`
+    ? `<span class="pill ${esc(r.rt)}">${esc(TYPE_LABEL[r.rt])}</span>`
     : `<span>${esc(fmtShort(r.date))}</span><span>${esc(CATS[r.cat])}${len ? ` · ${esc(len)}` : ''}</span>`;
   return `<button class="row" type="button" data-key="${esc(r.key)}">
     <span class="cover">${coverHtml(r, 120)}</span>
