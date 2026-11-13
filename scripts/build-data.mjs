@@ -1432,6 +1432,11 @@ async function main() {
     byArtist.set(norm(a.n), list);
   }
 
+  // doublons d'une même sortie le même jour (version « Clean », instrumentale, « Radio Edit », mention répétée…)
+  const kept = dedupeReleases(items);
+  if (kept.length !== items.length) console.log(`doublons retirés : ${items.length - kept.length}`);
+  items.splice(0, items.length, ...kept);
+
   // nettoyage du cache : on ne garde que ce qui sert encore
   const live = new Set(items.map(i => i.k));
   for (const k of Object.keys(details)) if (!live.has(k)) delete details[k];
@@ -1453,7 +1458,31 @@ async function main() {
   log(`terminé : ${items.length} sorties dont ${upcoming} à venir · requêtes ${JSON.stringify(stats)}`);
 }
 
-export { extractAnnouncement, makeMatchers, parseRss, subjectOf, quotedIn, dedupeNews, leanCat };
+// même artiste, même jour, même format, même titre une fois les parenthèses et crochets retirés :
+// on garde la version principale (pas « Clean », « Instrumental »…), puis celle qui a la tracklist (Deezer), la plus complète
+const VARIANT_RE = /[(\[][^)\]]*\b(clean|instrumental|radio edit|edit|sped up|slowed|a ?cappella|acapella|karaok\w*)\b[^)\]]*[)\]]/i;
+function dedupeReleases(items) {
+  const coreTitle = t => norm(String(t || '').replace(/[(\[][^)\]]*[)\]]/g, ''));
+  const fmt = rt => (rt === 'compile' ? 'album' : rt);
+  const score = it => (VARIANT_RE.test(it.t) ? 0 : 1e9) + (String(it.k).startsWith('dz') ? 1e8 : 0) + (it.n || 0) * 1e4 + (it.p || 0) / 1e3;
+  const groups = new Map();
+  for (const it of items) {
+    const core = coreTitle(it.t);
+    const key = core ? `${norm(it.a)}|${it.d}|${fmt(it.rt)}|${core}` : `#${it.k}`;
+    const g = groups.get(key);
+    if (!g) { groups.set(key, it); continue; }
+    const [best, other] = score(it) > score(g) ? [it, g] : [g, it];
+    best.s = [...new Set([...(best.s || []), ...(other.s || [])])];
+    if (!best.pl && other.pl) { best.pl = other.pl; best.po = other.po; }
+    if (!best.am && other.am) best.am = other.am;
+    if (!best.mb && other.mb) best.mb = other.mb;
+    groups.set(key, best);
+  }
+  const keep = new Set(groups.values());
+  return items.filter(it => keep.has(it));
+}
+
+export { extractAnnouncement, makeMatchers, parseRss, subjectOf, quotedIn, dedupeNews, leanCat, dedupeReleases };
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch(e => { console.error('ÉCHEC :', e); process.exit(1); });
