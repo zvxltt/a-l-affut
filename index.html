@@ -142,10 +142,20 @@ main {
 .stats b { font: 600 24px/1 var(--font-mono); color: var(--ink); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
 
 /* ---------- filtres ---------- */
+.ftool { margin: 28px 0 0; padding: 12px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.ftoggle {
+  display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px;
+  background: var(--soft); color: var(--ink); font-size: 13px; font-weight: 600; transition: background-color .15s, box-shadow .15s;
+}
+.ftoggle svg { width: 16px; height: 16px; }
+.ftoggle:hover { box-shadow: 0 0 0 1px var(--line); }
+.ftoggle[aria-expanded="true"] { background: var(--bg); box-shadow: 0 0 0 1px var(--line); }
+.fcount:not(:empty) { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--ink); color: var(--bg); font: 600 11px/18px var(--font-mono); text-align: center; }
 .filters {
   display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px;
-  margin: 28px 0 0; padding: 14px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  margin: 0; padding: 14px 0; border-bottom: 1px solid var(--line);
 }
+.filters[hidden] { display: none; }
 .seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--soft); max-width: 100%; overflow-x: auto; scrollbar-width: none; }
 .seg::-webkit-scrollbar { display: none; }
 .filters .seg-cc { display: none; }
@@ -386,7 +396,13 @@ body.d-open .drawer { transform: none; visibility: visible; pointer-events: auto
 
 <main>
   <section class="head" id="head"></section>
-  <div class="filters" id="filters">
+  <div class="ftool">
+    <button class="ftoggle" id="ftoggle" type="button" aria-expanded="false" aria-controls="filters">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+      <span>Filtrer et rechercher</span><span class="fcount" id="fcount"></span>
+    </button>
+  </div>
+  <div class="filters" id="filters" hidden>
     <div class="seg" role="group" aria-label="Genre">
       <button type="button" data-cat="all" aria-pressed="true">Tout <span class="n"></span></button>
       <button type="button" data-cat="rfr" aria-pressed="false">Rap FR <span class="n"></span></button>
@@ -649,6 +665,10 @@ function paintFilters(base) {
   fadeSegs(true);
 }
 // filtres qui débordent sur mobile : fondu à droite tant qu’il reste des choix cachés ; après un choix, le filtre actif reste visible
+function paintToggle() {
+  const n = (S.cat !== 'all') + (S.view === 'concerts' ? S.cc !== 'all' : S.type !== 'all') + !!S.q.trim();
+  $('#fcount').textContent = n ? n : '';
+}
 function fadeSegs(reveal) {
   $$('.seg', $filters).forEach(s => {
     const on = reveal && s.querySelector('[aria-pressed="true"]');
@@ -718,6 +738,7 @@ function render() {
   INDEX = new Map();
   $$('.tab').forEach(a => { if (a.dataset.view === S.view) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   $filters.classList.toggle('v-concerts', S.view === 'concerts');
+  paintToggle();
   $('#q').placeholder = S.view === 'concerts' ? 'Artiste, salle ou ville' : 'Artiste ou titre';
   if (S.view === 'a-venir') viewUpcoming(); else if (S.view === 'concerts') viewConcerts(); else viewWeek();
   paintStatus();
@@ -1003,10 +1024,17 @@ function applyTheme() {
 const savePrefs = () => store.set('prefs', { cat: S.cat, type: S.type, cc: S.cc });
 
 document.addEventListener('click', e => {
-  const el = e.target.closest('[data-key],[data-week],[data-cat],[data-type],[data-cc],[data-play],[data-copy],[data-reset],#theme,#scrim,#d-close');
+  const el = e.target.closest('[data-key],[data-week],[data-cat],[data-type],[data-cc],[data-play],[data-copy],[data-reset],#ftoggle,#theme,#scrim,#d-close');
   if (!el) return;
   const ds = el.dataset;
   if (el.id === 'scrim' || el.id === 'd-close') { closeDetail(); return; }
+  if (el.id === 'ftoggle') {
+    const open = $filters.hidden;
+    $filters.hidden = !open;
+    el.setAttribute('aria-expanded', String(open));
+    if (open) { fadeSegs(true); if (matchMedia('(hover: hover)').matches) $('#q').focus({ preventScroll: true }); }
+    return;
+  }
   if (el.id === 'theme') {
     theme = theme === 'auto' ? 'light' : theme === 'light' ? 'dark' : 'auto';
     store.set('theme', theme); applyTheme();
