@@ -161,8 +161,11 @@ async function loadAnnonces() {
 
 /* ------------------------------------------------------------------ classement */
 // rfr / rus / mfr : genre fixe ; fr : rap ou musique FR selon la sortie ; frx : découvert près d’artistes de variété.
+// « International » = le top 150 France et les très grandes stars, pas les artistes croisés au hasard des voisinages
+const minorInt = a => a.c === 'int' && !a.top && a.src !== 'seed' && (a.f || 0) < 2e6;
 function catOf(a, genreId, genreName, title) {
-  if (a.c === 'rfr' || a.c === 'rus' || a.c === 'mfr' || a.c === 'int') return a.c;
+  if (a.c === 'int') return minorInt(a) ? null : 'int';
+  if (a.c === 'rfr' || a.c === 'rus' || a.c === 'mfr') return a.c;
   const gid = genreId > 0 ? genreId : null;
   const known = gid != null || !!genreName;
   const rap = gid === 116 || /rap|hip/i.test(genreName || '');
@@ -173,7 +176,8 @@ function catOf(a, genreId, genreName, title) {
 }
 // Sortie dont on ignore le genre (annonce presse, MusicBrainz) : on suit la discographie de l’artiste.
 function leanCat(a) {
-  if (a.c === 'rfr' || a.c === 'rus' || a.c === 'mfr' || a.c === 'int') return a.c;
+  if (a.c === 'int') return minorInt(a) ? null : 'int';
+  if (a.c === 'rfr' || a.c === 'rus' || a.c === 'mfr') return a.c;
   if (typeof a.rp === 'number') return a.rp >= 50 ? 'rfr' : 'mfr';
   return 'mfr';
 }
@@ -989,9 +993,13 @@ function dedupeNews(list) {
 const newsGap = spaced(FAST ? 0 : 1300);
 async function pressStep(state) {
   const due = !state.news || !state.news.raw || Date.now() - state.news.t > 2 * HOUR;
-  if (!due || Date.now() > DEADLINE) return;
   const artists = state.artists;
   let byFirst = makeMatchers(artists);
+  if (!due || Date.now() > DEADLINE) {
+    // pas de lecture cette fois, mais les annonces déjà repérées sont relues avec les règles et les artistes du jour
+    if (state.news && state.news.raw) state.news.items = dedupeNews(state.news.raw.map(r => extractAnnouncement(r, byFirst)).filter(a => a && !a.unknown && a.date > TODAY));
+    return;
+  }
   const urls = [];
   const gn = (q, en) => `https://news.google.com/rss/search?q=${encodeURIComponent(`${q} when:30d`)}&${en ? 'hl=en-US&gl=US&ceid=US:en' : 'hl=fr&gl=FR&ceid=FR:fr'}`;
   for (const q of GN_FR) urls.push(gn(q, false));
@@ -1238,6 +1246,7 @@ async function main() {
     const a = artists[x.aid];
     if (!a || x.date <= TODAY) continue;
     const c = leanCat(a);
+    if (!c) continue;
     add({ k: `mb${x.id}`, t: x.title, a: x.artist || a.n, f: [], d: x.date, rt: x.rt, c, n: 0, du: 0, lb: x.label || '', g: '', ex: 0, p: a.f * 0.9, s: ['mb'], mb: x.id }, [a.n, x.artist]);
   }
   for (const x of (state.wiki && state.wiki.items) || []) {
@@ -1273,6 +1282,7 @@ async function main() {
       continue;
     }
     const c = leanCat(a);
+    if (!c) continue;
     const it = { k: `pr${x.aid}${x.date.replace(/-/g, '')}`, t: x.title, a: a.n, f: [], d: x.date, rt: x.rt, c, n: 0, du: 0, lb: '', g: '', ex: 0, p: a.f * 0.95, s: ['pr'], pl: x.link, po: x.outlet };
     items.push(it);
     list.push(it);
