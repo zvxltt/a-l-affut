@@ -64,6 +64,7 @@ const EN_RE = /\b(the|you|your|my|me|i|im|it|is|in|on|of|and|love|baby|night|don
 const PT_RE = /[ãõ]|\b(n[ãa]o|voc[êe]s?|cora[çc][ãa]o|pra|meu|minha|tudo|isso|essa|esse|muito|favela|quebrada|irm[ãa]o|t[ôo]|tamb[ée]m|quem|vamos|saudade|menina|menino|vagabundo|bandido)\b/i;
 const IT_RE = /\b(perch[ée]|pi[ùu]|sono|della|nella|questa|questo|voglio|sempre|cuore|notte|strada|fratello|soldi|mio|tuo|tua|amore|gli|tutto|niente|ancora|siamo|per|che|senza|anche|oggi|domani|ragazza|ragazzi|dove|nostro|nostra)\b/i;
 const DE_RE = /[äöüß]|\b(ich|nicht|und|der|mein|dein|kein|keine|wir|ihr|auf|f[üu]r|nur|immer|liebe|leben|geld|bruder|stra(?:ß|ss)e|zeit|alles|wenn|wieder|heute|nacht|herz|jetzt|dich|mich|sind|habe?|weil|schon|noch)\b/i;
+const FR_SURE_RE = /\b(j|qu|n|m|s|t)'[a-zàâäéèêëîïôöùûüœh]|c'est|aujourd'hui|[œëïûî]|\b(les|des|une|est|pas|mon|ton|tes|je|nous|vous|ça|pour|avec|sans|dans|moi|toi|tout|toute|rien|jamais|vie|nuit|cœur|coeur|amour|frère|frérot|soleil|fou|folle|être|faut|veux|peux|toujours|quartier|bébé|ciel|mère|père|oui|rue|seul|seule|demain|ouais|wesh|argent|monde|temps|larmes|guerre|paix|noir|noire|blanc|comme|quand|pourquoi|chez|sous|voilà|petit|petite|belle|beau|tête|fête|mieux|trop|cette|ces|leur|gros|pote|potes|daron|daronne|reuf|bendo|tess|binks|igo|bande|dernier|premier|encore|histoire|ensemble)\b/i;
 const ES_RE = /[ñáíóú¿¡]|\b(el|los|las|mi|para|una|del|por|como|corazón|noche|quiero|eres|vida|amor|baila|bebé|mami|papi|perreo|contigo|pero|todo|nada|soy|estoy|dime|ella|otra|vez|mucho)\b/i;
 
 /* ------------------------------------------------------------------ réseau */
@@ -175,7 +176,7 @@ function catOf(a, genreId, genreName, title) {
   if (a.off) return null;   // découvert par erreur (pas du rap, ou rap d’une autre langue) : rien n’est publié
   if (a.c === 'int') return minorInt(a) ? null : 'int';
   // petit artiste découvert autour du rap (ro) : ses sorties rangées dans un autre genre ne sont pas gardées
-  if (a.ro && ((genreId > 0 && genreId !== 116) || (!(genreId > 0) && genreName && !/rap|hip/i.test(genreName)))) return null;
+  if (a.ro && !(genreId === 116 || (!(genreId > 0) && genreName && /rap|hip/i.test(genreName)))) return null;
   if (a.c === 'rfr' || a.c === 'rus' || a.c === 'mfr') return a.c;
   const gid = genreId > 0 ? genreId : null;
   const known = gid != null || !!genreName;
@@ -212,10 +213,14 @@ async function discoverRelated(state) {
   const artists = state.artists;
   // points de départ : la liste de départ, les artistes très suivis et, avec la découverte élargie, tout le rap déjà suivi
   // à partir de 12 000 fans (60 000 en rap US) : leurs voisins font remonter la scène underground
-  const base = Object.entries(artists)
-    .filter(([, a]) => a.c !== 'int' && !a.off && (a.src === 'seed' || a.f >= 120000 || (UG_ON && !a.ro && ((a.c === 'rfr' && a.f >= 12000) || (a.c === 'rus' && a.f >= 60000)))))
-    .sort((x, y) => (x[1].src === 'seed' ? -1 : 0) - (y[1].src === 'seed' ? -1 : 0) || y[1].f - x[1].f)
-    .slice(0, UG_ON ? 2600 : 1200);
+  const byRank = (x, y) => (x[1].src === 'seed' ? -1 : 0) - (y[1].src === 'seed' ? -1 : 0) || y[1].f - x[1].f;
+  const oldBase = Object.entries(artists).filter(([, a]) => a.c !== 'int' && !a.off && (a.src === 'seed' || a.f >= 120000)).sort(byRank).slice(0, 1200);
+  const inOld = new Set(oldBase.map(([id]) => id));
+  // rap FR dont les titres sont en français (pas le rap suisse alémanique ou flamand des catégories Wikipédia)
+  const rapBase = !UG_ON ? [] : Object.entries(artists)
+    .filter(([id, a]) => !inOld.has(id) && !a.off && !a.ro && ((a.c === 'rfr' && a.f >= 12000 && !(a.lf < 20)) || (a.c === 'rus' && a.f >= 60000)))
+    .sort(byRank).slice(0, 1600);
+  const base = [...oldBase, ...rapBase];
   log(`découverte : artistes similaires de ${base.length} artistes…`);
   const votes = new Map();
   await Promise.all(base.map(([id, s]) => dz(`/artist/${id}/related?limit=40`).then(res => {
@@ -454,13 +459,15 @@ async function fetchDiscographies(state) {
   if (force) state.discoV = DISCO_V;
   await Promise.all(todo.map(id => dz(`/artist/${id}/albums?limit=1000`).then(res => {
     const items = [];
-    let last = '', rap = 0, rnb = 0, known = 0, fr = 0, en = 0, es = 0, xo = 0;
+    let last = '', rap = 0, rnb = 0, known = 0, fr = 0, en = 0, es = 0, xo = 0, frs = 0, tot = 0;
     for (const x of res.data || []) {
       if (x.genre_id > 0) { known++; if (x.genre_id === 116) rap++; if (x.genre_id === 165) rnb++; }
       const t = String(x.title || '').replace(/'/g, '');
       const isEs = ES_RE.test(t), isFr = FR_RE.test(t) && !isEs, isEn = EN_RE.test(t);
       if (isEs) es++; else if (isFr && !isEn) fr++; else if (isEn && !isFr) en++;
       if (!isEs && (PT_RE.test(t) || IT_RE.test(t) || DE_RE.test(t)) && !/\b(je|tu|nous|vous|les|des|est|pas|c'?est|j'?ai)\b/i.test(x.title || '')) xo++;
+      tot++;
+      if (FR_SURE_RE.test(String(x.title || '').replace(/[’`]/g, "'"))) frs++;
       const d = x.release_date || '';
       if (!isYmd(d)) continue;
       if (d <= TODAY && d > last) last = d;
@@ -474,9 +481,15 @@ async function fetchDiscographies(state) {
     // Le rap US, c’est du rap : la pop, le R&B ou le reggaeton rangés là par voisinage passent en International.
     // Un artiste du top France aux titres anglais passe en International, et inversement aux titres français.
     if (a.ro) {
-      // découverte élargie : pas de rap (au moins 3 sorties au genre connu, moins de 30 % de rap) ou rap d’une autre langue → écarté
-      const n = fr + en + es + xo, foreign = n >= 5 && (es + xo) / n >= 0.35 && (a.c === 'rus' || fr / n < 0.2);
-      if ((known >= 3 && a.rp < 30) || foreign) a.off = 1; else delete a.off;
+      // découverte élargie : écarté s’il ne fait pas de rap (aucun rap sur 2 sorties au genre connu, ou moins de 30 % sur 3)
+      // ou s’il rappe dans une autre langue ; un rappeur « FR » aux titres anglais passe en rap US
+      const n = fr + en + es + xo;
+      let foreign = n >= 5 && (es + xo) / n >= 0.35 && (a.c === 'rus' || fr / n < 0.2);
+      if (!foreign && a.c === 'rfr' && tot >= 6 && frs / tot < 0.1) {
+        if (en / tot >= 0.3 && (es + xo) / tot < 0.15) a.c = 'rus';
+        else foreign = true;
+      }
+      if ((known >= 2 && rap === 0) || (known >= 3 && a.rp < 30) || foreign) a.off = 1; else delete a.off;
     } else if (a.src !== 'seed') {
       if (a.c === 'rus' && ((known >= 3 && a.rp < 30) || a.ls >= 30)) a.c = 'int';
       const top = a.src === 'top' || a.top;
