@@ -56,6 +56,7 @@ function splitFeat(title) {
 }
 const FR_RE = /[éèêëàâùûçôîïœ]|\b(le|la|les|des|du|une?|et|est|pas|mon|ma|mes|ton|ta|tes|je|tu|il|elle|nous|vous|on|ce|ça|qui|que|pour|avec|sans|dans|sur|moi|toi|plus|tout|rien|jamais|vie|nuit|coeur|amour|frère|soleil|mal|bien|fou|folle)\b/i;
 const EN_RE = /\b(the|you|your|my|me|i|im|it|is|in|on|of|and|love|baby|night|dont|cant|we|they|money|life|feel|girl|time|world|up|down|out)\b/i;
+const ES_RE = /[ñáíóú¿¡]|\b(el|los|las|mi|para|una|del|por|como|corazón|noche|quiero|eres|vida|amor|baila|bebé|mami|papi|perreo|contigo|pero|todo|nada|soy|estoy|dime|ella|otra|vez|mucho)\b/i;
 
 /* ------------------------------------------------------------------ réseau */
 function limiter(perWindow, windowMs, conc) {
@@ -313,9 +314,11 @@ async function fetchDiscographies(state) {
   const ids = Object.keys(artists);
   const out = new Map();
   const todo = [];
+  // version des données dérivées (genre, langue des titres) : on relit tout une fois quand elle change
+  const DISCO_V = 2, force = state.discoV !== DISCO_V;
   for (const id of ids) {
     const a = artists[id], e = state.disco[id];
-    if (e) {
+    if (e && !force) {
       const age = a.last ? (Date.parse(TODAY) - Date.parse(a.last)) / DAY : 9999;
       const future = e.items.some(x => x.date > TODAY);
       const ttl = future || age <= 150 ? 0 : age <= 500 ? 6 * HOUR : 24 * HOUR;
@@ -324,14 +327,15 @@ async function fetchDiscographies(state) {
     todo.push(id);
   }
   let fails = 0;
+  if (force) state.discoV = DISCO_V;
   await Promise.all(todo.map(id => dz(`/artist/${id}/albums?limit=1000`).then(res => {
     const items = [];
-    let last = '', rap = 0, rnb = 0, known = 0, fr = 0, en = 0;
+    let last = '', rap = 0, rnb = 0, known = 0, fr = 0, en = 0, es = 0;
     for (const x of res.data || []) {
       if (x.genre_id > 0) { known++; if (x.genre_id === 116) rap++; if (x.genre_id === 165) rnb++; }
       const t = String(x.title || '').replace(/'/g, '');
-      const isFr = FR_RE.test(t), isEn = EN_RE.test(t);
-      if (isFr && !isEn) fr++; else if (isEn && !isFr) en++;
+      const isEs = ES_RE.test(t), isFr = FR_RE.test(t) && !isEs, isEn = EN_RE.test(t);
+      if (isEs) es++; else if (isFr && !isEn) fr++; else if (isEn && !isFr) en++;
       const d = x.release_date || '';
       if (!isYmd(d)) continue;
       if (d <= TODAY && d > last) last = d;
@@ -341,10 +345,15 @@ async function fetchDiscographies(state) {
     artists[id].last = last;
     const a = artists[id];
     if (known) { a.rp = Math.round((100 * rap) / known); a.rb = Math.round((100 * rnb) / known); }   // part de rap et de R&B
-    if (fr + en >= 6) a.lf = Math.round((100 * fr) / (fr + en));                                     // part de titres en français
-    // pop rangée par erreur en rap US (découverte par voisinage) → International ; top France aux titres anglais → International
-    if (a.src !== 'seed' && a.c === 'rus' && known >= 3 && a.rp + a.rb < 30) a.c = 'int';
-    if (a.src !== 'seed' && (a.src === 'top' || a.top) && a.c === 'fr' && typeof a.lf === 'number' && a.lf < 15) a.c = 'int';
+    if (fr + en + es >= 6) { a.lf = Math.round((100 * fr) / (fr + en + es)); a.ls = Math.round((100 * es) / (fr + en + es)); }   // titres en français, en espagnol
+    // Le rap US, c’est du rap : la pop, le R&B ou le reggaeton rangés là par voisinage passent en International.
+    // Un artiste du top France aux titres anglais passe en International, et inversement aux titres français.
+    if (a.src !== 'seed') {
+      if (a.c === 'rus' && ((known >= 3 && a.rp < 30) || a.ls >= 30)) a.c = 'int';
+      const top = a.src === 'top' || a.top;
+      if (top && a.c === 'fr' && typeof a.lf === 'number' && a.lf < 15) a.c = 'int';
+      else if (top && a.c === 'int' && a.lf >= 60) a.c = 'fr';
+    }
     state.disco[id] = { t: Date.now(), items };
     out.set(id, items);
   }).catch(e => {
@@ -690,9 +699,15 @@ const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const QUOTE_RE = /«\s*([^»]{1,80}?)\s*»|“\s*([^”]{1,80}?)\s*”|"\s*([^"]{1,80}?)\s*"|‘\s*(.{1,80}?)\s*’(?![\p{L}\p{N}])|(?<![\p{L}\p{N}])'(.{1,60}?)'(?![\p{L}\p{N}])/gu;
 const QUOTE_DESC = /(?:album|EP|mixtape|projet|opus|LP|tape)(?:\s+[\p{L}’'-]+){0,3}?\s*(?:intitulé|baptisé|titled|called|,)?\s*[«“"‘]\s*([^»”"’]{1,80}?)\s*[»”"’]/iu;
 function quotedIn(s) {
-  QUOTE_RE.lastIndex = 0;
-  const m = QUOTE_RE.exec(String(s || ''));
-  return m ? (m[1] || m[2] || m[3] || m[4] || m[5] || '').trim() : '';
+  const str = String(s || '');
+  for (const m of str.matchAll(QUOTE_RE)) {
+    const q = (m[1] || m[2] || m[3] || m[4] || m[5] || '').trim();
+    const k = spacedNorm(q);
+    if (!k || NOT_ARTIST.has(k) || NOT_SUBJECT.has(k) || GENERIC_TITLE.has(k)) continue;
+    if (!str.slice(0, m.index).trim() && /^\s*:/.test(str.slice(m.index + m[0].length))) continue;   // étiquette de tête
+    return q;
+  }
+  return '';
 }
 const maskQuotes = s => String(s || '').replace(QUOTE_RE, m => ' '.repeat(m.length));
 const VERB_RE = new RegExp(`(?<![\\p{L}\\p{N}])(?:${[
