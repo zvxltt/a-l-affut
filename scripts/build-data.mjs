@@ -61,7 +61,7 @@ function splitFeat(title) {
 const FR_RE = /[éèêëàâùûçôîïœ]|\b(le|la|les|des|du|une?|et|est|pas|mon|ma|mes|ton|ta|tes|je|tu|il|elle|nous|vous|on|ce|ça|qui|que|pour|avec|sans|dans|sur|moi|toi|plus|tout|rien|jamais|vie|nuit|coeur|amour|frère|soleil|mal|bien|fou|folle)\b/i;
 const EN_RE = /\b(the|you|your|my|me|i|im|it|is|in|on|of|and|love|baby|night|dont|cant|we|they|money|life|feel|girl|time|world|up|down|out)\b/i;
 // titres en portugais, italien ou allemand : le rap étranger croisé dans les découvertes n’est pas du rap FR
-const PT_RE = /[ãõ]|\b(n[ãa]o|voc[êe]s?|cora[çc][ãa]o|pra|meu|minha|tudo|isso|essa|esse|muito|favela|quebrada|irm[ãa]o|t[ôo]|tamb[ée]m|quem|vamos|saudade|menina|menino|vagabundo|bandido)\b/i;
+const PT_RE = /[ãõ]|\bs[óo] s[óo]\b|\b(s[óo]|n[ãa]o|voc[êe]s?|cora[çc][ãa]o|pra|meu|minha|tudo|isso|essa|esse|muito|favela|quebrada|irm[ãa]o|t[ôo]|tamb[ée]m|quem|vamos|saudade|menina|menino|vagabundo|bandido)\b/i;
 const IT_RE = /\b(perch[ée]|pi[ùu]|sono|della|nella|questa|questo|voglio|sempre|cuore|notte|strada|fratello|soldi|mio|tuo|tua|amore|gli|tutto|niente|ancora|siamo|per|che|senza|anche|oggi|domani|ragazza|ragazzi|dove|nostro|nostra)\b/i;
 const DE_RE = /[äöüß]|\b(ich|nicht|und|der|mein|dein|kein|keine|wir|ihr|auf|f[üu]r|nur|immer|liebe|leben|geld|bruder|stra(?:ß|ss)e|zeit|alles|wenn|wieder|heute|nacht|herz|jetzt|dich|mich|sind|habe?|weil|schon|noch)\b/i;
 const FR_SURE_RE = /\b(j|qu|n|m|s|t)'[a-zàâäéèêëîïôöùûüœh]|c'est|aujourd'hui|[œëïûî]|\b(les|des|une|est|pas|mon|ton|tes|je|nous|vous|ça|pour|avec|sans|dans|moi|toi|tout|toute|rien|jamais|vie|nuit|cœur|coeur|amour|frère|frérot|soleil|fou|folle|être|faut|veux|peux|toujours|quartier|bébé|ciel|mère|père|oui|rue|seul|seule|demain|ouais|wesh|argent|monde|temps|larmes|guerre|paix|noir|noire|blanc|comme|quand|pourquoi|chez|sous|voilà|petit|petite|belle|beau|tête|fête|mieux|trop|cette|ces|leur|gros|pote|potes|daron|daronne|reuf|bendo|tess|binks|igo|bande|dernier|premier|encore|histoire|ensemble)\b/i;
@@ -541,6 +541,35 @@ async function dryRunReport(state, before) {
   log(`ESSAI : ${active} de ces artistes ont sorti quelque chose depuis 5 mois (relus à chaque passage)`);
   log(`ESSAI : cette semaine — ${thisWeek.sort((a, b) => b.fans - a.fans).slice(0, 40).map(r => `${r.arts[0].n} – ${r.title} [${r.rt}/${r.cat}]`).join(' ; ')}`);
   log(`ESSAI : requêtes ${JSON.stringify(stats)}`);
+}
+
+// Liens directs Spotify et YouTube d'une sortie Deezer, par song.link (Odesli) : 10 requêtes par minute sans clé,
+// donc quelques dizaines par passage, les sorties récentes les plus suivies d'abord ; gardés en cache.
+const odesliGap = spaced(FAST ? 0 : 6500);
+async function linksStep(state, items) {
+  const cache = state.links = state.links || {};
+  const attach = it => { const l = cache[it.dz]; if (l) { if (l.sp) it.su = l.sp; if (l.yt) it.yu = l.yt; } };
+  items.forEach(it => it.dz && attach(it));
+  if (FAST) return;
+  const from = addDays(TODAY, -14);
+  const todo = items.filter(it => it.dz && it.d >= from && (!cache[it.dz] || (!cache[it.dz].sp && Date.now() - cache[it.dz].t > 2 * DAY)))
+    .sort((a, b) => b.p - a.p).slice(0, 25);
+  let n = 0;
+  for (const it of todo) {
+    if (Date.now() > DEADLINE - 3 * MIN) break;
+    try {
+      const j = await odesliGap(() => getJson(`https://api.song.link/v1-alpha.1/links?userCountry=FR&url=${encodeURIComponent(`https://www.deezer.com/album/${it.dz}`)}`));
+      const L = j.linksByPlatform || {};
+      cache[it.dz] = { sp: (L.spotify && L.spotify.url) || '', yt: (L.youtubeMusic && L.youtubeMusic.url) || (L.youtube && L.youtube.url) || '', t: Date.now() };
+      attach(it); n++;
+    } catch (e) {
+      if (e.status === 429) break;
+      cache[it.dz] = { sp: '', yt: '', t: Date.now() };
+    }
+  }
+  const live = new Set(items.map(i => String(i.dz)));
+  for (const k of Object.keys(cache)) if (!live.has(k)) delete cache[k];
+  if (todo.length) log(`liens Spotify et YouTube : ${n}/${todo.length} sorties`);
 }
 
 function buildDeezerReleases(artists, discos, albums) {
@@ -1358,6 +1387,10 @@ const SK_METROS = [
   ['35345-belgium-ghent', 'BE'], ['26855-belgium-charleroi', 'BE'], ['27453-switzerland-geneva', 'CH'], ['27454-switzerland-lausanne', 'CH'],
   ['104761-switzerland-zurich', 'CH'], ['27451-switzerland-basel', 'CH'], ['27452-switzerland-bern', 'CH'], ['35384-switzerland-fribourg', 'CH'],
 ];
+// nom affiché de chaque zone (agenda Songkick d'une métropole et de ses alentours)
+const METRO_LABEL = { 'saint-etienne': 'Saint-Étienne', 'clermont-ferrand': 'Clermont-Ferrand', brussels: 'Bruxelles', liege: 'Liège', antwerp: 'Anvers',
+  ghent: 'Gand', charleroi: 'Charleroi', geneva: 'Genève', lausanne: 'Lausanne', zurich: 'Zurich', basel: 'Bâle', bern: 'Berne', fribourg: 'Fribourg', paris: 'Paris et Île-de-France' };
+const metroLabel = slug => { const k = slug.replace(/^\d+-[a-z]+-/, ''); return METRO_LABEL[k] || k.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join('-'); };
 const SK_COUNTRY = { france: 'FR', belgium: 'BE', belgique: 'BE', switzerland: 'CH', suisse: 'CH' };
 const skGap = spaced(FAST ? 0 : 1200);
 async function songkickEvents() {
@@ -1385,7 +1418,7 @@ async function songkickEvents() {
           venue: loc.name || '', city: addr.addressLocality || '', cc: SK_COUNTRY[spacedNorm(addr.addressCountry)] || cc,
           url: String(e.url || '').replace(/\?.*$/, ''), img: e.image || '', price: 0,
           status: /Cancelled/i.test(status) ? 'cancelled' : /Postponed/i.test(status) ? 'postponed' : /Rescheduled/i.test(status) ? 'rescheduled' : '',
-          fest: e['@type'] === 'Festival',
+          fest: e['@type'] === 'Festival', m: metroLabel(metro),
         });
       }
       if (!/page=\d+#metro-area-calendar/.test(html) || !html.includes(`page=${page + 1}`)) break;
@@ -1415,9 +1448,13 @@ async function ticketmasterEvents() {
     };
   });
 }
+// dates Ticketmaster : zone retrouvée par la ville quand c'est celle d'un agenda
+const METRO_CITIES = Object.fromEntries(SK_METROS.map(([slug]) => [norm(slug.replace(/^\d+-[a-z]+-/, '').replace(/-/g, ' ')), metroLabel(slug)]));
+Object.assign(METRO_CITIES, { bruxelles: 'Bruxelles', geneve: 'Genève', zurich: 'Zurich', bale: 'Bâle', berne: 'Berne', anvers: 'Anvers', gand: 'Gand' });
+const metroOfCity = city => METRO_CITIES[norm(city)] || city || '';
 async function concertsStep(state) {
   const prev = state.concerts || { t: 0, items: [] };
-  if (Date.now() - prev.t < 12 * HOUR || Date.now() > DEADLINE) return;
+  if ((prev.v === 2 && Date.now() - prev.t < 12 * HOUR) || Date.now() > DEADLINE) return;
   const sk = await songkickEvents();
   const tmList = TM_KEY ? await ticketmasterEvents() : [];
   if (!sk.pagesOk && !tmList.length) { log('concerts : agendas indisponibles, on garde les dates d’avant'); return; }
@@ -1441,12 +1478,13 @@ async function concertsStep(state) {
     items.push({
       id: e.id, d: e.d, h: e.h, n: e.name, a: hits.map(h => h.n), c, v: e.venue, ci: e.city, cc: e.cc, u: e.url, im: e.img,
       pr: e.price, st: e.status, fe: e.fest || e.performers.length >= 4 ? 1 : 0, p: Math.round(pop(hits[0])),
+      m: e.m || metroOfCity(e.city),
     });
   }
   items.sort((x, y) => x.d.localeCompare(y.d) || y.p - x.p);
   // un agenda resté muet ne doit pas effacer les dates déjà connues
   if (items.length < (prev.items || []).filter(x => x.d >= TODAY).length * 0.5) { log(`concerts : seulement ${items.length} dates trouvées, on garde les précédentes`); return; }
-  state.concerts = { t: Date.now(), items };
+  state.concerts = { t: Date.now(), items, v: 2 };
   log(`concerts : ${sk.metrosOk}/${SK_METROS.length} villes lues (${sk.pagesOk} pages, ${sk.out.length} événements)${TM_KEY ? `, ${tmList.length} Ticketmaster` : ''} → ${items.length} dates d’artistes suivis`);
 }
 
@@ -1611,6 +1649,8 @@ async function main() {
   if (kept.length !== items.length) console.log(`doublons retirés : ${items.length - kept.length}`);
   items.splice(0, items.length, ...kept);
 
+  await linksStep(state, items);
+
   // nettoyage du cache : on ne garde que ce qui sert encore
   const live = new Set(items.map(i => i.k));
   for (const k of Object.keys(details)) if (!live.has(k)) delete details[k];
@@ -1624,7 +1664,7 @@ async function main() {
   items.sort((a, b) => b.d.localeCompare(a.d) || b.p - a.p);
   const generatedAt = new Date().toISOString();
   const upcoming = items.filter(i => i.d > TODAY).length;
-  await writeFile(`${OUT}/releases.json`, JSON.stringify({ v: 1, generatedAt, today: TODAY, artists: Object.values(artists).filter(a => !a.off).length, items }));
+  await writeFile(`${OUT}/releases.json`, JSON.stringify({ v: 1, generatedAt, today: TODAY, artists: Object.values(artists).filter(a => !a.off).length, co: ((state.concerts && state.concerts.items) || []).filter(x => x.d >= TODAY).length, items }));
   await writeFile(`${OUT}/details.json`, JSON.stringify(details));
   const concerts = ((state.concerts && state.concerts.items) || []).filter(x => x.d >= TODAY);
   await writeFile(`${OUT}/concerts.json`, JSON.stringify({ v: 1, generatedAt, updatedAt: state.concerts ? new Date(state.concerts.t).toISOString() : null, items: concerts }));

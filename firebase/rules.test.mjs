@@ -37,7 +37,7 @@ await t('profil de bob', () => assertSucceeds(createProfile('bob', 'bob')));
 const K = 'dz123456';
 await t('note pendant la semaine de sortie', () => assertSucceeds(setDoc(doc(db('alice'), 'reviews', `${K}__alice`), review('alice', K, today, { tx: 'Très bon album.' }))));
 await t('mauvaise semaine refusée', () => assertFails(setDoc(doc(db('alice'), 'reviews', `x1__alice`), review('alice', 'x1', today, { w: addDays(weekStart(today), -7) }))));
-await t('sortie d’il y a 10 jours refusée', () => assertFails(setDoc(doc(db('alice'), 'reviews', `x2__alice`), review('alice', 'x2', addDays(today, -10)))));
+await t('sortie d’il y a 10 jours : note tardive permise', () => assertSucceeds(setDoc(doc(db('alice'), 'reviews', `x2__alice`), review('alice', 'x2', addDays(today, -10)))));
 await t('sortie pas encore sortie refusée', () => assertFails(setDoc(doc(db('alice'), 'reviews', `x3__alice`), review('alice', 'x3', addDays(today, 3)))));
 await t('note 11 refusée', () => assertFails(setDoc(doc(db('alice'), 'reviews', `x4__alice`), review('alice', 'x4', today, { r: 11 }))));
 await t('note 0 refusée', () => assertFails(setDoc(doc(db('alice'), 'reviews', `x5__alice`), review('alice', 'x5', today, { r: 0 }))));
@@ -81,8 +81,9 @@ await t('deuxième écriture d’une note créée dans la séance (sans renvoyer
 // une vieille note, écrite hors des règles pour le test
 const OLD = addDays(today, -30);
 await env.withSecurityRulesDisabled(c => setDoc(doc(c.firestore(), 'reviews', `old1__alice`), { ...review('alice', 'old1', OLD), at: Timestamp.fromDate(new Date(OLD)), up: Timestamp.fromDate(new Date(OLD)) }));
-await t('vieille note : changer la note refusé', () => assertFails(updateDoc(doc(db('alice'), 'reviews', 'old1__alice'), { r: 2, up: serverTimestamp() })));
-await t('vieille note : noter un son refusé', () => assertFails(updateDoc(doc(db('alice'), 'reviews', 'old1__alice'), { tr: '9', tl: 'Intro', up: serverTimestamp() })));
+await t('vieille note : changer la note permis (notes tardives)', () => assertSucceeds(updateDoc(doc(db('alice'), 'reviews', 'old1__alice'), { r: 2, up: serverTimestamp() })));
+await t('vieille note : noter un son permis', () => assertSucceeds(updateDoc(doc(db('alice'), 'reviews', 'old1__alice'), { tr: '9', tl: 'Intro', up: serverTimestamp() })));
+await t('note tardive : mauvaise semaine de classement refusée', () => assertFails(setDoc(doc(db('alice'), 'reviews', `x9__alice`), review('alice', 'x9', addDays(today, -20), { w: weekStart(today) }))));
 await t('vieille note : recopier le nouveau pseudo permis', () => assertSucceeds(updateDoc(doc(db('alice'), 'reviews', 'old1__alice'), { h: 'alice2', n: 'Alice', up: serverTimestamp() })));
 await t('photo : recopiée sur une vieille note', () => assertSucceeds(updateDoc(doc(db('alice'), 'reviews', 'old1__alice'), { ph: `data:image/webp;base64,${'UklGR'.repeat(1200)}`, up: serverTimestamp() })));
 await t('vieille note : supprimer permis', () => assertSucceeds(deleteDoc(doc(db('alice'), 'reviews', 'old1__alice'))));

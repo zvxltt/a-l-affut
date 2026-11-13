@@ -1,0 +1,21 @@
+{
+  "name": "À l’affût — sorties rap et musique",
+  "short_name": "À l’affût",
+  "description": "Les sorties rap FR, rap US et musique française : la semaine, ce qui arrive, les concerts, les notes.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0A0A0A",
+  "theme_color": "#0A0A0A",
+  "icons": [
+    { "src": "logo/icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "logo/icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "logo/icone-masquable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Cette semaine", "url": "./#semaine" },
+    { "name": "À venir", "url": "./#a-venir" },
+    { "name": "Concerts", "url": "./#concerts" }
+  ]
+}

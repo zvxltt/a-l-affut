@@ -14,14 +14,13 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: pages
-  cancel-in-progress: false
-
 jobs:
   publier:
     runs-on: ubuntu-latest
     timeout-minutes: 55
+    concurrency:
+      group: pages
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
@@ -33,7 +32,7 @@ jobs:
       - name: Préparer le site
         run: |
           mkdir -p site/data
-          cp index.html .nojekyll site/
+          cp index.html .nojekyll manifest.webmanifest sw.js site/
           cp -r logo site/logo
       - name: Collecter les sorties
         run: node scripts/build-data.mjs
@@ -47,3 +46,29 @@ jobs:
           path: site
       - id: deploy
         uses: actions/deploy-pages@v4
+
+  # GitHub saute souvent les passages programmés toutes les heures : chaque passage relance lui-même le suivant,
+  # une heure après son propre départ, sauf si un autre passage est déjà prévu ou en cours.
+  relance:
+    needs: publier
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    permissions:
+      actions: write
+    steps:
+      - name: Attendre l'heure suivante puis relancer
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          start=$(gh run view "$RUN_ID" -R "$REPO" --json createdAt --jq '.createdAt')
+          wait=$(( $(date -d "$start" +%s) + 3600 - $(date +%s) ))
+          if [ "$wait" -gt 3000 ]; then wait=3000; fi
+          if [ "$wait" -gt 0 ]; then echo "attente ${wait} s"; sleep "$wait"; fi
+          others=$(gh run list -R "$REPO" --workflow update.yml --limit 20 --json databaseId,status \
+            --jq "[.[] | select(.databaseId != $RUN_ID) | select(.status != \"completed\")] | length")
+          if [ "$others" -gt 0 ]; then echo "un passage est déjà prévu ($others) : rien à relancer"; exit 0; fi
+          gh workflow run update.yml -R "$REPO" --ref main
+          echo "passage suivant lancé"
