@@ -1146,6 +1146,85 @@ async function chartsStep(state) {
   log(`classements : top ${list.length} France, ${added} artistes ajoutés${missing ? `, ${missing} introuvables sur Deezer` : ''}`);
 }
 
+/* ------------------------------------------------------------------ concerts */
+// Concerts et festivals en France, en Belgique et en Suisse des artistes suivis, d’après l’API Discovery de
+// Ticketmaster (clé gratuite rangée dans le secret GitHub TICKETMASTER_KEY). Relus toutes les 12 heures, sur un an.
+const TM_KEY = process.env.TICKETMASTER_KEY || '';
+const TM_COUNTRIES = ['FR', 'BE', 'CH'];
+const tmGap = spaced(FAST ? 0 : 260);                // 5 requêtes par seconde au plus
+async function tm(params) {
+  const url = `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${encodeURIComponent(TM_KEY)}&segmentId=KZFzniwnSyZfZ7v7nJ&size=200&sort=date,asc&locale=*&${params}`;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try { const j = await tmGap(() => getJson(url, { timeout: 30000 })); stats.ticketmaster = (stats.ticketmaster || 0) + 1; return j; }
+    catch (e) { if (e.status === 401 || e.status === 403) throw e; await sleep(FAST ? 0 : e.status === 429 ? 5000 : 2000); }
+  }
+  throw new Error('Ticketmaster indisponible');
+}
+// l’API ne rend que 1 000 résultats par recherche : une période trop chargée est coupée en deux
+async function tmScan(cc, from, to, out) {
+  const range = `countryCode=${cc}&startDateTime=${from}T00:00:00Z&endDateTime=${to}T23:59:59Z`;
+  const first = await tm(`${range}&page=0`);
+  const total = (first.page && first.page.totalElements) || 0;
+  if (total > 1000 && from < to) {
+    const mid = addDays(from, Math.floor((Date.parse(to) - Date.parse(from)) / DAY / 2));
+    await tmScan(cc, from, mid, out);
+    await tmScan(cc, addDays(mid, 1), to, out);
+    return;
+  }
+  out.push(...((first._embedded && first._embedded.events) || []));
+  for (let p = 1; p < Math.min(Math.ceil(total / 200), 5); p++) {
+    if (Date.now() > DEADLINE) return;
+    const j = await tm(`${range}&page=${p}`);
+    out.push(...((j._embedded && j._embedded.events) || []));
+  }
+}
+async function concertsStep(state) {
+  const prev = state.concerts || { t: 0, items: [] };
+  if (!TM_KEY) { log('concerts : pas encore de clé TICKETMASTER_KEY, onglet en attente'); return; }
+  if (Date.now() - prev.t < 12 * HOUR || Date.now() > DEADLINE) return;
+  const raw = [];
+  let ok = 0;
+  for (const cc of TM_COUNTRIES) {
+    try { await tmScan(cc, TODAY, addDays(TODAY, 365), raw); ok++; }
+    catch (e) { log(`concerts : ${cc} indisponible (${e.message})`); if (e.status === 401 || e.status === 403) break; }
+  }
+  if (!ok) return;
+  const byName = new Map();
+  for (const [id, a] of Object.entries(state.artists)) {
+    const k = norm(a.n);
+    if (k.length >= 3 && !NOT_ARTIST.has(spacedNorm(a.n))) byName.set(k, { id, ...a });
+  }
+  const items = [];
+  const seen = new Set();
+  for (const e of uniqBy(raw, x => x.id)) {
+    const status = e.dates && e.dates.status && e.dates.status.code;
+    const d = e.dates && e.dates.start && e.dates.start.localDate;
+    if (status === 'cancelled' || !isYmd(d) || d < TODAY) continue;
+    const atts = (e._embedded && e._embedded.attractions) || [];
+    const hits = uniqBy(atts.map(x => byName.get(norm(x.name))).filter(Boolean), x => x.id).sort((x, y) => pop(y) - pop(x));
+    if (!hits.length) continue;
+    const c = leanCat(hits[0]);
+    if (!c) continue;
+    const v = (e._embedded && e._embedded.venues && e._embedded.venues[0]) || {};
+    const city = (v.city && v.city.name) || '';
+    const key = `${norm(hits[0].n)}|${d}|${norm(city)}`;       // une même date vendue en plusieurs formules (VIP…)
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const imgs = e.images || [];
+    const img = imgs.filter(i => i.ratio === '16_9' && i.width >= 500).sort((x, y) => x.width - y.width)[0] || imgs[0];
+    const prices = (e.priceRanges || []).map(p => p.min).filter(n => n > 0);
+    items.push({
+      id: e.id, d, h: String((e.dates.start && e.dates.start.localTime) || '').slice(0, 5), n: e.name || '', a: hits.map(h => h.n), c,
+      v: v.name || '', ci: city, cc: (v.country && v.country.countryCode) || '', u: e.url || '', im: img ? img.url : '',
+      pr: prices.length ? Math.min(...prices) : 0, st: status === 'postponed' || status === 'rescheduled' ? status : '',
+      fe: atts.length >= 4 ? 1 : 0, p: Math.round(pop(hits[0])),
+    });
+  }
+  items.sort((x, y) => x.d.localeCompare(y.d) || y.p - x.p);
+  state.concerts = { t: Date.now(), items };
+  log(`concerts : ${raw.length} événements lus en ${TM_COUNTRIES.slice(0, ok).join(', ')}, ${items.length} concerts d’artistes suivis`);
+}
+
 /* ------------------------------------------------------------------ assemblage */
 function matchArtist(name, byName) {
   const n = norm(name);
@@ -1198,6 +1277,7 @@ async function main() {
   await appleStep(state, details);
   await musicbrainzStep(state, details);
   await pressStep(state);
+  await concertsStep(state);
 
   /* ---- fusion ---- */
   const byName = new Map(Object.entries(artists).map(([id, a]) => [norm(a.n), { id, ...a }]));
@@ -1310,6 +1390,8 @@ async function main() {
   const upcoming = items.filter(i => i.d > TODAY).length;
   await writeFile(`${OUT}/releases.json`, JSON.stringify({ v: 1, generatedAt, today: TODAY, artists: Object.keys(artists).length, items }));
   await writeFile(`${OUT}/details.json`, JSON.stringify(details));
+  const concerts = ((state.concerts && state.concerts.items) || []).filter(x => x.d >= TODAY);
+  await writeFile(`${OUT}/concerts.json`, JSON.stringify({ v: 1, generatedAt, updatedAt: state.concerts ? new Date(state.concerts.t).toISOString() : null, items: concerts }));
   await writeFile(`${OUT}/state.json`, JSON.stringify(state));
   log(`terminé : ${items.length} sorties dont ${upcoming} à venir · requêtes ${JSON.stringify(stats)}`);
 }

@@ -40,6 +40,7 @@ jobs:
         env:
           SITE_URL: https://zvxltt.github.io/a-l-affut
           OUT_DIR: site/data
+          TICKETMASTER_KEY: ${{ secrets.TICKETMASTER_KEY }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -14,7 +14,8 @@ Le robot (`scripts/build-data.mjs`) :
 3. récupère pour chaque sortie la tracklist, la durée de chaque titre, le label et les featurings exacts ;
 4. cherche les sorties annoncées : précommandes Apple Music, MusicBrainz, section « Upcoming releases » des pages Wikipédia « 20xx in hip-hop », fichier `data/annonces.json` ;
 5. lit la presse (Google Actualités, les flux des médias rap, des recherches par date pour les dix prochains vendredis et par artiste à tour de rôle) pour repérer les annonces faites sur Instagram et reprises par les médias, du type « X annonce son album pour le 4 décembre » ; seul le sujet de la phrase est retenu (« Star Academy : Léa Doffey annonce… » concerne Léa Doffey ; dans « l’album Cocoon », Cocoon est un titre), les articles déjà repérés sont relus à chaque passage avec les règles du jour, et l’article est cité comme source ;
-6. publie le tout sur GitHub Pages dans `data/releases.json` et `data/details.json`.
+6. relève les concerts et festivals des artistes suivis en France, en Belgique et en Suisse sur un an (API Discovery de Ticketmaster, toutes les 12 heures ; clé gratuite à ranger dans le secret GitHub `TICKETMASTER_KEY`) ;
+7. publie le tout sur GitHub Pages dans `data/releases.json`, `data/details.json` et `data/concerts.json`.
 
 Chaque passage réutilise le résultat précédent : seules les nouveautés sont téléchargées.
 
@@ -22,6 +23,7 @@ Chaque passage réutilise le résultat précédent : seules les nouveautés sont
 
 - **À venir** (page d’accueil) : toutes les sorties annoncées, par mois et par date, avec leur source.
 - **Cette semaine** : tout ce qui est sorti depuis vendredi, et les 8 semaines précédentes (flèches ou touches ← →).
+- **Concerts** : les dates à venir en France, Belgique et Suisse, par mois et par jour, avec la salle, l’heure, le prix de départ et le lien pour réserver ; filtres par genre et par pays.
 - **Fiche** au clic : pochette, durée, nombre de titres, label, featurings, tracklist avec la durée de chaque titre, extraits de 30 secondes, liens Deezer, Spotify, Apple Music et YouTube.
 - Filtres Rap FR / Rap US / Musique FR / International et Albums / EP / Singles, recherche, pastille « Nouveau », thème clair et sombre. « International » regroupe les artistes du top 150 France qui ne sont ni du rap FR, ni du rap US, ni de la musique française (The Weeknd, Bad Bunny, Tame Impala…), ainsi que la pop rangée jusque-là en rap US.
 

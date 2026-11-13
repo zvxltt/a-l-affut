@@ -148,6 +148,12 @@ main {
 }
 .seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--soft); max-width: 100%; overflow-x: auto; scrollbar-width: none; }
 .seg::-webkit-scrollbar { display: none; }
+.filters .seg-cc { display: none; }
+.filters.v-concerts .seg-cc { display: inline-flex; }
+.filters.v-concerts .seg-type { display: none; }
+a.row { text-decoration: none; }
+.ctime { font: 500 10.5px var(--font-mono); color: var(--muted); letter-spacing: .03em; white-space: nowrap; }
+.warn { font-weight: 700; color: var(--ink); }
 /* plus de choix à droite : fondu qui invite à faire défiler */
 .seg.more { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 34px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 34px), transparent); }
 .seg button {
@@ -369,6 +375,7 @@ body.d-open .drawer { transform: none; visibility: visible; pointer-events: auto
     <nav class="tabs" aria-label="Sections">
       <a class="tab" href="#a-venir" data-view="a-venir">À venir <span class="n" id="up-n"></span></a>
       <a class="tab" href="#semaine" data-view="semaine">Cette semaine</a>
+      <a class="tab" href="#concerts" data-view="concerts">Concerts <span class="n" id="co-n"></span></a>
     </nav>
     <div class="tools">
       <span class="status" id="status" aria-live="polite"></span>
@@ -387,7 +394,13 @@ body.d-open .drawer { transform: none; visibility: visible; pointer-events: auto
       <button type="button" data-cat="mfr" aria-pressed="false">Musique FR <span class="n"></span></button>
       <button type="button" data-cat="int" aria-pressed="false">International <span class="n"></span></button>
     </div>
-    <div class="seg" role="group" aria-label="Format">
+    <div class="seg seg-cc" role="group" aria-label="Pays">
+      <button type="button" data-cc="all" aria-pressed="true">Partout <span class="n"></span></button>
+      <button type="button" data-cc="FR" aria-pressed="false">France <span class="n"></span></button>
+      <button type="button" data-cc="BE" aria-pressed="false">Belgique <span class="n"></span></button>
+      <button type="button" data-cc="CH" aria-pressed="false">Suisse <span class="n"></span></button>
+    </div>
+    <div class="seg seg-type" role="group" aria-label="Format">
       <button type="button" data-type="all" aria-pressed="true">Tout <span class="n"></span></button>
       <button type="button" data-type="album" aria-pressed="false">Albums <span class="n"></span></button>
       <button type="button" data-type="ep" aria-pressed="false">EP <span class="n"></span></button>
@@ -426,6 +439,8 @@ body.d-open .drawer { transform: none; visibility: visible; pointer-events: auto
    ===================================================================== */
 const DATA_URL = 'data/releases.json';
 const DETAILS_URL = 'data/details.json';
+const CONCERTS_URL = 'data/concerts.json';
+const COUNTRY = { FR: 'France', BE: 'Belgique', CH: 'Suisse' };
 const POLL_MS = 3 * 60e3;           // le site vérifie s’il y a du nouveau toutes les 3 minutes
 const MAX_BACK = 8;                 // semaines consultables en arrière
 const CATS = { rfr: 'Rap FR', rus: 'Rap US', mfr: 'Musique FR', int: 'International' };
@@ -529,6 +544,7 @@ const S = {
   view: 'a-venir', week: 0,
   cat: CATS[prefs.cat] ? prefs.cat : 'all',
   type: TYPE_LABEL[prefs.type] ? prefs.type : 'all',
+  cc: COUNTRY[prefs.cc] ? prefs.cc : 'all',
   q: '', detail: null,
 };
 
@@ -551,6 +567,7 @@ async function loadData(first) {
     const items = (j.items || []).filter(x => isYmd(x.d) && CATS[x.c]).map(mapItem);
     const added = DATA.items.length ? items.filter(x => !before.has(x.key)).length : 0;
     DATA = { generatedAt: j.generatedAt, items, byKey: new Map(items.map(x => [x.key, x])), artists: j.artists || 0 };
+    if (CONCERTS.loaded && CONCERTS.generatedAt !== j.generatedAt) loadConcerts(true);
     render();
     if (added > 0) toast(`${added} ${plural(added, 'nouvelle sortie', 'nouvelles sorties')} à l’instant`);
   } catch (e) {
@@ -558,6 +575,26 @@ async function loadData(first) {
     if (!DATA.items.length) render();
     paintStatus();
   }
+}
+// Concerts : fichier à part, chargé à la première visite de l’onglet puis à chaque mise à jour du robot
+let CONCERTS = { generatedAt: '', updatedAt: null, items: [], loaded: false };
+function mapConcert(x) {
+  return {
+    key: `c${x.id}`, date: x.d, time: x.h || '', name: x.n || '', artists: x.a || [], cat: x.c, venue: x.v || '', city: x.ci || '',
+    cc: x.cc || '', url: x.u || '', img: x.im || '', price: x.pr || 0, status: x.st || '', fest: !!x.fe, pop: x.p || 0,
+  };
+}
+async function loadConcerts(force) {
+  if (CONCERTS.loaded && !force) return;
+  try {
+    const r = await fetch(CONCERTS_URL, { cache: 'no-cache' });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const j = await r.json();
+    CONCERTS = { generatedAt: j.generatedAt, updatedAt: j.updatedAt, items: (j.items || []).filter(x => isYmd(x.d) && CATS[x.c]).map(mapConcert), loaded: true };
+  } catch (e) {
+    if (!CONCERTS.loaded) CONCERTS = { generatedAt: '', updatedAt: null, items: [], loaded: true };
+  }
+  if (S.view === 'concerts' && !S.detail) render(); else paintStatus();
 }
 async function loadDetails() {
   if (DETAILS && detailsFor === DATA.generatedAt) return DETAILS;
@@ -590,6 +627,8 @@ function paintStatus() {
   else st.textContent = 'Chargement…';
   const up = DATA.items.filter(x => x.date > today()).length;
   $('#up-n').textContent = up ? up : '';
+  const co = CONCERTS.items.filter(x => x.date >= today()).length;
+  $('#co-n').textContent = co ? co : '';
   if (DATA.artists) $('#foot-l').textContent = `À l’affût · ${DATA.artists.toLocaleString('fr-FR')} artistes suivis, dont le top 150 France`;
 }
 
@@ -678,7 +717,9 @@ function emptyHtml(kind) {
 function render() {
   INDEX = new Map();
   $$('.tab').forEach(a => { if (a.dataset.view === S.view) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
-  if (S.view === 'a-venir') viewUpcoming(); else viewWeek();
+  $filters.classList.toggle('v-concerts', S.view === 'concerts');
+  $('#q').placeholder = S.view === 'concerts' ? 'Artiste, salle ou ville' : 'Artiste ou titre';
+  if (S.view === 'a-venir') viewUpcoming(); else if (S.view === 'concerts') viewConcerts(); else viewWeek();
   paintStatus();
 }
 
@@ -744,6 +785,72 @@ function viewUpcoming() {
   }
   if (open) html += '</div>';
   if (!list.length) html += emptyHtml(base.length ? 'filters' : 'upcoming');
+  $content.innerHTML = html;
+}
+
+function concertRowHtml(c) {
+  const shown = c.artists.slice(0, 3).join(', ') + (c.artists.length > 3 ? ` +${c.artists.length - 3}` : '');
+  const sub = norm(c.name) !== norm(c.artists[0] || '') ? c.name : '';
+  const where = [c.venue, c.city].filter(Boolean).join(', ') + (c.cc && c.cc !== 'FR' && COUNTRY[c.cc] ? ` · ${COUNTRY[c.cc]}` : '');
+  const status = c.status === 'postponed' ? 'Reporté' : c.status === 'rescheduled' ? 'Nouvelle date' : '';
+  const img = c.img ? `<img src="${esc(c.img)}" alt="" loading="lazy" decoding="async">` : `<span class="ph" aria-hidden="true">${esc(initial(c.artists[0] || c.name))}</span>`;
+  return `<a class="row crow" href="${esc(c.url)}" target="_blank" rel="noopener" aria-label="${esc(`${shown}, ${fmtShort(c.date)}${c.time ? ` à ${c.time.replace(':', 'h')}` : ''}, ${where}. Réserver sur Ticketmaster`)}">
+    <span class="cover">${img}</span>
+    <span class="row-t">
+      <span class="row-title">${esc(shown)}</span>
+      ${sub ? `<span class="row-artist">${esc(sub)}</span>` : ''}
+      <span class="row-cat">${esc(where)}${status ? ` · <b class="warn">${esc(status)}</b>` : ''}</span>
+    </span>
+    <span class="row-side"><span class="pill ${c.fest ? 'ep' : 'album'}">${c.fest ? 'Festival' : 'Concert'}</span>${c.time || c.price ? `<span class="ctime">${esc([c.time ? c.time.replace(':', 'h') : '', c.price ? `dès ${Math.round(c.price)} €` : ''].filter(Boolean).join(' · '))}</span>` : ''}</span>
+  </a>`;
+}
+function viewConcerts() {
+  const t = today();
+  const q = norm(S.q);
+  const base = CONCERTS.items.filter(c => c.date >= t && (!q || norm(`${c.artists.join(' ')} ${c.name} ${c.venue} ${c.city}`).includes(q)));
+  const cc = { all: 0, rfr: 0, rus: 0, mfr: 0, int: 0 }, kc = { all: 0, FR: 0, BE: 0, CH: 0 };
+  for (const c of base) {
+    if (S.cc === 'all' || c.cc === S.cc) { cc.all++; cc[c.cat]++; }
+    if (S.cat === 'all' || c.cat === S.cat) { kc.all++; if (kc[c.cc] !== undefined) kc[c.cc]++; }
+  }
+  $$('[data-cat]', $filters).forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.cat === S.cat)); b.querySelector('.n').textContent = cc[b.dataset.cat] || 0; });
+  $$('[data-cc]', $filters).forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.cc === S.cc)); b.querySelector('.n').textContent = kc[b.dataset.cc] || 0; });
+  fadeSegs(true);
+  const list = base.filter(c => (S.cat === 'all' || c.cat === S.cat) && (S.cc === 'all' || c.cc === S.cc))
+    .sort((a, b) => a.date.localeCompare(b.date) || b.pop - a.pop);
+  const fests = list.filter(c => c.fest).length;
+  const soon = list.filter(c => c.date <= addDays(t, 30)).length;
+  const cities = new Set(list.map(c => norm(c.city)).filter(Boolean)).size;
+  $head.innerHTML = `
+    <div class="head-main"><p class="kicker">Concerts et festivals</p><h1 class="h1">Concerts</h1>
+      <p class="sub">Les dates en France, en Belgique et en Suisse des artistes suivis, d’après la billetterie Ticketmaster. Touche une date pour réserver.</p></div>
+    ${statsHtml([[list.length, plural(list.length, 'date', 'dates')], [soon, 'dans les 30 jours'], [fests, plural(fests, 'festival', 'festivals')], [cities, plural(cities, 'ville', 'villes')]])}`;
+  if (!CONCERTS.loaded) { $content.innerHTML = '<div class="empty"><strong>Chargement des concerts…</strong></div>'; return; }
+  if (!CONCERTS.items.length) {
+    $content.innerHTML = '<div class="empty"><strong>Les concerts arrivent bientôt.</strong>Le robot relève les dates dès que la billetterie est branchée, puis les met à jour deux fois par jour.</div>';
+    return;
+  }
+  let html = '', month = '', open = false, g = null;
+  const groups = [];
+  for (const c of list) {
+    if (!g || g.date !== c.date) groups.push(g = { date: c.date, items: [] });
+    g.items.push(c);
+  }
+  for (const grp of groups) {
+    const d = parseYmd(grp.date);
+    const m = `${MON[d.getMonth()]} ${d.getFullYear()}`;
+    if (m !== month) {
+      if (open) html += '</div>';
+      html += `<h2 class="month">${esc(cap(m))}</h2><div class="days">`;
+      month = m; open = true;
+    }
+    html += `<section class="day">
+      <div class="day-h"><div class="day-d">${esc(cap(fmtShort(grp.date)))}</div><div class="day-r">${esc(grp.date === t ? 'ce soir' : relLabel(grp.date))}</div></div>
+      <div class="day-list">${grp.items.map(concertRowHtml).join('')}</div>
+    </section>`;
+  }
+  if (open) html += '</div>';
+  if (!list.length) html += '<div class="empty"><strong>Aucun concert avec ces filtres.</strong>Essaie un autre genre ou un autre pays.<br><button class="btn" type="button" data-reset>Tout afficher</button></div>';
   $content.innerHTML = html;
 }
 
@@ -893,10 +1000,10 @@ function applyTheme() {
   $('#theme').setAttribute('aria-label', `${label}. Changer le thème`);
   $('#theme').title = label;
 }
-const savePrefs = () => store.set('prefs', { cat: S.cat, type: S.type });
+const savePrefs = () => store.set('prefs', { cat: S.cat, type: S.type, cc: S.cc });
 
 document.addEventListener('click', e => {
-  const el = e.target.closest('[data-key],[data-week],[data-cat],[data-type],[data-play],[data-copy],[data-reset],#theme,#scrim,#d-close');
+  const el = e.target.closest('[data-key],[data-week],[data-cat],[data-type],[data-cc],[data-play],[data-copy],[data-reset],#theme,#scrim,#d-close');
   if (!el) return;
   const ds = el.dataset;
   if (el.id === 'scrim' || el.id === 'd-close') { closeDetail(); return; }
@@ -910,7 +1017,8 @@ document.addEventListener('click', e => {
   if (ds.week !== undefined) { S.week = Math.min(0, Math.max(-MAX_BACK, Number(ds.week))); render(); return; }
   if (ds.cat) { S.cat = ds.cat; savePrefs(); render(); return; }
   if (ds.type) { S.type = ds.type; savePrefs(); render(); return; }
-  if (ds.reset !== undefined) { S.cat = 'all'; S.type = 'all'; S.q = ''; $('#q').value = ''; savePrefs(); render(); return; }
+  if (ds.cc) { S.cc = ds.cc; savePrefs(); render(); return; }
+  if (ds.reset !== undefined) { S.cat = 'all'; S.type = 'all'; S.cc = 'all'; S.q = ''; $('#q').value = ''; savePrefs(); render(); return; }
   if (ds.play) {
     if (audio.src === ds.play && !audio.paused) audio.pause();
     else { audio.src = ds.play; audio.play().catch(() => toast('Extrait indisponible pour ce titre')); }
@@ -939,7 +1047,8 @@ document.addEventListener('error', e => {
   }
 }, true);
 function route() {
-  const v = location.hash === '#semaine' ? 'semaine' : 'a-venir';
+  const v = location.hash === '#semaine' ? 'semaine' : location.hash === '#concerts' ? 'concerts' : 'a-venir';
+  if (v === 'concerts') loadConcerts(false);
   const changed = v !== S.view;
   S.view = v;
   if (S.detail) closeDetail();
@@ -964,6 +1073,7 @@ document.addEventListener('visibilitychange', () => {
 });
 route();
 loadData(true);
+loadConcerts(false);
 setInterval(() => { lastCheck = Date.now(); loadData(false); }, POLL_MS);
 setInterval(paintStatus, 30e3);
 setInterval(() => { if (!S.detail) render(); }, 15 * 60e3); // changement de jour, libellés relatifs
