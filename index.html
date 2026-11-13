@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>À l’affût</title>
-<meta name="description" content="Les sorties rap FR, rap US et musique française de la semaine, et tout ce qui arrive bientôt. Mis à jour automatiquement toutes les heures.">
+<meta name="description" content="Les sorties rap FR, rap US, musique française et des artistes les plus écoutés en France : la semaine en cours et tout ce qui arrive bientôt. Mis à jour automatiquement toutes les heures.">
 <meta name="theme-color" content="#FFFFFF">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -148,6 +148,8 @@ main {
 }
 .seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--soft); max-width: 100%; overflow-x: auto; scrollbar-width: none; }
 .seg::-webkit-scrollbar { display: none; }
+/* plus de choix à droite : fondu qui invite à faire défiler */
+.seg.more { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 34px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 34px), transparent); }
 .seg button {
   display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 12px; border-radius: 999px;
   font-size: 13px; font-weight: 600; color: var(--ink-2); white-space: nowrap; transition: background-color .15s, color .15s, box-shadow .15s;
@@ -384,6 +386,7 @@ body.d-open .drawer { transform: none; visibility: visible; pointer-events: auto
       <button type="button" data-cat="rfr" aria-pressed="false">Rap FR <span class="n"></span></button>
       <button type="button" data-cat="rus" aria-pressed="false">Rap US <span class="n"></span></button>
       <button type="button" data-cat="mfr" aria-pressed="false">Musique FR <span class="n"></span></button>
+      <button type="button" data-cat="int" aria-pressed="false">International <span class="n"></span></button>
     </div>
     <div class="seg" role="group" aria-label="Format">
       <button type="button" data-type="all" aria-pressed="true">Tout <span class="n"></span></button>
@@ -426,7 +429,7 @@ const DATA_URL = 'data/releases.json';
 const DETAILS_URL = 'data/details.json';
 const POLL_MS = 3 * 60e3;           // le site vérifie s’il y a du nouveau toutes les 3 minutes
 const MAX_BACK = 8;                 // semaines consultables en arrière
-const CATS = { rfr: 'Rap FR', rus: 'Rap US', mfr: 'Musique FR' };
+const CATS = { rfr: 'Rap FR', rus: 'Rap US', mfr: 'Musique FR', int: 'International' };
 const TYPE_LABEL = { album: 'Album', ep: 'EP', single: 'Single', compile: 'Compil' };
 const SRC_LABEL = { dz: 'Deezer', it: 'Apple Music', mb: 'MusicBrainz', wk: 'Wikipédia', pr: 'Presse', an: 'Presse' };
 
@@ -588,7 +591,7 @@ function paintStatus() {
   else st.textContent = 'Chargement…';
   const up = DATA.items.filter(x => x.date > today()).length;
   $('#up-n').textContent = up ? up : '';
-  if (DATA.artists) $('#foot-l').textContent = `À l’affût · ${DATA.artists} artistes suivis en rap FR, rap US et musique française`;
+  if (DATA.artists) $('#foot-l').textContent = `À l’affût · ${DATA.artists.toLocaleString('fr-FR')} artistes suivis, dont le top 150 France`;
 }
 
 const matchQ = (r, q) => !q || norm(`${r.title} ${r.artist} ${r.feats.join(' ')}`).includes(q);
@@ -597,7 +600,7 @@ const matchCat = r => S.cat === 'all' || r.cat === S.cat;
 const applyFilters = list => { const q = norm(S.q); return list.filter(r => matchCat(r) && matchType(r) && matchQ(r, q)); };
 function paintFilters(base) {
   const q = norm(S.q);
-  const cc = { all: 0, rfr: 0, rus: 0, mfr: 0 }, tc = { all: 0, album: 0, ep: 0, single: 0 };
+  const cc = { all: 0, rfr: 0, rus: 0, mfr: 0, int: 0 }, tc = { all: 0, album: 0, ep: 0, single: 0 };
   for (const r of base) {
     if (!matchQ(r, q)) continue;
     if (matchType(r)) { cc.all++; cc[r.cat]++; }
@@ -605,7 +608,18 @@ function paintFilters(base) {
   }
   $$('[data-cat]', $filters).forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.cat === S.cat)); b.querySelector('.n').textContent = cc[b.dataset.cat] || 0; });
   $$('[data-type]', $filters).forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.type === S.type)); b.querySelector('.n').textContent = tc[b.dataset.type] || 0; });
+  fadeSegs(true);
 }
+// filtres qui débordent sur mobile : fondu à droite tant qu’il reste des choix cachés ; après un choix, le filtre actif reste visible
+function fadeSegs(reveal) {
+  $$('.seg', $filters).forEach(s => {
+    const on = reveal && s.querySelector('[aria-pressed="true"]');
+    if (on && (on.offsetLeft < s.scrollLeft || on.offsetLeft + on.offsetWidth > s.scrollLeft + s.clientWidth)) s.scrollLeft = on.offsetLeft - 8;
+    s.classList.toggle('more', s.scrollLeft + s.clientWidth < s.scrollWidth - 2);
+  });
+}
+addEventListener('resize', () => fadeSegs(), { passive: true });
+document.addEventListener('scroll', e => { if (e.target.classList && e.target.classList.contains('seg')) fadeSegs(); }, { capture: true, passive: true });
 function countTypes(list) {
   const c = { album: 0, ep: 0, single: 0 };
   for (const r of list) c[r.rt === 'compile' ? 'album' : r.rt]++;
