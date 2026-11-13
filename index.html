@@ -371,6 +371,153 @@ body.d-open .drawer { transform: none; visibility: visible; pointer-events: auto
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
 
+/* ---------- comptes, notes, critiques, profils ---------- */
+.acct { display: inline-flex; align-items: center; height: 36px; padding: 0 4px; border-radius: 999px; margin-right: 2px; }
+.acct .acct-l { padding: 7px 13px; border-radius: 999px; background: var(--ink); color: var(--bg); font-size: 13px; font-weight: 650; white-space: nowrap; }
+.acct:hover .acct-l { background: var(--ink-2); }
+.acct.in:hover .av { box-shadow: 0 0 0 2px var(--line); }
+.av { display: inline-grid; place-items: center; flex: none; border-radius: 50%; overflow: hidden; background: var(--soft); color: var(--ink-2); font-weight: 750; box-shadow: inset 0 0 0 1px var(--line); }
+.av img { width: 100%; height: 100%; object-fit: cover; }
+.av.sm { width: 30px; height: 30px; font-size: 13px; }
+.av.xl { width: 92px; height: 92px; font-size: 38px; }
+.av.sk { background: var(--line); animation: pulse 1.2s ease-in-out infinite alternate; }
+@keyframes pulse { to { opacity: .45; } }
+.muted { color: var(--muted); }
+
+.stars { position: relative; display: inline-block; width: max-content; justify-self: start; line-height: 1; font-size: 15px; letter-spacing: 1px; color: var(--line); white-space: nowrap; vertical-align: -1px; }
+.stars .on { position: absolute; inset: 0 auto 0 0; width: var(--v); overflow: hidden; color: var(--ink); }
+.stars.sm { font-size: 12.5px; }
+.rt { font: 650 11px var(--font-mono); color: var(--ink); background: var(--soft); border-radius: 999px; padding: 2px 7px; letter-spacing: .02em; }
+
+.rb { margin-top: 6px; }
+.rb-sum { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: end; gap: 22px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 14px; }
+.rb-avg { display: grid; gap: 6px; }
+.rb-avg b { font-family: var(--font-display); font-weight: 800; font-stretch: 112%; font-size: 40px; line-height: .9; letter-spacing: -0.03em; }
+.rb-avg .stars { font-size: 17px; }
+.rb-avg > span:last-child { font: 500 11.5px var(--font-mono); color: var(--muted); }
+.hist { display: grid; grid-template-columns: repeat(10, 1fr); align-items: end; gap: 3px; height: 56px; }
+.hist span { height: max(3px, var(--h)); border-radius: 3px 3px 1px 1px; background: var(--ink); opacity: .85; }
+.rb-empty, .rb-note { color: var(--ink-2); margin: 0; font-size: 14.5px; }
+.rb-note { margin-top: 14px; color: var(--muted); }
+.rb-mine { display: flex; align-items: center; gap: 8px; margin: 10px 0 0; font-weight: 650; }
+.rb-cta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; padding: 14px 16px; border-radius: 14px; background: var(--soft); }
+.rb-cta p { margin: 0; font-size: 14.5px; }
+.rb-form { margin-top: 16px; display: grid; gap: 12px; }
+.rate-row { display: flex; align-items: center; gap: 14px; }
+.rate-in { position: relative; display: inline-block; font-size: 36px; line-height: 1; letter-spacing: 3px; color: var(--line); cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; border-radius: 8px; }
+.rate-in .on { position: absolute; inset: 0 auto 0 0; width: var(--v); overflow: hidden; color: var(--ink); white-space: nowrap; }
+.rate-in:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+.rate-val { font: 650 15px var(--font-mono); color: var(--ink-2); min-width: 4ch; }
+.rb-form textarea, .fld input, .fld textarea, .m-search {
+  width: 100%; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--ink); font: inherit; font-size: 15px; padding: 11px 13px; resize: vertical;
+}
+.rb-form textarea:focus, .fld input:focus, .fld textarea:focus, .m-search:focus { outline: none; border-color: var(--ink); }
+.rb-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.rb-hint { margin-left: auto; font: 500 11px var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.rb-more { margin: 12px 0 0; color: var(--muted); font-size: 13.5px; }
+.rv-list { display: grid; gap: 0; margin-top: 18px; border-top: 1px solid var(--line); }
+.rv { padding: 16px 0; border-bottom: 1px solid var(--line); display: grid; gap: 8px; }
+.rv.own { background: linear-gradient(90deg, var(--soft), transparent 70%); padding-left: 10px; margin-left: -10px; border-radius: 10px 0 0 10px; }
+.rv-who { display: flex; align-items: center; gap: 9px; text-decoration: none; min-width: 0; }
+.rv-who b { font-size: 14.5px; }
+.rv-who span { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rv-who em { font: 600 10px var(--font-mono); font-style: normal; text-transform: uppercase; letter-spacing: .06em; background: var(--ink); color: var(--bg); border-radius: 999px; padding: 2px 7px; }
+.rv-who:hover b { text-decoration: underline; }
+.rv-meta { display: flex; align-items: center; gap: 10px; font: 500 11.5px var(--font-mono); color: var(--muted); }
+.rv-tx { margin: 0; white-space: pre-line; overflow-wrap: anywhere; line-height: 1.55; font-size: 15px; }
+.rv-tx.clamp { display: -webkit-box; -webkit-line-clamp: 7; -webkit-box-orient: vertical; overflow: hidden; }
+.rv-more { justify-self: start; font-size: 13.5px; font-weight: 650; text-decoration: underline; text-underline-offset: 3px; }
+.rv-rel { display: flex; align-items: center; gap: 12px; text-align: left; min-width: 0; }
+.rv-rel .cover { width: 52px; flex: none; border-radius: 6px; }
+.rv-rel b { display: block; font-size: 15px; }
+.rv-rel span span { color: var(--ink-2); font-size: 13.5px; }
+.rv-list.wide { max-width: 760px; }
+
+.cta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin-top: 30px; padding: 18px 20px; border-radius: 16px; background: var(--soft); }
+.cta p { margin: 0; max-width: 62ch; color: var(--ink-2); }
+.cta b { color: var(--ink); }
+.toprated { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 4px 36px; }
+.tr { width: 100%; display: grid; grid-template-columns: 30px 56px minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 10px; margin: 0 -10px; border-radius: 12px; text-align: left; }
+.tr:hover { background: var(--soft); }
+.tr-n { font-family: var(--font-display); font-weight: 800; font-stretch: 112%; font-size: 26px; color: var(--muted); text-align: center; }
+.tr .cover { width: 56px; border-radius: 6px; }
+.tr-t { display: grid; gap: 2px; min-width: 0; }
+.tr-t b { font-size: 15px; overflow-wrap: anywhere; }
+.tr-t span { color: var(--ink-2); font-size: 13.5px; overflow-wrap: anywhere; }
+.tr-s { display: grid; justify-items: end; gap: 4px; }
+.tr-s b { font: 700 18px var(--font-mono); letter-spacing: -0.02em; }
+.tr-s > span:last-child { font: 500 10.5px var(--font-mono); color: var(--muted); }
+.tr-s .stars { justify-self: end; }
+
+.prof { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 22px; flex-basis: 100%; }
+.prof .h1 { margin-top: 4px; }
+.prof-meta { margin: 6px 0 0; font: 500 13px var(--font-mono); color: var(--muted); }
+.prof-bio { white-space: pre-line; }
+.prof .actions { align-self: start; flex-wrap: wrap; justify-content: flex-end; }
+.vit { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+.vit-item { position: relative; }
+.vit-item .card { width: 100%; }
+.vit-x { position: absolute; top: 8px; right: 8px; background: var(--bg); box-shadow: 0 1px 4px rgba(0, 0, 0, .2); width: 32px; height: 32px; }
+.vit-add { aspect-ratio: 1; display: grid; place-content: center; justify-items: center; gap: 6px; border: 1.5px dashed var(--line); border-radius: 10px; color: var(--muted); font-size: 14px; font-weight: 600; }
+.vit-add span { font-size: 34px; line-height: 1; font-weight: 300; }
+.vit-add:hover { border-color: var(--ink); color: var(--ink); }
+.grid.sm { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 24px 16px; }
+.grid.sm .card-title { font-size: 14px; }
+.grid.sm .card-artist { font-size: 13px; }
+.dist { display: flex; align-items: end; gap: 10px; max-width: 360px; margin: 0 0 22px; }
+.dist .hist { flex: 1; height: 44px; }
+.dist-l { font: 600 12px var(--font-mono); color: var(--muted); }
+body[data-view="profil"] .ftool, body[data-view="user"] .ftool { display: none; }
+body[data-view="profil"] .filters, body[data-view="user"] .filters { display: none; }
+
+.modal { width: min(520px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); border: 0; border-radius: 20px; padding: 0; background: var(--bg); color: var(--ink); box-shadow: 0 24px 80px rgba(0, 0, 0, .35); }
+.modal::backdrop { background: rgba(10, 10, 10, .5); backdrop-filter: blur(3px); }
+.m-in { position: relative; padding: 30px 28px 26px; }
+.m-x { position: absolute; top: 14px; right: 14px; }
+.m-title { font-family: var(--font-display); font-weight: 800; font-stretch: 112%; font-size: 26px; line-height: 1.1; letter-spacing: -0.02em; margin: 0 40px 10px 0; }
+.m-sub { color: var(--ink-2); margin: 0 0 20px; }
+.m-fine { color: var(--muted); font-size: 12.5px; margin: 18px 0 0; }
+.m-err { color: #C62828; font-size: 13.5px; margin: 4px 0 0; min-height: 1.2em; }
+.m-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+.m-danger { margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--line); }
+.btn.google { display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 48px; font-size: 15px; font-weight: 650; border-color: var(--line); }
+.empty .btn.google { width: auto; padding: 0 22px; }
+.btn.google svg { width: 20px; height: 20px; }
+.btn.danger { color: #C62828; border-color: rgba(198, 40, 40, .35); }
+.btn.danger:hover:not(:disabled) { border-color: #C62828; }
+.fld { display: grid; gap: 6px; margin-bottom: 14px; }
+.fld > span:first-child { font: 600 11px var(--font-mono); text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+.fld small { color: var(--muted); font-size: 12.5px; }
+.fld-at { position: relative; display: block; }
+.fld-at b { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted); font-weight: 600; }
+.fld-at input { padding-left: 30px; }
+.m-search { margin-bottom: 12px; }
+.pick-list { display: grid; gap: 2px; max-height: min(52vh, 460px); overflow-y: auto; margin: 0 -8px; }
+.pick { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 8px; border-radius: 10px; text-align: left; }
+.pick:hover:not(:disabled) { background: var(--soft); }
+.pick:disabled { opacity: .5; cursor: default; }
+.pick .cover { width: 48px; border-radius: 6px; }
+.pick-t { display: grid; min-width: 0; }
+.pick-t b { font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pick-t span { color: var(--ink-2); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pick-in { font: 500 10.5px var(--font-mono); color: var(--muted); }
+@media (max-width: 760px) {
+  .prof { grid-template-columns: auto minmax(0, 1fr); }
+  .prof .actions { grid-column: 1 / -1; justify-content: flex-start; }
+  .vit { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .av.xl { width: 72px; height: 72px; font-size: 30px; }
+}
+@media (max-width: 520px) {
+  .acct .acct-l { padding: 6px 11px; font-size: 12.5px; }
+  .rb-sum { grid-template-columns: 1fr; }
+  .rb-hint { margin-left: 0; width: 100%; }
+  .tr { grid-template-columns: 24px 48px minmax(0, 1fr) auto; gap: 10px; }
+  .tr .cover { width: 48px; }
+  .toprated { grid-template-columns: minmax(0, 1fr); }
+  .m-in { padding: 26px 20px 20px; }
+  .rate-in { font-size: 40px; }
+}
+
 .status .live { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 7px; vertical-align: 1px; opacity: .7; }
 .month { margin: 38px 0 0; font: 600 12px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .month + .days { margin-top: 10px; }
@@ -389,6 +536,7 @@ body.d-open .drawer { transform: none; visibility: visible; pointer-events: auto
     </nav>
     <div class="tools">
       <span class="status" id="status" aria-live="polite"></span>
+      <button class="acct" id="acct" type="button" hidden></button>
       <button class="icon-btn" id="theme" type="button" aria-label="Changer le thème" title="Changer le thème"></button>
     </div>
   </div>
@@ -444,6 +592,7 @@ body.d-open .drawer { transform: none; visibility: visible; pointer-events: auto
   <div id="d-body"></div>
 </aside>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<dialog class="modal" id="modal" aria-labelledby="m-title"><div class="m-in" id="m-body"></div></dialog>
 <noscript><p style="padding:24px;font:16px system-ui">Active JavaScript pour voir les sorties.</p></noscript>
 
 <script>
@@ -561,7 +710,7 @@ const S = {
   cat: CATS[prefs.cat] ? prefs.cat : 'all',
   type: TYPE_LABEL[prefs.type] ? prefs.type : 'all',
   cc: COUNTRY[prefs.cc] ? prefs.cc : 'all',
-  q: '', detail: null,
+  q: '', detail: null, handle: '',
 };
 
 function mapItem(x) {
@@ -699,7 +848,7 @@ function cardHtml(r) {
       <span class="card-title">${esc(r.title)}${r.ex ? '<span class="ex" title="Explicite">E</span>' : ''}</span>
       <span class="card-artist">${esc(r.artist)}</span>
       ${r.feats.length ? `<span class="card-feat">feat. ${esc(r.feats.join(', '))}</span>` : ''}
-      <span class="meta"><span>${esc(CATS[r.cat])}</span><span>${esc(fmtShort(r.date))}</span>${r.n > 1 ? `<span>${r.n} titres${r.dur ? ` · ${fmtTotal(r.dur)}` : ''}</span>` : ''}</span>
+      <span class="meta">${rtChip(r)}<span>${esc(CATS[r.cat])}</span><span>${esc(fmtShort(r.date))}</span>${r.n > 1 ? `<span>${r.n} titres${r.dur ? ` · ${fmtTotal(r.dur)}` : ''}</span>` : ''}</span>
     </span>
   </button>`;
 }
@@ -737,10 +886,11 @@ function emptyHtml(kind) {
 function render() {
   INDEX = new Map();
   $$('.tab').forEach(a => { if (a.dataset.view === S.view) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+  document.body.dataset.view = S.view;
   $filters.classList.toggle('v-concerts', S.view === 'concerts');
   paintToggle();
   $('#q').placeholder = S.view === 'concerts' ? 'Artiste, salle ou ville' : 'Artiste ou titre';
-  if (S.view === 'a-venir') viewUpcoming(); else if (S.view === 'concerts') viewConcerts(); else viewWeek();
+  if (S.view === 'a-venir') viewUpcoming(); else if (S.view === 'concerts') viewConcerts(); else if (S.view === 'profil' || S.view === 'user') viewProfile(); else viewWeek();
   paintStatus();
 }
 
@@ -763,12 +913,20 @@ function viewWeek() {
   const albums = list.filter(r => r.rt === 'album' || r.rt === 'compile');
   const eps = list.filter(r => r.rt === 'ep');
   const singles = list.filter(r => r.rt === 'single');
-  let html = '';
+  const wr = FB_CONFIG ? WEEKREV.get(ws) : null;
+  const usedAt = wr ? wr.at : -1;
+  let html = S.week === 0 ? rateCtaHtml() : '';
+  if (FB_CONFIG) html += topRatedHtml(list);
   if (albums.length) html += section('Albums', albums.length, `<div class="grid">${albums.map(cardHtml).join('')}</div>`);
   if (eps.length) html += section('EP', eps.length, `<div class="grid">${eps.map(cardHtml).join('')}</div>`);
   if (singles.length) html += section('Singles', singles.length, `<div class="rows">${singles.map(r => rowHtml(r, false)).join('')}</div>`);
   if (!list.length) html += emptyHtml(base.length ? 'filters' : 'week');
   $content.innerHTML = html;
+  if (FB_CONFIG) {
+    ensureWeekRatings(ws).then(e => {
+      if (e && e.at !== usedAt && S.view === 'semaine' && addDays(weekStartOf(today()), S.week * 7) === ws) render();
+    });
+  }
 }
 
 function viewUpcoming() {
@@ -903,7 +1061,7 @@ async function loadPreviews(r) {
   } catch (e) { /* les extraits sont un bonus */ }
 }
 function openDetail(key) {
-  const r = INDEX.get(key) || DATA.byKey.get(key);
+  const r = INDEX.get(key) || DATA.byKey.get(key) || EXTRA.get(key);
   if (!r) return;
   S.detail = key;
   lastFocus = document.activeElement;
@@ -916,6 +1074,7 @@ function openDetail(key) {
   loadDetails().then(() => { if (S.detail === key) paintDetail(r); }, () => { if (S.detail === key) paintDetail(r, true); });
   loadPreviews(r);
 }
+function detailRelease() { return S.detail ? INDEX.get(S.detail) || DATA.byKey.get(S.detail) || EXTRA.get(S.detail) || null : null; }
 function closeDetail() {
   if (!S.detail) return;
   S.detail = null;
@@ -989,11 +1148,13 @@ function paintDetail(r, failed) {
       <p class="d-date">${released ? 'Sorti le' : 'Sortie prévue le'} ${esc(fmtLong(r.date))}${rel ? ` · ${esc(rel)}` : ''}</p>
       ${facts.length ? `<dl class="facts">${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>` : ''}
       ${feats.length ? `<h3 class="d-h3">Featurings</h3><div class="chips">${feats.map(f => `<span class="chip">${esc(f.name)}${f.n > 1 ? `<span class="mono">×${f.n}</span>` : ''}</span>`).join('')}</div>` : ''}
+      ${FB_CONFIG && RATEABLE.has(r.rt) ? `<section class="rb" id="d-rate" data-k="${esc(r.key)}"></section>` : ''}
       ${tracks}
       <h3 class="d-h3">Écouter</h3>
       <div class="links">${linksHtml(r)}</div>
       <p class="d-src">Source : ${esc(srcText(r))}</p>
     </div>`;
+  if (FB_CONFIG && RATEABLE.has(r.rt)) paintRatings(r);
 }
 
 const audio = new Audio();
@@ -1007,6 +1168,678 @@ function syncPlay() {
   });
 }
 ['play', 'pause', 'ended'].forEach(ev => audio.addEventListener(ev, syncPlay));
+
+/* =====================================================================
+   Comptes, notes et critiques
+   Connexion Google et base Firestore (Firebase). Les règles de sécurité
+   (firebase/firestore.rules) n’autorisent une note que pendant la semaine
+   de sortie et chacun n’écrit que ses propres données.
+   ===================================================================== */
+const FB_CONFIG = {"apiKey":"AIzaSyAFvgC0vexSgUiX8pFHoNNCbp6EJNVff6Q","authDomain":"a-l-affut.firebaseapp.com","projectId":"a-l-affut","storageBucket":"a-l-affut.firebasestorage.app","messagingSenderId":"1015111370208","appId":"1:1015111370208:web:131f671aea381bab3dd785"};
+const FB_SDK = 'https://www.gstatic.com/firebasejs/10.14.1';
+const RATEABLE = new Set(['album', 'ep', 'compile']);
+const HANDLE_RE = /^[a-z0-9_]{3,20}$/;
+let FB = null, fbLoading = null;
+const ME = { ready: !FB_CONFIG, user: null, profile: null, reviews: null, failed: false };
+const REV = new Map();        // clé de sortie -> { at, list } (toutes les notes de la sortie)
+const REVLOAD = new Set();
+const WEEKREV = new Map();    // début de semaine -> { at, list, agg }
+const PROFILES = new Map();   // pseudo -> { at, uid, user, reviews } ou { missing }
+const DRAFT = new Map();      // clé de sortie -> { r, tx, del } : saisie en cours, conservée entre deux affichages
+const EXTRA = new Map();      // sorties ouvertes depuis un profil mais absentes des données de la semaine
+const $modal = $('#modal'), $mbody = $('#m-body');
+
+function fb() {
+  if (!FB_CONFIG) return Promise.reject(new Error('comptes désactivés'));
+  if (!fbLoading) {
+    fbLoading = (async () => {
+      const [app, A, F] = await Promise.all([
+        import(`${FB_SDK}/firebase-app.js`), import(`${FB_SDK}/firebase-auth.js`), import(`${FB_SDK}/firebase-firestore-lite.js`),
+      ]);
+      const a = app.initializeApp(FB_CONFIG);
+      FB = { A, F, auth: A.getAuth(a), db: F.getFirestore(a) };
+      A.onAuthStateChanged(FB.auth, onUser);
+      return FB;
+    })().catch(e => { fbLoading = null; ME.ready = true; paintAcct(); throw e; });
+  }
+  return fbLoading;
+}
+const tsMs = t => (t && typeof t.toMillis === 'function' ? t.toMillis() : t && t.seconds ? t.seconds * 1000 : 0);
+const fmtAvg = v => v.toFixed(1).replace('.', ',');
+const fmtNote = r => String(r / 2).replace('.', ',');
+const starsHtml = (pct, label, cls = '') => `<span class="stars ${cls}" style="--v:${Math.max(0, Math.min(100, pct)).toFixed(1)}%" role="img" aria-label="${esc(label)}"><span aria-hidden="true">★★★★★</span><span class="on" aria-hidden="true">★★★★★</span></span>`;
+const noteStars = (r, cls) => starsHtml(r * 10, `${fmtNote(r)} sur 5`, cls);
+function avatarHtml(p, size) {
+  const name = (p && p.n) || '?';
+  return `<span class="av ${size}">${p && p.ph ? `<img src="${esc(p.ph)}" alt="" referrerpolicy="no-referrer" loading="lazy">` : esc(initial(name))}</span>`;
+}
+function timeAgo(ms) {
+  if (!ms) return '';
+  const m = Math.round((Date.now() - ms) / 60e3);
+  if (m < 1) return 'à l’instant';
+  if (m < 60) return `il y a ${m} min`;
+  const h = Math.round(m / 60);
+  if (h < 24) return `il y a ${h} h`;
+  const d = Math.round(h / 24);
+  if (d < 31) return `il y a ${d} j`;
+  const t = new Date(ms);
+  return `${t.getDate()} ${MON_S[t.getMonth()]} ${t.getFullYear()}`;
+}
+
+/* ---------- lecture ---------- */
+async function getDocData(col, id) {
+  const { F, db } = await fb();
+  const s = await F.getDoc(F.doc(db, col, id));
+  return s.exists() ? s.data() : null;
+}
+async function queryReviews(field, value) {
+  const { F, db } = await fb();
+  const snap = await F.getDocs(F.query(F.collection(db, 'reviews'), F.where(field, '==', value), F.limit(1000)));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => tsMs(b.up) - tsMs(a.up));
+}
+function aggregate(list) {
+  const m = new Map();
+  for (const x of list) {
+    const a = m.get(x.k) || { n: 0, sum: 0, dist: new Array(10).fill(0), texts: 0 };
+    a.n++; a.sum += x.r; a.dist[x.r - 1]++;
+    if (x.tx) a.texts++;
+    m.set(x.k, a);
+  }
+  for (const a of m.values()) a.avg = a.sum / a.n / 2;
+  return m;
+}
+// moyenne lissée pour le classement : une seule note à 5 ne passe pas devant dix notes à 4,5
+const bayes = a => (a.sum / 2 + 3 * 2) / (a.n + 2);
+function ratingOf(r) {
+  const e = WEEKREV.get(weekStartOf(r.date));
+  return e && e.agg ? e.agg.get(r.key) || null : null;
+}
+function ensureWeekRatings(ws) {
+  if (!FB_CONFIG) return Promise.resolve(null);
+  const c = WEEKREV.get(ws);
+  if (c && c.loading) return c.loading;
+  if (c && Date.now() - c.at < 90e3) return Promise.resolve(c);
+  const loading = queryReviews('w', ws).then(list => {
+    const e = { at: Date.now(), list, agg: aggregate(list) };
+    WEEKREV.set(ws, e);
+    return e;
+  }, () => { const e = { at: Date.now(), list: c ? c.list : [], agg: c ? c.agg : new Map() }; WEEKREV.set(ws, e); return e; });
+  WEEKREV.set(ws, { at: c ? c.at : 0, list: c ? c.list : [], agg: c ? c.agg : new Map(), loading });
+  return loading;
+}
+async function loadReviews(r) {
+  if (REVLOAD.has(r.key)) return;
+  REVLOAD.add(r.key);
+  try { REV.set(r.key, { at: Date.now(), list: await queryReviews('k', r.key) }); }
+  catch (e) { REV.set(r.key, { at: Date.now(), list: (REV.get(r.key) || {}).list || [], err: true }); }
+  finally { REVLOAD.delete(r.key); }
+  if (S.detail === r.key) paintRatings(r);
+}
+
+/* ---------- connexion ---------- */
+async function onUser(user) {
+  ME.user = user || null; ME.profile = null; ME.reviews = null; ME.failed = false; ME.ready = false;
+  paintAcct();
+  if (user) {
+    try {
+      const [p, mine] = await Promise.all([getDocData('users', user.uid), queryReviews('uid', user.uid)]);
+      ME.profile = p;
+      ME.reviews = new Map(mine.map(x => [x.k, x]));
+    } catch (e) { ME.failed = true; toast('La base des notes ne répond pas, réessaie dans un instant'); }
+  }
+  ME.ready = true;
+  paintAcct();
+  if (user && !ME.failed && !ME.profile) openOnboarding();
+  refreshAfterAuth();
+}
+function refreshAfterAuth() {
+  if (S.detail) { const r = detailRelease(); if (r) paintRatings(r); }
+  if (S.view === 'profil' || S.view === 'user' || S.view === 'semaine') render();
+}
+function paintAcct() {
+  const b = $('#acct');
+  if (!b) return;
+  b.hidden = !FB_CONFIG;
+  if (!FB_CONFIG) return;
+  b.classList.toggle('in', !!ME.user);
+  if (!ME.ready) { b.innerHTML = '<span class="av sm sk"></span>'; b.setAttribute('aria-label', 'Compte'); return; }
+  if (ME.user) {
+    b.innerHTML = avatarHtml(ME.profile || { n: ME.user.displayName || '?', ph: ME.user.photoURL }, 'sm');
+    b.setAttribute('aria-label', 'Mon profil');
+  } else {
+    b.innerHTML = '<span class="acct-l">Se connecter</span>';
+    b.setAttribute('aria-label', 'Se connecter');
+  }
+}
+async function signIn() {
+  try {
+    const f = FB || await fb();
+    const p = new f.A.GoogleAuthProvider();
+    p.setCustomParameters({ prompt: 'select_account' });
+    await f.A.signInWithPopup(f.auth, p);
+    if ($modal.open && $modal.dataset.kind === 'signin') closeModal();
+  } catch (e) {
+    const code = e && e.code;
+    if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') return;
+    toast(code === 'auth/popup-blocked' ? 'Autorise les fenêtres surgissantes pour te connecter' : 'Connexion impossible pour le moment');
+  }
+}
+async function signOut() {
+  if (!FB) return;
+  await FB.A.signOut(FB.auth);
+  toast('Tu es déconnecté');
+}
+
+/* ---------- fenêtres ---------- */
+function openModal(kind, html) {
+  $modal.dataset.kind = kind;
+  $mbody.innerHTML = `<button class="icon-btn m-x" type="button" data-act="close-modal" aria-label="Fermer">${I.x}</button>${html}`;
+  if (!$modal.open) $modal.showModal();
+  const f = $('input:not([type=hidden]), textarea', $mbody);
+  if (f && matchMedia('(hover: hover)').matches) f.focus();
+}
+function closeModal() { if ($modal.open) $modal.close(); }
+$modal.addEventListener('click', e => { if (e.target === $modal) closeModal(); });
+const G_LOGO = '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.2-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.2-.1-2.3-.4-3.5z"/></svg>';
+function openSignIn(why) {
+  openModal('signin', `<h2 class="m-title" id="m-title">Connexion</h2>
+    <p class="m-sub">${esc(why || 'Connecte-toi pour noter les sorties de la semaine, écrire tes critiques et composer ta vitrine.')}</p>
+    <button class="btn google" type="button" data-act="google">${G_LOGO}Continuer avec Google</button>
+    <p class="m-fine">Ton nom, ta photo et tes notes apparaissent sur ton profil public. Tu peux supprimer ton compte à tout moment.</p>`);
+}
+const slug = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 20);
+function profileFormHtml(kind, p) {
+  const u = ME.user || {};
+  let h = p ? p.h : slug(u.displayName || (u.email || '').split('@')[0]);
+  if (h.length < 3) h = `${h || 'fan'}${Math.floor(100 + Math.random() * 900)}`.slice(0, 20);
+  const n = p ? p.n : (u.displayName || 'Auditeur').slice(0, 50);
+  return `<form id="f-profile" data-kind="${kind}" novalidate>
+    <label class="fld"><span>Pseudo</span><span class="fld-at"><b>@</b><input name="h" value="${esc(h)}" maxlength="20" autocomplete="off" autocapitalize="none" spellcheck="false" required></span>
+      <small>3 à 20 caractères : lettres minuscules, chiffres et _. C’est l’adresse de ton profil.</small></label>
+    <label class="fld"><span>Nom affiché</span><input name="n" value="${esc(n)}" maxlength="50" required></label>
+    ${kind === 'edit' ? `<label class="fld"><span>Bio</span><textarea name="bio" maxlength="300" rows="3" placeholder="Ce que tu écoutes, ce que tu défends…">${esc(p.bio || '')}</textarea></label>` : ''}
+    <p class="m-err" id="f-err" role="alert"></p>
+    <div class="m-actions"><button class="btn solid" type="submit">${kind === 'edit' ? 'Enregistrer' : 'Créer mon profil'}</button></div>
+    ${kind === 'edit' ? `<div class="m-danger"><button class="btn danger" type="button" data-act="del-account">Supprimer mon compte</button></div>` : ''}
+  </form>`;
+}
+function openOnboarding() {
+  openModal('onboard', `<h2 class="m-title" id="m-title">Bienvenue sur À l’affût</h2>
+    <p class="m-sub">Choisis ton pseudo pour créer ton profil : tes notes, tes critiques et ta vitrine y seront rassemblées.</p>
+    ${profileFormHtml('create', null)}`);
+}
+function openEditProfile() {
+  if (!ME.profile) return;
+  openModal('edit', `<h2 class="m-title" id="m-title">Modifier le profil</h2>${profileFormHtml('edit', ME.profile)}`);
+}
+async function submitProfile(form) {
+  const err = $('#f-err');
+  const h = form.h.value.trim().toLowerCase();
+  const n = form.n.value.trim();
+  const bio = form.bio ? form.bio.value.trim() : '';
+  if (!HANDLE_RE.test(h)) { err.textContent = 'Pseudo : 3 à 20 caractères, lettres minuscules, chiffres et _ uniquement.'; return; }
+  if (!n) { err.textContent = 'Indique un nom.'; return; }
+  const btn = $('button[type=submit]', form);
+  btn.disabled = true; err.textContent = '';
+  try {
+    const { F, db, auth } = FB;
+    const u = auth.currentUser;
+    const old = ME.profile;
+    if (!old || h !== old.h) {
+      const taken = await getDocData('handles', h);
+      if (taken && taken.uid !== u.uid) { err.textContent = 'Ce pseudo est déjà pris.'; btn.disabled = false; return; }
+    }
+    const b = F.writeBatch(db);
+    if (!old) {
+      b.set(F.doc(db, 'handles', h), { uid: u.uid });
+      b.set(F.doc(db, 'users', u.uid), { h, n, ph: u.photoURL || '', bio: '', sc: [], since: F.serverTimestamp(), up: F.serverTimestamp() });
+    } else {
+      if (h !== old.h) { b.set(F.doc(db, 'handles', h), { uid: u.uid }); b.delete(F.doc(db, 'handles', old.h)); }
+      b.update(F.doc(db, 'users', u.uid), { h, n, bio, up: F.serverTimestamp() });
+    }
+    await b.commit();
+    ME.profile = await getDocData('users', u.uid);
+    if (old && (h !== old.h || n !== old.n)) await propagateAuthor();
+    PROFILES.clear();
+    closeModal();
+    paintAcct();
+    toast(old ? 'Profil mis à jour' : 'Profil créé, tu peux noter les sorties de la semaine');
+    if (!old || S.view === 'profil' || S.view === 'user') { if (S.view === 'user') location.hash = `#u/${h}`; else render(); }
+    if (S.detail) { const r = detailRelease(); if (r) paintRatings(r); }
+  } catch (e) {
+    err.textContent = 'Enregistrement impossible pour le moment, réessaie.';
+    btn.disabled = false;
+  }
+}
+// le nom et le pseudo sont recopiés dans chaque critique : on les met à jour après un changement
+async function propagateAuthor() {
+  const { F, db } = FB;
+  const mine = [...(ME.reviews || new Map()).values()];
+  for (let i = 0; i < mine.length; i += 400) {
+    const b = F.writeBatch(db);
+    for (const x of mine.slice(i, i + 400)) b.update(F.doc(db, 'reviews', x.id), { h: ME.profile.h, n: ME.profile.n, ph: ME.profile.ph || '', up: F.serverTimestamp() });
+    await b.commit();
+  }
+  for (const x of mine) { x.h = ME.profile.h; x.n = ME.profile.n; }
+  REV.clear(); WEEKREV.clear();
+}
+async function deleteAccount(btn) {
+  if (btn.dataset.confirm !== '1') {
+    btn.dataset.confirm = '1';
+    btn.textContent = 'Confirmer : tout supprimer définitivement';
+    return;
+  }
+  btn.disabled = true;
+  try {
+    const { A, F, db, auth } = FB;
+    const u = auth.currentUser;
+    const mine = [...(ME.reviews || new Map()).values()];
+    for (let i = 0; i < mine.length; i += 400) {
+      const b = F.writeBatch(db);
+      for (const x of mine.slice(i, i + 400)) b.delete(F.doc(db, 'reviews', x.id));
+      await b.commit();
+    }
+    const b = F.writeBatch(db);
+    b.delete(F.doc(db, 'users', u.uid));
+    if (ME.profile) b.delete(F.doc(db, 'handles', ME.profile.h));
+    await b.commit();
+    try { await A.deleteUser(u); }
+    catch (e) {
+      if (e && e.code === 'auth/requires-recent-login') { await A.reauthenticateWithPopup(u, new A.GoogleAuthProvider()); await A.deleteUser(u); }
+      else await A.signOut(auth);
+    }
+    REV.clear(); WEEKREV.clear(); PROFILES.clear();
+    closeModal();
+    toast('Ton compte et tes notes ont été supprimés');
+    if (S.view === 'profil') render();
+  } catch (e) {
+    btn.disabled = false;
+    toast('Suppression impossible pour le moment, réessaie');
+  }
+}
+
+/* ---------- note et critique dans la fiche ---------- */
+function windowOf(r) {
+  const t = today(), ws = weekStartOf(r.date), we = addDays(ws, 6);
+  return { ws, we, from: r.date > ws ? r.date : ws, state: r.date > t ? 'soon' : t <= we ? 'open' : 'closed' };
+}
+function summaryHtml(list, a, state) {
+  if (!list) return '<div class="rb-sum"><div class="sk" style="height:64px;width:100%"></div></div>';
+  if (!a) return `<p class="rb-empty">${state === 'open' ? 'Pas encore de note. Sois le premier à donner la tienne.' : state === 'soon' ? 'Pas encore sortie.' : 'Personne n’a noté cette sortie pendant sa semaine.'}</p>`;
+  const max = Math.max(...a.dist, 1);
+  return `<div class="rb-sum">
+    <div class="rb-avg"><b>${fmtAvg(a.avg)}</b>${starsHtml(a.avg * 20, `${fmtAvg(a.avg)} sur 5`)}<span>${a.n} ${plural(a.n, 'note', 'notes')}${a.texts ? ` · ${a.texts} ${plural(a.texts, 'critique', 'critiques')}` : ''}</span></div>
+    <div class="hist" role="img" aria-label="Répartition des notes">${a.dist.map((v, i) => `<span style="--h:${Math.round((v / max) * 100)}%" title="${fmtNote(i + 1)} : ${v} ${plural(v, 'note', 'notes')}"></span>`).join('')}</div>
+  </div>`;
+}
+function meHtml(r, w, mine) {
+  if (w.state === 'soon') return `<p class="rb-note">La note ouvrira le ${esc(fmtDay(r.date))}, jour de sa sortie, jusqu’au ${esc(fmtDay(w.we))}.</p>`;
+  if (w.state === 'closed') {
+    return `<p class="rb-note">La note était ouverte la semaine de sa sortie, du ${esc(fmtDay(w.from))} au ${esc(fmtDay(w.we))}.</p>
+      ${mine ? `<p class="rb-mine">Ta note ${noteStars(mine.r, 'sm')}</p>` : ''}`;
+  }
+  if (!ME.ready) return '<div class="sk" style="height:46px"></div>';
+  if (!ME.user) return `<div class="rb-cta"><p>Note cette sortie et écris ta critique, jusqu’au ${esc(fmtDay(w.we))}.</p><button class="btn solid" type="button" data-act="signin">Se connecter pour noter</button></div>`;
+  if (!ME.profile) return `<div class="rb-cta"><p>Crée ton profil pour noter cette sortie.</p><button class="btn solid" type="button" data-act="onboard">Créer mon profil</button></div>`;
+  const d = DRAFT.get(r.key) || { r: mine ? mine.r : 0, tx: mine ? mine.tx || '' : '' };
+  return `<div class="rb-form">
+    <div class="rate-row">
+      <div class="rate-in" id="rate-in" role="slider" tabindex="0" aria-label="Ta note sur 5" aria-valuemin="0" aria-valuemax="5" aria-valuenow="${d.r / 2}" aria-valuetext="${d.r ? `${fmtNote(d.r)} sur 5` : 'pas de note'}" data-k="${esc(r.key)}" data-v="${d.r}" style="--v:${d.r * 10}%"><span aria-hidden="true">★★★★★</span><span class="on" aria-hidden="true">★★★★★</span></div>
+      <span class="rate-val" id="rate-val">${d.r ? fmtNote(d.r) : mine ? '' : 'Ta note'}</span>
+    </div>
+    <textarea id="rv-text" data-k="${esc(r.key)}" maxlength="3000" rows="4" placeholder="Ta critique (facultatif) : ce qui t’a marqué, les meilleurs morceaux…">${esc(d.tx)}</textarea>
+    <div class="rb-actions">
+      <button class="btn solid" type="button" data-act="rv-save" data-k="${esc(r.key)}">${mine ? 'Mettre à jour' : 'Publier'}</button>
+      ${mine ? `<button class="btn" type="button" data-act="rv-del" data-k="${esc(r.key)}">${d.del ? 'Confirmer la suppression' : 'Supprimer'}</button>` : ''}
+      <span class="rb-hint">Ouvert jusqu’au ${esc(fmtDay(w.we))}</span>
+    </div>
+  </div>`;
+}
+function reviewHtml(x, withRelease) {
+  const own = !withRelease && ME.user && x.uid === ME.user.uid;
+  const long = (x.tx || '').length > 520;
+  return `<article class="rv${own ? ' own' : ''}">
+    ${withRelease ? `<button class="rv-rel" type="button" data-rkey="${esc(x.k)}"><span class="cover">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : `<span class="ph" aria-hidden="true">${esc(initial(x.t))}</span>`}</span><span><b>${esc(x.t)}</b><span>${esc(x.a)}</span></span></button>`
+      : `<a class="rv-who" href="#u/${esc(x.h || '')}">${avatarHtml(x, 'sm')}<b>${esc(x.n || '?')}</b><span>@${esc(x.h || '')}</span>${own ? '<em>toi</em>' : ''}</a>`}
+    <div class="rv-meta">${noteStars(x.r, 'sm')}<span>${esc(timeAgo(tsMs(x.at)))}</span></div>
+    ${x.tx ? `<p class="rv-tx${long ? ' clamp' : ''}">${esc(x.tx)}</p>${long ? '<button class="rv-more" type="button" data-act="rv-more">Lire la suite</button>' : ''}` : ''}
+  </article>`;
+}
+function paintRatings(r) {
+  const el = $('#d-rate');
+  if (!el || el.dataset.k !== r.key) return;
+  const c = REV.get(r.key);
+  const list = c ? c.list : null;
+  const a = list ? aggregate(list).get(r.key) || null : null;
+  const w = windowOf(r);
+  const mine = ME.reviews ? ME.reviews.get(r.key) || null : null;
+  const texts = list ? list.filter(x => x.tx) : [];
+  const silent = list ? list.length - texts.length : 0;
+  el.innerHTML = `<h3 class="d-h3">Notes et critiques</h3>
+    ${summaryHtml(list, a, w.state)}
+    ${meHtml(r, w, mine)}
+    ${texts.length ? `<div class="rv-list">${texts.map(x => reviewHtml(x, false)).join('')}</div>` : ''}
+    ${silent && texts.length ? `<p class="rb-more">Et ${silent} ${plural(silent, 'note', 'notes')} sans critique.</p>` : ''}
+    ${c && c.err ? '<p class="rb-note">Les notes n’ont pas pu être chargées.</p>' : ''}`;
+  if (!c || Date.now() - c.at > 60e3) loadReviews(r);
+}
+function setRate(el, v, commit) {
+  v = Math.max(0, Math.min(10, v));
+  el.style.setProperty('--v', `${v * 10}%`);
+  el.setAttribute('aria-valuenow', String(v / 2));
+  el.setAttribute('aria-valuetext', v ? `${fmtNote(v)} sur 5` : 'pas de note');
+  const lab = $('#rate-val');
+  if (lab) lab.textContent = v ? fmtNote(v) : 'Ta note';
+  if (commit) {
+    el.dataset.v = String(v);
+    const k = el.dataset.k;
+    const d = DRAFT.get(k) || { r: 0, tx: ($('#rv-text') || {}).value || '' };
+    d.r = v; DRAFT.set(k, d);
+  }
+}
+const rateFromX = (el, x) => { const b = el.getBoundingClientRect(); return Math.max(1, Math.min(10, Math.ceil(((x - b.left) / b.width) * 10))); };
+let rateDrag = null;
+document.addEventListener('pointerdown', e => {
+  const el = e.target.closest('#rate-in');
+  if (!el) return;
+  rateDrag = el;
+  el.setPointerCapture(e.pointerId);
+  setRate(el, rateFromX(el, e.clientX), false);
+});
+document.addEventListener('pointermove', e => {
+  const el = rateDrag || (e.pointerType === 'mouse' && e.target.closest('#rate-in'));
+  if (el) setRate(el, rateFromX(el, e.clientX), false);
+});
+document.addEventListener('pointerup', e => {
+  if (!rateDrag) return;
+  const el = rateDrag;
+  rateDrag = null;
+  setRate(el, rateFromX(el, e.clientX), true);
+});
+document.addEventListener('pointerout', e => {
+  const el = e.target.closest && e.target.closest('#rate-in');
+  if (el && !rateDrag && !el.contains(e.relatedTarget)) setRate(el, Number(el.dataset.v || 0), false);
+});
+document.addEventListener('keydown', e => {
+  const el = e.target.closest && e.target.closest('#rate-in');
+  if (!el) return;
+  const v = Number(el.dataset.v || 0);
+  const next = { ArrowRight: v + 1, ArrowUp: v + 1, ArrowLeft: v - 1, ArrowDown: v - 1, Home: 1, End: 10 }[e.key];
+  if (next === undefined) return;
+  e.preventDefault();
+  setRate(el, Math.max(1, Math.min(10, next)), true);
+});
+document.addEventListener('input', e => {
+  if (e.target.id !== 'rv-text') return;
+  const k = e.target.dataset.k;
+  const el = $('#rate-in');
+  const d = DRAFT.get(k) || { r: el ? Number(el.dataset.v || 0) : 0, tx: '' };
+  d.tx = e.target.value; DRAFT.set(k, d);
+});
+async function saveReview(k) {
+  const r = detailRelease();
+  if (!r || r.key !== k || !ME.profile) return;
+  const el = $('#rate-in');
+  const v = el ? Number(el.dataset.v || 0) : 0;
+  if (!v) { toast('Choisis d’abord une note, de ½ à 5 étoiles'); return; }
+  const tx = ($('#rv-text') || {}).value || '';
+  const btn = $('[data-act="rv-save"]');
+  if (btn) btn.disabled = true;
+  const { F, db, auth } = FB;
+  const u = auth.currentUser;
+  const mine = ME.reviews && ME.reviews.get(k);
+  const data = {
+    k, uid: u.uid, r: v, w: weekStartOf(r.date), d: r.date, t: r.title.slice(0, 300), a: r.artist.slice(0, 300),
+    img: (coverUrl(r, 500) || '').slice(0, 600), rt: r.rt, c: r.cat, h: ME.profile.h, n: ME.profile.n, ph: (ME.profile.ph || '').slice(0, 600),
+    at: mine && mine.at ? mine.at : F.serverTimestamp(), up: F.serverTimestamp(),
+  };
+  if (tx.trim()) data.tx = tx.trim().slice(0, 3000);
+  try {
+    await F.setDoc(F.doc(db, 'reviews', `${k}__${u.uid}`), data);
+    const now = { toMillis: () => Date.now() };
+    const saved = { ...data, id: `${k}__${u.uid}`, at: mine && mine.at ? mine.at : now, up: now };
+    ME.reviews = ME.reviews || new Map();
+    ME.reviews.set(k, saved);
+    DRAFT.delete(k);
+    REV.delete(k); WEEKREV.delete(data.w); PROFILES.clear();
+    toast(mine ? 'Note mise à jour' : 'Note publiée');
+    paintRatings(r);
+    if (S.view === 'semaine') render();
+  } catch (e) {
+    if (btn) btn.disabled = false;
+    toast(e && e.code === 'permission-denied' ? 'La note de cette sortie est fermée' : 'Publication impossible pour le moment, réessaie');
+  }
+}
+async function deleteReview(k) {
+  const r = detailRelease();
+  const d = DRAFT.get(k) || { r: 0, tx: '' };
+  if (!d.del) { d.del = true; DRAFT.set(k, d); if (r) paintRatings(r); return; }
+  try {
+    const { F, db, auth } = FB;
+    const mine = ME.reviews && ME.reviews.get(k);
+    await F.deleteDoc(F.doc(db, 'reviews', `${k}__${auth.currentUser.uid}`));
+    if (ME.reviews) ME.reviews.delete(k);
+    DRAFT.delete(k);
+    REV.delete(k); if (mine) WEEKREV.delete(mine.w); PROFILES.clear();
+    toast('Note supprimée');
+    if (r) paintRatings(r);
+    if (S.view === 'semaine') render();
+  } catch (e) { toast('Suppression impossible pour le moment'); }
+}
+
+/* ---------- classement et cartes de la semaine ---------- */
+function rtChip(r) {
+  const a = RATEABLE.has(r.rt) ? ratingOf(r) : null;
+  return a ? `<span class="rt" title="${a.n} ${plural(a.n, 'note', 'notes')}">★ ${fmtAvg(a.avg)}</span>` : '';
+}
+function topRatedHtml(list) {
+  const rated = list.filter(r => RATEABLE.has(r.rt)).map(r => ({ r, a: ratingOf(r) })).filter(x => x.a)
+    .sort((x, y) => bayes(y.a) - bayes(x.a) || y.a.n - x.a.n).slice(0, 5);
+  if (!rated.length) return '';
+  return section('Les mieux notés', rated.length, `<ol class="toprated">${rated.map(({ r, a }, i) => {
+    INDEX.set(r.key, r);
+    return `<li><button class="tr" type="button" data-key="${esc(r.key)}"><span class="tr-n">${i + 1}</span>
+      <span class="cover">${coverHtml(r, 120)}</span>
+      <span class="tr-t"><b>${esc(r.title)}</b><span>${esc(r.artist)}</span></span>
+      <span class="tr-s"><b>${fmtAvg(a.avg)}</b>${starsHtml(a.avg * 20, `${fmtAvg(a.avg)} sur 5`, 'sm')}<span>${a.n} ${plural(a.n, 'note', 'notes')}</span></span></button></li>`;
+  }).join('')}</ol>`);
+}
+function rateCtaHtml() {
+  if (!FB_CONFIG || !ME.ready || (ME.user && ME.profile)) return '';
+  return `<div class="cta"><p><b>Note les sorties de la semaine.</b> Les albums et les EP se notent pendant leur semaine de sortie, du vendredi au jeudi.</p>
+    <button class="btn solid" type="button" data-act="${ME.user ? 'onboard' : 'signin'}">${ME.user ? 'Créer mon profil' : 'Se connecter avec Google'}</button></div>`;
+}
+
+/* ---------- profils ---------- */
+async function loadProfile(handle) {
+  const c = PROFILES.get(handle);
+  if (c && Date.now() - c.at < 60e3) return c;
+  const h = await getDocData('handles', handle);
+  let e;
+  if (!h) e = { at: Date.now(), missing: true };
+  else {
+    const [user, reviews] = await Promise.all([getDocData('users', h.uid), queryReviews('uid', h.uid)]);
+    e = user ? { at: Date.now(), uid: h.uid, user, reviews } : { at: Date.now(), missing: true };
+  }
+  PROFILES.set(handle, e);
+  return e;
+}
+function sinceLabel(ts) {
+  const ms = tsMs(ts);
+  if (!ms) return '';
+  const d = new Date(ms);
+  return `${MON[d.getMonth()]} ${d.getFullYear()}`;
+}
+function storedRelease(x) {
+  return {
+    key: x.k, title: x.t || '', artist: x.a || '', feats: [], date: isYmd(x.d) ? x.d : today(), rt: TYPE_LABEL[x.rt] ? x.rt : 'album', cat: CATS[x.c] ? x.c : 'rfr',
+    md5: '', cover: x.img || '', n: 0, dur: 0, label: '', genre: '', ex: false, pop: 0, src: [], dz: Number((String(x.k).match(/^dz(\d+)$/) || [])[1] || 0),
+    am: '', mb: '', article: '', outlet: '',
+  };
+}
+function openStored(key, from) {
+  if (DATA.byKey.has(key)) { openDetail(key); return; }
+  const x = from.find(y => y && y.k === key);
+  if (!x) return;
+  EXTRA.set(key, storedRelease(x));
+  openDetail(key);
+}
+function distHtml(reviews) {
+  const dist = new Array(10).fill(0);
+  for (const x of reviews) dist[x.r - 1]++;
+  const max = Math.max(...dist, 1);
+  return `<div class="dist"><span class="dist-l">½</span><div class="hist">${dist.map((v, i) => `<span style="--h:${Math.round((v / max) * 100)}%" title="${fmtNote(i + 1)} : ${v}"></span>`).join('')}</div><span class="dist-l">5</span></div>`;
+}
+function showcaseHtml(u, own) {
+  const sc = (u.sc || []).slice(0, 4);
+  const slots = [];
+  for (let i = 0; i < 4; i++) {
+    const it = sc[i];
+    if (it) {
+      slots.push(`<div class="vit-item"><button class="card" type="button" data-rkey="${esc(it.k)}" data-from="sc">
+        <span class="cover">${it.img ? `<img src="${esc(it.img)}" alt="" loading="lazy">` : `<span class="ph" aria-hidden="true">${esc(initial(it.t))}</span>`}</span>
+        <span class="card-t"><span class="card-title">${esc(it.t)}</span><span class="card-artist">${esc(it.a)}</span></span></button>
+        ${own ? `<button class="vit-x icon-btn" type="button" data-act="vit-del" data-i="${i}" aria-label="Retirer ${esc(it.t)} de la vitrine">${I.x}</button>` : ''}</div>`);
+    } else if (own) slots.push('<button class="vit-add" type="button" data-act="vit-add"><span aria-hidden="true">+</span>Ajouter une sortie</button>');
+  }
+  if (!slots.length) return '<p class="muted">Pas encore de sorties dans sa vitrine.</p>';
+  return `<div class="vit">${slots.join('')}</div>`;
+}
+function viewProfile() {
+  $head.innerHTML = '';
+  if (!FB_CONFIG) { $content.innerHTML = '<div class="empty"><strong>Les profils arrivent bientôt.</strong></div>'; return; }
+  let data = null;
+  if (S.view === 'profil') {
+    if (!ME.ready) { $content.innerHTML = '<div class="empty"><strong>Connexion…</strong></div>'; return; }
+    if (!ME.user) {
+      $head.innerHTML = '<div class="head-main"><p class="kicker">Profil</p><h1 class="h1">Ton profil</h1><p class="sub">Connecte-toi avec Google pour noter les sorties de la semaine, écrire tes critiques et composer ta vitrine de sorties préférées.</p></div>';
+      $content.innerHTML = `<div class="empty"><strong>Tu n’es pas connecté.</strong>Ton profil rassemble tes notes, tes critiques et ta vitrine.<br><button class="btn google" type="button" data-act="google">${G_LOGO}Continuer avec Google</button></div>`;
+      return;
+    }
+    if (!ME.profile) { $content.innerHTML = `<div class="empty"><strong>Il te reste à choisir ton pseudo.</strong><br><button class="btn solid" type="button" data-act="onboard">Créer mon profil</button></div>`; return; }
+    data = { user: ME.profile, reviews: [...(ME.reviews || new Map()).values()].sort((a, b) => tsMs(b.up) - tsMs(a.up)), own: true };
+  } else {
+    const c = PROFILES.get(S.handle);
+    if (!c || Date.now() - c.at > 60e3) {
+      if (!c) $content.innerHTML = '<div class="empty"><strong>Chargement du profil…</strong></div>';
+      loadProfile(S.handle).then(() => { if (S.view === 'user') render(); }, () => { if (S.view === 'user') $content.innerHTML = '<div class="empty"><strong>Profil indisponible pour le moment.</strong></div>'; });
+      if (!c) return;
+    }
+    if (c.missing) { $content.innerHTML = `<div class="empty"><strong>Aucun profil @${esc(S.handle)}.</strong>Vérifie le pseudo, ou il a peut-être été changé.</div>`; return; }
+    data = { user: c.user, reviews: c.reviews, own: !!(ME.user && c.uid === ME.user.uid) };
+    if (data.own && ME.profile) data = { user: ME.profile, reviews: [...(ME.reviews || new Map()).values()].sort((a, b) => tsMs(b.up) - tsMs(a.up)), own: true };
+  }
+  const { user: u, reviews, own } = data;
+  PROFILE_VIEW = reviews;
+  PROFILE_SC = u.sc || [];
+  const texts = reviews.filter(x => x.tx);
+  const avg = reviews.length ? reviews.reduce((s, x) => s + x.r, 0) / reviews.length / 2 : 0;
+  const thisWeek = reviews.filter(x => x.w === weekStartOf(today())).length;
+  const since = sinceLabel(u.since);
+  $head.innerHTML = `<div class="prof">
+      ${avatarHtml(u, 'xl')}
+      <div class="prof-t"><p class="kicker">${own ? 'Mon profil' : 'Profil'}</p><h1 class="h1">${esc(u.n)}</h1>
+        <p class="prof-meta">@${esc(u.h)}${since ? ` · membre depuis ${esc(since)}` : ''}</p>
+        ${u.bio ? `<p class="sub prof-bio">${esc(u.bio)}</p>` : own ? '<p class="sub muted">Ajoute une bio pour présenter tes goûts.</p>' : ''}
+      </div>
+      <div class="actions">${own ? '<button class="btn" type="button" data-act="edit-profile">Modifier le profil</button><button class="btn" type="button" data-act="signout">Se déconnecter</button>' : ''}<button class="btn" type="button" data-act="copy-profile" data-h="${esc(u.h)}">${I.link}Copier le lien</button></div>
+    </div>
+    ${statsHtml([[reviews.length, plural(reviews.length, 'note', 'notes')], [texts.length, plural(texts.length, 'critique', 'critiques')], [reviews.length ? fmtAvg(avg) : '–', 'de moyenne'], [thisWeek, 'cette semaine']])}`;
+  let html = section(own ? 'Ma vitrine' : 'Vitrine', '', showcaseHtml(u, own));
+  if (reviews.length) {
+    html += section(own ? 'Mes notes' : 'Ses notes', reviews.length, `${distHtml(reviews)}<div class="grid sm">${reviews.map(x => `<button class="card" type="button" data-rkey="${esc(x.k)}" data-from="rv">
+      <span class="cover">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : `<span class="ph" aria-hidden="true">${esc(initial(x.t))}</span>`}</span>
+      <span class="card-t"><span class="card-title">${esc(x.t)}</span><span class="card-artist">${esc(x.a)}</span>${noteStars(x.r, 'sm')}</span></button>`).join('')}</div>`);
+  }
+  if (texts.length) html += section(own ? 'Mes critiques' : 'Ses critiques', texts.length, `<div class="rv-list wide">${texts.map(x => reviewHtml(x, true)).join('')}</div>`);
+  if (!reviews.length) html += `<div class="empty"><strong>${own ? 'Tu n’as encore rien noté.' : 'Aucune note pour l’instant.'}</strong>${own ? 'Les albums et les EP se notent pendant leur semaine de sortie : ouvre une fiche dans « Cette semaine ».<br><a class="btn" href="#semaine">Voir les sorties de la semaine</a>' : ''}</div>`;
+  $content.innerHTML = html;
+}
+let PROFILE_VIEW = [], PROFILE_SC = [];
+
+/* ---------- vitrine ---------- */
+function pickCandidates(q) {
+  const seen = new Set();
+  const out = [];
+  const push = x => { if (!x.k || seen.has(x.k)) return; seen.add(x.k); out.push(x); };
+  for (const x of [...(ME.reviews || new Map()).values()].sort((a, b) => b.r - a.r)) push({ k: x.k, t: x.t, a: x.a, img: x.img, d: x.d, rt: x.rt, c: x.c, mine: x.r });
+  const t = today();
+  for (const r of [...DATA.items].filter(r => r.date <= t).sort((a, b) => b.pop - a.pop)) push({ k: r.key, t: r.title, a: r.artist, img: coverUrl(r, 500), d: r.date, rt: r.rt, c: r.cat });
+  const nq = norm(q);
+  return out.filter(x => !nq || norm(`${x.t} ${x.a}`).includes(nq)).slice(0, 40);
+}
+function paintPick(q) {
+  const list = $('#pick-list');
+  if (!list) return;
+  const inSc = new Set(((ME.profile && ME.profile.sc) || []).map(x => x.k));
+  const items = pickCandidates(q);
+  list.innerHTML = items.length ? items.map(x => `<button class="pick" type="button" data-act="vit-pick" data-k="${esc(x.k)}" ${inSc.has(x.k) ? 'disabled' : ''}>
+      <span class="cover">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : `<span class="ph" aria-hidden="true">${esc(initial(x.t))}</span>`}</span>
+      <span class="pick-t"><b>${esc(x.t)}</b><span>${esc(x.a)}</span></span>
+      ${x.mine ? noteStars(x.mine, 'sm') : ''}${inSc.has(x.k) ? '<span class="pick-in">déjà dans ta vitrine</span>' : ''}</button>`).join('')
+    : '<p class="muted">Aucune sortie trouvée.</p>';
+}
+function openPicker() {
+  openModal('pick', `<h2 class="m-title" id="m-title">Ajouter à ta vitrine</h2>
+    <p class="m-sub">Choisis une sortie parmi celles que tu as notées ou les sorties récentes.</p>
+    <input class="m-search" id="pick-q" type="search" placeholder="Album, EP, single ou artiste" autocomplete="off">
+    <div class="pick-list" id="pick-list"></div>`);
+  paintPick('');
+}
+document.addEventListener('input', e => { if (e.target.id === 'pick-q') paintPick(e.target.value); });
+async function saveShowcase(sc) {
+  const { F, db, auth } = FB;
+  await F.updateDoc(F.doc(db, 'users', auth.currentUser.uid), { sc, up: F.serverTimestamp() });
+  ME.profile = { ...ME.profile, sc };
+  PROFILES.clear();
+  render();
+}
+async function pickShowcase(k) {
+  const x = pickCandidates('').find(y => y.k === k) || pickCandidates(k).find(y => y.k === k);
+  if (!x || !ME.profile) return;
+  const sc = [...(ME.profile.sc || [])].filter(y => y.k !== k).concat([{ k: x.k, t: x.t.slice(0, 300), a: x.a.slice(0, 300), img: (x.img || '').slice(0, 600), d: x.d || '', rt: x.rt || 'album', c: x.c || '' }]).slice(0, 4);
+  try { await saveShowcase(sc); closeModal(); toast('Ajouté à ta vitrine'); }
+  catch (e) { toast('Enregistrement impossible pour le moment'); }
+}
+async function removeShowcase(i) {
+  if (!ME.profile) return;
+  const sc = [...(ME.profile.sc || [])];
+  sc.splice(i, 1);
+  try { await saveShowcase(sc); toast('Retiré de ta vitrine'); }
+  catch (e) { toast('Enregistrement impossible pour le moment'); }
+}
+
+/* ---------- actions ---------- */
+document.addEventListener('submit', e => {
+  if (e.target.id === 'f-profile') { e.preventDefault(); submitProfile(e.target); }
+});
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act],[data-rkey],#acct');
+  if (!el) return;
+  if (el.id === 'acct') {
+    if (ME.user) location.hash = '#profil'; else if (ME.ready) openSignIn(); else fb().catch(() => toast('Connexion indisponible pour le moment'));
+    return;
+  }
+  if (el.dataset.rkey) { openStored(el.dataset.rkey, el.dataset.from === 'sc' ? PROFILE_SC : PROFILE_VIEW); return; }
+  const act = el.dataset.act, k = el.dataset.k;
+  if (act === 'close-modal') closeModal();
+  else if (act === 'signin') openSignIn();
+  else if (act === 'google') signIn();
+  else if (act === 'onboard') { if (!ME.user) openSignIn(); else openOnboarding(); }
+  else if (act === 'signout') signOut();
+  else if (act === 'edit-profile') openEditProfile();
+  else if (act === 'del-account') deleteAccount(el);
+  else if (act === 'rv-save') saveReview(k);
+  else if (act === 'rv-del') deleteReview(k);
+  else if (act === 'rv-more') { const p = el.previousElementSibling; if (p) p.classList.remove('clamp'); el.remove(); }
+  else if (act === 'vit-add') openPicker();
+  else if (act === 'vit-pick') pickShowcase(k);
+  else if (act === 'vit-del') removeShowcase(Number(el.dataset.i));
+  else if (act === 'copy-profile') {
+    const url = `${location.origin}${location.pathname}#u/${el.dataset.h}`;
+    (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => toast('Lien du profil copié'), () => toast(url));
+  }
+});
 
 /* =====================================================================
    Navigation
@@ -1060,7 +1893,7 @@ document.addEventListener('click', e => {
 let qTimer = null;
 $('#q').addEventListener('input', e => { clearTimeout(qTimer); qTimer = setTimeout(() => { S.q = e.target.value; render(); }, 140); });
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && S.detail) { closeDetail(); return; }
+  if (e.key === 'Escape' && S.detail && !$('#modal').open) { closeDetail(); return; }
   if (S.detail || S.view !== 'semaine' || e.altKey || e.ctrlKey || e.metaKey) return;
   if (/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement && document.activeElement.tagName)) return;
   if (e.key === 'ArrowLeft' && S.week > -MAX_BACK) { S.week--; render(); }
@@ -1075,9 +1908,11 @@ document.addEventListener('error', e => {
   }
 }, true);
 function route() {
-  const v = location.hash === '#semaine' ? 'semaine' : location.hash === '#concerts' ? 'concerts' : 'a-venir';
+  const hm = location.hash.match(/^#u\/([a-z0-9_]{3,20})$/);
+  const v = location.hash === '#semaine' ? 'semaine' : location.hash === '#concerts' ? 'concerts' : location.hash === '#profil' ? 'profil' : hm ? 'user' : 'a-venir';
+  S.handle = hm ? hm[1] : '';
   if (v === 'concerts') loadConcerts(false);
-  const changed = v !== S.view;
+  const changed = v !== S.view || v === 'user';
   S.view = v;
   if (S.detail) closeDetail();
   render();
@@ -1102,6 +1937,8 @@ document.addEventListener('visibilitychange', () => {
 route();
 loadData(true);
 loadConcerts(false);
+paintAcct();
+if (FB_CONFIG) setTimeout(() => fb().catch(() => {}), 200);
 setInterval(() => { lastCheck = Date.now(); loadData(false); }, POLL_MS);
 setInterval(paintStatus, 30e3);
 setInterval(() => { if (!S.detail) render(); }, 15 * 60e3); // changement de jour, libellés relatifs

@@ -1,0 +1,81 @@
+rules_version = '2';
+// Règles de la base Firestore du site À l'affût (notes, critiques, profils).
+// Tout est public en lecture ; on n'écrit que ses propres données.
+// Une sortie ne se note que pendant sa semaine de sortie (du vendredi au jeudi).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function dateOf(s) { return timestamp.date(int(s[0:4]), int(s[5:7]), int(s[8:10])); }
+    function weekStartOf(s) { return dateOf(s) - duration.value((dateOf(s).dayOfWeek() + 2) % 7, 'd'); }
+    function inReleaseWeek(d) {
+      return request.time >= dateOf(d) - duration.value(2, 'h')
+        && request.time < weekStartOf(d) + duration.value(7, 'd') + duration.value(2, 'h');
+    }
+    function isDate(s) { return s is string && s.matches('^20[0-9]{2}-[0-1][0-9]-[0-3][0-9]$'); }
+    function okStr(m, k, max) { return !(k in m) || (m[k] is string && m[k].size() <= max); }
+
+    function validReview(r) {
+      return r.keys().hasOnly(['k', 'uid', 'r', 'tx', 'w', 'd', 't', 'a', 'img', 'rt', 'c', 'h', 'n', 'ph', 'at', 'up'])
+        && r.keys().hasAll(['k', 'uid', 'r', 'w', 'd', 't', 'a', 'at', 'up'])
+        && r.uid == request.auth.uid
+        && r.k is string && r.k.matches('^[A-Za-z0-9_-]{2,80}$')
+        && r.r is int && r.r >= 1 && r.r <= 10
+        && isDate(r.d) && isDate(r.w) && dateOf(r.w) == weekStartOf(r.d)
+        && r.t is string && r.t.size() <= 300 && r.a is string && r.a.size() <= 300
+        && okStr(r, 'tx', 3000) && okStr(r, 'img', 600) && okStr(r, 'rt', 10) && okStr(r, 'c', 10)
+        && okStr(r, 'h', 20) && okStr(r, 'n', 50) && okStr(r, 'ph', 600)
+        && r.up == request.time;
+    }
+
+    match /reviews/{id} {
+      allow read: if true;
+      allow create: if signedIn()
+        && id == request.resource.data.k + '__' + request.auth.uid
+        && validReview(request.resource.data)
+        && request.resource.data.at == request.time
+        && inReleaseWeek(request.resource.data.d);
+      allow update: if signedIn()
+        && resource.data.uid == request.auth.uid
+        && validReview(request.resource.data)
+        && request.resource.data.k == resource.data.k
+        && request.resource.data.at == resource.data.at
+        && ((request.resource.data.d == resource.data.d && inReleaseWeek(resource.data.d))
+          || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['h', 'n', 'ph', 'up']));
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    function validUser(u) {
+      return u.keys().hasOnly(['h', 'n', 'ph', 'bio', 'sc', 'since', 'up'])
+        && u.keys().hasAll(['h', 'n', 'since', 'up'])
+        && u.h is string && u.h.matches('^[a-z0-9_]{3,20}$')
+        && getAfter(/databases/$(database)/documents/handles/$(u.h)).data.uid == request.auth.uid
+        && u.n is string && u.n.size() >= 1 && u.n.size() <= 50
+        && okStr(u, 'ph', 600) && okStr(u, 'bio', 300)
+        && (!('sc' in u) || (u.sc is list && u.sc.size() <= 4))
+        && u.up == request.time;
+    }
+
+    match /users/{uid} {
+      allow read: if true;
+      allow create: if signedIn() && request.auth.uid == uid
+        && validUser(request.resource.data) && request.resource.data.since == request.time;
+      allow update: if signedIn() && request.auth.uid == uid
+        && validUser(request.resource.data) && request.resource.data.since == resource.data.since;
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
+    match /handles/{h} {
+      allow read: if true;
+      allow create: if signedIn()
+        && h.matches('^[a-z0-9_]{3,20}$')
+        && request.resource.data.keys().hasOnly(['uid'])
+        && request.resource.data.uid == request.auth.uid
+        && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.h == h;
+      allow delete: if signedIn()
+        && resource.data.uid == request.auth.uid
+        && (!existsAfter(/databases/$(database)/documents/users/$(request.auth.uid))
+          || getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.h != h);
+    }
+  }
+}
