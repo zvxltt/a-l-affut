@@ -1213,7 +1213,7 @@ async function songkickEvents() {
         out.push({
           id: `sk${(String(e.url || '').match(/concerts\/(\d+)/) || [])[1] || norm(e.name)}`,
           d: String(e.startDate || '').slice(0, 10), h: (String(e.startDate || '').match(/T(\d\d:\d\d)/) || [])[1] || '',
-          name: String(e.name || '').replace(/\s+@\s+.*$/, ''), performers: (Array.isArray(e.performer) ? e.performer : [e.performer]).filter(Boolean).map(x => x.name),
+          name: e['@type'] === 'Festival' ? String(e.name || '').replace(/\s+@\s+.*$/, '') : '', performers: (Array.isArray(e.performer) ? e.performer : [e.performer]).filter(Boolean).map(x => x.name),
           venue: loc.name || '', city: addr.addressLocality || '', cc: SK_COUNTRY[spacedNorm(addr.addressCountry)] || cc,
           url: String(e.url || '').replace(/\?.*$/, ''), img: e.image || '', price: 0,
           status: /Cancelled/i.test(status) ? 'cancelled' : /Postponed/i.test(status) ? 'postponed' : /Rescheduled/i.test(status) ? 'rescheduled' : '',
