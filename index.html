@@ -96,7 +96,8 @@ svg { flex: none; }
 .logo-g { stroke: var(--bg); fill: none; }
 .logo-d { fill: var(--bg); }
 .logo-w { fill: var(--ink); }
-.tabs { display: flex; gap: 2px; }
+.tabs { display: flex; gap: 2px; flex: 1; min-width: 0; }
+.tab-sub { margin-left: auto; }
 .tab {
   display: inline-flex; align-items: center; gap: 6px;
   font-weight: 600; font-size: 14px; padding: 7px 13px; border-radius: 999px;
@@ -106,8 +107,10 @@ svg { flex: none; }
 .tab:hover { color: var(--ink); background: var(--soft); }
 .tab[aria-current="page"] { color: var(--bg); background: var(--ink); }
 .tab .n { font: 600 11px var(--font-mono); opacity: .75; }
+.nb { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--ink); color: var(--bg); font: 700 10.5px/18px var(--font-mono); text-align: center; font-variant-numeric: tabular-nums; }
+.nb:empty { display: none; }
+.tab[aria-current="page"] .nb { background: var(--bg); color: var(--ink); }
 .tools { margin-left: auto; display: flex; align-items: center; gap: 4px; }
-.status { font: 500 12px var(--font-mono); color: var(--muted); white-space: nowrap; margin-right: 8px; font-variant-numeric: tabular-nums; }
 .icon-btn {
   width: 38px; height: 38px; display: inline-grid; place-items: center; border-radius: 999px;
   color: var(--ink); transition: background-color .15s;
@@ -370,12 +373,12 @@ body.d-open .drawer { transform: none; visibility: visible; pointer-events: auto
   /* téléphone : en-tête d'une ligne, sections dans la barre du bas, à portée de pouce */
   .top-in { gap: 12px; padding-top: 10px; padding-bottom: 10px; }
   .logo { height: 26px; }
-  .tabs, .top .acct, .status { display: none; }
+  .tabs, .top .acct { display: none; }
   body { padding-bottom: calc(62px + env(safe-area-inset-bottom)); }
   html { scroll-padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
   .bnav {
     position: fixed; z-index: 40; left: 0; right: 0; bottom: 0;
-    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
     padding: 5px max(6px, env(safe-area-inset-right)) calc(5px + env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left));
     background: color-mix(in srgb, var(--bg) 92%, transparent);
     -webkit-backdrop-filter: saturate(1.4) blur(14px); backdrop-filter: saturate(1.4) blur(14px);
@@ -383,11 +386,13 @@ body.d-open .drawer { transform: none; visibility: visible; pointer-events: auto
   }
   .bn {
     display: grid; justify-items: center; gap: 2px; padding: 4px 0 3px; border-radius: 12px;
-    color: var(--muted); text-decoration: none; font-size: 11px; font-weight: 650; letter-spacing: .01em;
+    color: var(--muted); text-decoration: none; font-size: 10.5px; font-weight: 650; letter-spacing: 0;
     -webkit-tap-highlight-color: transparent; transition: color .15s;
   }
   .bn > svg, .bn-i { box-sizing: content-box; width: 24px; height: 24px; padding: 3px 16px; border-radius: 999px; transition: background-color .2s; }
-  .bn-i { display: grid; place-items: center; }
+  .bn-i { display: grid; place-items: center; position: relative; }
+  .bn > span:last-child { white-space: nowrap; }   /* « Abonnements » peut déborder un peu de sa colonne : ses voisins sont courts */
+  .bn .nb { position: absolute; top: -2px; left: calc(50% + 6px); min-width: 17px; height: 17px; padding: 0 4px; font-size: 10px; line-height: 17px; box-shadow: 0 0 0 2px var(--bg); }
   .bn-i svg { width: 24px; height: 24px; }
   .bn[aria-current="page"] { color: var(--ink); }
   .bn[aria-current="page"] > svg, .bn[aria-current="page"] .bn-i { background: var(--soft); }
@@ -610,7 +615,8 @@ html[data-text="tres-grand"] body { zoom: 1.22; }
 html[data-motion="reduce"] *, html[data-motion="reduce"] *::before, html[data-motion="reduce"] *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 html.nozoom, html.nozoom body { touch-action: pan-x pan-y; }
 #gear.on { background: var(--soft); }
-body[data-view="parametres"] .ftool, body[data-view="parametres"] .filters { display: none; }
+body[data-view="parametres"] .ftool, body[data-view="parametres"] .filters,
+body[data-view="abonnements"] .ftool, body[data-view="abonnements"] .filters { display: none; }
 .set-sec { margin-top: 34px; max-width: 760px; }
 .set-h { font: 600 11px var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 4px; }
 .set-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 24px; padding: 16px 0; border-bottom: 1px solid var(--line); }
@@ -630,24 +636,99 @@ body[data-view="parametres"] .ftool, body[data-view="parametres"] .filters { dis
 .m-split { justify-content: space-between; align-items: center; }
 .m-switch { margin: 16px 0 0; font-size: 13.5px; color: var(--ink-2); }
 .btn-link { font-size: 13.5px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; color: var(--ink); }
-/* ---------- amis ---------- */
-.people { display: grid; gap: 2px; margin-top: 8px; }
-.person { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); }
-.person-l { display: flex; align-items: center; gap: 10px; min-width: 0; text-decoration: none; }
+/* ---------- abonnements ---------- */
+.av.md { width: 40px; height: 40px; font-size: 16px; }
+.people { display: grid; margin-top: 8px; }
+.person { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.person-l { display: flex; align-items: center; gap: 12px; min-width: 0; text-decoration: none; color: inherit; }
 .person-l > span { display: grid; min-width: 0; }
 .person-l b { font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.person-l span span { color: var(--muted); font-size: 13px; }
-.person-l:hover b { text-decoration: underline; }
-.fr-add { max-width: 520px; margin-bottom: 18px; }
-.fr-add .search { margin: 0; max-width: none; flex: none; }
+.person-l span span { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.person-l small { font: 600 10.5px var(--font-mono); text-transform: uppercase; letter-spacing: .05em; color: var(--ink-2); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.person-l:hover b { text-decoration: underline; text-underline-offset: 2px; }
+.people.wide { max-width: 680px; margin-top: 18px; border-top: 1px solid var(--line); }
+.people-empty { padding: 18px 0; margin: 0; }
+.btn.fol { min-width: 118px; }
+.btn.fol.sm { min-width: 108px; flex: none; }
+.btn.fol .fol-b { display: none; }
+@media (hover: hover) and (pointer: fine) {
+  .btn.fol.on:hover .fol-a { display: none; }
+  .btn.fol.on:hover .fol-b { display: inline; }
+}
+.prof-fol, .feed-stats { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 22px; margin: 14px 0 0; font-size: 14px; }
+.prof-fol { margin-top: -2px; }
+.prof-fol a, .feed-stats a { color: var(--ink-2); text-decoration: none; }
+.prof-fol b, .feed-stats b { color: var(--ink); font: 600 15px var(--font-mono); font-variant-numeric: tabular-nums; margin-right: 2px; }
+.prof-fol a:hover, .feed-stats a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.prof-tag { font: 600 10.5px var(--font-mono); text-transform: uppercase; letter-spacing: .06em; padding: 3px 8px; border-radius: 6px; background: var(--soft); color: var(--ink-2); }
+.back { display: inline-flex; align-items: center; gap: 2px; margin-left: -6px; padding: 4px 10px 4px 2px; border-radius: 999px; color: var(--ink-2); font-weight: 600; font-size: 14px; text-decoration: none; }
+.back:hover { color: var(--ink); background: var(--soft); }
+.back svg { width: 18px; height: 18px; }
+.seg a { display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--ink-2); white-space: nowrap; text-decoration: none; transition: background-color .15s, color .15s, box-shadow .15s; }
+.seg a:hover { color: var(--ink); }
+.seg a[aria-current="page"] { background: var(--bg); color: var(--ink); box-shadow: 0 0 0 1px var(--line), 0 1px 3px rgba(0, 0, 0, .07); }
+.people-tabs { margin-top: 30px; }
+body[data-view="abonnements"] main { padding-bottom: 8px; }
+.feed-wrap {
+  display: grid; grid-template-columns: minmax(0, 1fr) 300px; grid-template-rows: auto 1fr;
+  grid-template-areas: "main find" "main sug"; column-gap: 56px; align-items: start; margin-top: 32px;
+}
+.feed-main { grid-area: main; min-width: 0; max-width: 680px; }
+.feed-main > .empty:first-child { margin-top: 0; }
+.feed-find { grid-area: find; min-width: 0; }
+.feed-sug { grid-area: sug; min-width: 0; margin-top: 34px; }
+.side-h { font: 600 11px var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 10px; }
+.feed-find .search { margin: 0; max-width: none; min-width: 0; flex: none; }
+.feed-find .people > .muted { margin: 10px 0 0; font-size: 14px; }
+.feed-sk { display: grid; gap: 14px; }
+.feed-sk .sk { height: 156px; border-radius: 14px; }
+.posts { margin-top: 14px; border-top: 1px solid var(--line); }
+.post { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 14px; padding: 18px 0 20px; border-bottom: 1px solid var(--line); }
+.post-av { text-decoration: none; }
+.post-b { display: grid; gap: 10px; min-width: 0; }
+.post-h { display: flex; align-items: baseline; gap: 6px; min-width: 0; margin: 0; font-size: 13px; color: var(--muted); }
+.post-h a { color: var(--ink); text-decoration: none; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 0 1 auto; }
+.post-h a:hover b { text-decoration: underline; text-underline-offset: 2px; }
+.post-h b { font-size: 15px; }
+.post-h > span:first-of-type { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 0 1 auto; }
+.post-h time { flex: none; font-variant-numeric: tabular-nums; }
+.post-a { margin: -8px 0 0; font-size: 13.5px; color: var(--ink-2); }
+.post-rel {
+  display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; padding: 10px; border-radius: 14px;
+  border: 1px solid var(--line); background: var(--bg); color: inherit; transition: border-color .15s;
+}
+@media (hover: hover) { .post-rel:hover { border-color: var(--ink); } }
+.post-rel:active { border-color: var(--ink); }
+.post-rel .cover { width: 64px; flex: none; border-radius: 8px; }
+.post-rt { display: grid; gap: 3px; min-width: 0; }
+.post-rt b { font-size: 15.5px; line-height: 1.25; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
+.post-rt > span:not(.post-n) { color: var(--ink-2); font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.post-n { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 3px; }
+.post-n i { font: 600 12.5px var(--font-mono); font-style: normal; font-variant-numeric: tabular-nums; }
+.post-n em { font: 500 11.5px var(--font-mono); font-style: normal; color: var(--muted); }
+.post-n .post-best { color: var(--ink-2); font: 500 13px var(--font-body); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.post-n .post-best b { font: 600 12.5px var(--font-mono); color: var(--ink); }
+.post-tx { margin: 0; white-space: pre-line; overflow-wrap: anywhere; line-height: 1.55; font-size: 15px; }
+.post-tx.clamp { display: -webkit-box; -webkit-line-clamp: 7; -webkit-box-orient: vertical; overflow: hidden; }
+.feed-more { text-align: center; margin-top: 22px; }
+@media (max-width: 860px) {
+  .feed-wrap { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-template-areas: "find" "main" "sug"; margin-top: 22px; }
+  .feed-main { max-width: none; margin-top: 26px; }
+  .feed-sug { margin-top: 40px; }
+}
+@media (max-width: 520px) {
+  .post { grid-template-columns: 34px minmax(0, 1fr); gap: 11px; }
+  .post .av.md { width: 34px; height: 34px; font-size: 14px; }
+  .post-rel .cover { width: 56px; }
+  .person .btn.fol.sm { min-width: 0; padding: 0 12px; }
+}
 .fr-notes { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
 .fr-l { font: 600 11px var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-right: 4px; }
 .fr-n { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 3px; border-radius: 999px; background: var(--soft); text-decoration: none; font-size: 13px; }
 .fr-n span { font: 600 12px var(--font-mono); }
 .rv-who em.ami { background: var(--soft); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
-.rv.feed .rv-rel { margin-top: 2px; }
 
-.status .live { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 7px; vertical-align: 1px; opacity: .7; }
+.set-st .live { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 7px; vertical-align: 1px; opacity: .7; }
 .month { margin: 38px 0 0; font: 600 12px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .month + .days { margin-top: 10px; }
 .d-msg a { color: var(--ink); }
@@ -662,9 +743,9 @@ body[data-view="parametres"] .ftool, body[data-view="parametres"] .filters { dis
       <a class="tab" href="#a-venir" data-view="a-venir">À venir <span class="n" id="up-n"></span></a>
       <a class="tab" href="#semaine" data-view="semaine">Cette semaine</a>
       <a class="tab" href="#concerts" data-view="concerts">Concerts <span class="n" id="co-n"></span></a>
+      <a class="tab tab-sub" href="#abonnements" data-view="abonnements">Abonnements <span class="nb" data-badge="abonnements"></span></a>
     </nav>
     <div class="tools">
-      <span class="status" id="status" aria-live="polite"></span>
       <button class="acct" id="acct" type="button" hidden></button>
       <a class="icon-btn" id="gear" href="#parametres" aria-label="Paramètres" title="Paramètres"></a>
     </div>
@@ -709,13 +790,14 @@ body[data-view="parametres"] .ftool, body[data-view="parametres"] .filters { dis
 
 <footer class="foot">
   <span id="foot-l">À l’affût · rap FR, rap US et musique française</span>
-  <span><span id="foot-st">Mis à jour automatiquement toutes les heures</span> · Deezer, Apple Music, MusicBrainz, Wikipédia, presse</span>
+  <span>Sources : Deezer, Apple Music, MusicBrainz, Wikipédia, presse</span>
 </footer>
 
 <nav class="bnav" aria-label="Sections">
   <a class="bn" href="#a-venir" data-view="a-venir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span>À venir</span></a>
   <a class="bn" href="#semaine" data-view="semaine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2.6"/></svg><span>Semaine</span></a>
   <a class="bn" href="#concerts" data-view="concerts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V6.8A1.8 1.8 0 0 1 5.8 5h12.4A1.8 1.8 0 0 1 20 6.8V9a3 3 0 0 0 0 6v2.2a1.8 1.8 0 0 1-1.8 1.8H5.8A1.8 1.8 0 0 1 4 17.2V15a3 3 0 0 0 0-6z"/><path d="M14.5 5.5v13" stroke-dasharray="1.6 2.2"/></svg><span>Concerts</span></a>
+  <a class="bn" href="#abonnements" data-view="abonnements"><span class="bn-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.6" r="3.5"/><path d="M2.8 19.6c.9-3.3 3.3-5.1 6.2-5.1s5.3 1.8 6.2 5.1"/><path d="M15.6 5.3a3.5 3.5 0 0 1 0 6.6"/><path d="M17.7 14.9c1.8.7 3 2.3 3.5 4.7"/></svg><span class="nb" data-badge="abonnements"></span></span><span>Abonnements</span></a>
   <a class="bn" href="#profil" data-view="profil" id="bn-me"><span class="bn-i" id="bn-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-3.6 4.1-5.5 7.5-5.5s6.3 1.9 7.5 5.5"/></svg></span><span>Profil</span></a>
 </nav>
 <div class="scrim" id="scrim"></div>
@@ -848,8 +930,9 @@ const S = {
   cat: CATS[prefs.cat] ? prefs.cat : 'all',
   type: TYPE_LABEL[prefs.type] ? prefs.type : 'all',
   cc: COUNTRY[prefs.cc] ? prefs.cc : 'all',
-  q: '', detail: null, handle: '',
+  q: '', detail: null, handle: '', sub: '',
 };
+if (!['a-venir', 'semaine', 'concerts', 'abonnements'].includes(SET.start)) SET.start = 'a-venir';
 
 function mapItem(x) {
   return {
@@ -924,12 +1007,11 @@ function persistSeen() {
 const $head = $('#head'), $content = $('#content'), $filters = $('#filters');
 let INDEX = new Map();
 
+const statusHtml = () => loadError && !DATA.items.length ? 'Connexion impossible'
+  : DATA.generatedAt ? `<span class="live" aria-hidden="true"></span>Mis à jour ${esc(ago(DATA.generatedAt))}` : 'Chargement…';
 function paintStatus() {
-  const st = $('#status');
-  if (loadError && !DATA.items.length) st.textContent = 'Connexion impossible';
-  else if (DATA.generatedAt) st.innerHTML = `<span class="live" aria-hidden="true"></span>Mis à jour ${esc(ago(DATA.generatedAt))}`;
-  if (DATA.generatedAt) $('#foot-st').textContent = `Mis à jour ${ago(DATA.generatedAt)}, vérifié toutes les heures`;
-  else st.textContent = 'Chargement…';
+  const st = $('#set-st');   // l’heure de mise à jour n’est affichée que dans les paramètres
+  if (st) st.innerHTML = statusHtml();
   const up = DATA.items.filter(x => x.date > today()).length;
   $('#up-n').textContent = up ? up : '';
   const co = CONCERTS.items.filter(x => x.date >= today()).length;
@@ -1043,7 +1125,7 @@ function render() {
   paintToggle();
   $('#q').placeholder = S.view === 'concerts' ? 'Artiste, salle ou ville' : 'Artiste ou titre';
   $('#gear').classList.toggle('on', S.view === 'parametres');
-  if (S.view === 'a-venir') viewUpcoming(); else if (S.view === 'concerts') viewConcerts(); else if (S.view === 'profil' || S.view === 'user') viewProfile(); else if (S.view === 'parametres') viewSettings(); else viewWeek();
+  if (S.view === 'a-venir') viewUpcoming(); else if (S.view === 'concerts') viewConcerts(); else if (S.view === 'abonnements') viewFeed(); else if (S.view === 'profil' || S.view === 'user') viewProfile(); else if (S.view === 'parametres') viewSettings(); else viewWeek();
   paintStatus();
 }
 
@@ -1213,7 +1295,7 @@ function viewSettings() {
     </section>
     <section class="set-sec"><h2 class="set-h">Affichage</h2>
       ${setRow('Autoriser le zoom', 'Permet de zoomer avec deux doigts ou un double toucher dans tout le site.', toggle('zoom', SET.zoom, 'Autoriser le zoom'))}
-      ${setRow('Onglet d’ouverture', 'Ce que le site montre quand tu l’ouvres.', choice('start', SET.start, [['a-venir', 'À venir'], ['semaine', 'Cette semaine'], ['concerts', 'Concerts']]))}
+      ${setRow('Onglet d’ouverture', 'Ce que le site montre quand tu l’ouvres.', choice('start', SET.start, [['a-venir', 'À venir'], ['semaine', 'Cette semaine'], ['concerts', 'Concerts'], ['abonnements', 'Abonnements']]))}
       ${setRow('Pastilles « Nouveau »', 'Signale ce qui est apparu depuis ta dernière visite.', toggle('news', SET.news, 'Pastilles Nouveau'))}
     </section>
     ${FB_CONFIG ? `<section class="set-sec"><h2 class="set-h">Compte</h2>${accountSettingsHtml()}</section>` : ''}
@@ -1221,7 +1303,8 @@ function viewSettings() {
       ${setRow('Réinitialiser', `Efface les réglages, les filtres et l’historique des « Nouveau » de ce navigateur${used ? '' : ' (rien d’enregistré pour l’instant)'}. Ton compte et tes notes ne sont pas touchés.`, '<button class="btn sm" type="button" data-set="reset">Réinitialiser</button>')}
     </section>
     <section class="set-sec"><h2 class="set-h">À propos</h2>
-      <p class="set-about">À l’affût suit ${DATA.artists ? `${DATA.artists.toLocaleString('fr-FR')} artistes` : 'des milliers d’artistes'} : les sorties rap FR, rap US, musique française et du top 150 France, relevées chaque heure sur Deezer, Apple Music, MusicBrainz, Wikipédia et dans la presse${DATA.generatedAt ? `, mises à jour ${esc(ago(DATA.generatedAt))}` : ''}. Les concerts viennent des agendas des grandes villes de France, de Belgique et de Suisse.</p>
+      ${setRow('Dernière mise à jour', 'Le site vérifie les nouvelles sorties toutes les heures.', `<span class="set-st" id="set-st" aria-live="polite">${statusHtml()}</span>`)}
+      <p class="set-about">À l’affût suit ${DATA.artists ? `${DATA.artists.toLocaleString('fr-FR')} artistes` : 'des milliers d’artistes'} : les sorties rap FR, rap US, musique française et du top 150 France, relevées chaque heure sur Deezer, Apple Music, MusicBrainz, Wikipédia et dans la presse. Les concerts viennent des agendas des grandes villes de France, de Belgique et de Suisse.</p>
     </section>`;
 }
 function resetLocal(btn) {
@@ -1556,9 +1639,10 @@ async function onUser(user) {
   refreshAfterAuth();
 }
 function refreshAfterAuth() {
-  FRIEND_FEED = null; FRIEND_UI = { q: '', results: null, followers: null };
+  FEED = null; FOLLOWERS.clear(); PEOPLE = { q: '', list: null, err: false }; paintFeedBadge();
+  if (ME.user && ME.profile && following().length) loadFeed().then(paintFeedBadge, () => {});
   if (S.detail) { const r = detailRelease(); if (r) paintRatings(r); }
-  if (S.view === 'profil' || S.view === 'user' || S.view === 'semaine' || S.view === 'parametres') render();
+  if (['profil', 'user', 'semaine', 'parametres', 'abonnements'].includes(S.view)) render();
 }
 const BN_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-3.6 4.1-5.5 7.5-5.5s6.3 1.9 7.5 5.5"/></svg>';
 function paintBottomAcct() {
@@ -1617,7 +1701,7 @@ $modal.addEventListener('click', e => { if (e.target === $modal) closeModal(); }
 const G_LOGO = '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.2-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.2-.1-2.3-.4-3.5z"/></svg>';
 function openSignIn(why, mode = 'in') {
   openModal('signin', `<h2 class="m-title" id="m-title">${mode === 'up' ? 'Créer un compte' : 'Connexion'}</h2>
-    <p class="m-sub">${esc(why || 'Connecte-toi pour noter les sorties de la semaine, écrire tes critiques, ajouter tes amis et composer ta vitrine.')}</p>
+    <p class="m-sub">${esc(why || 'Connecte-toi pour noter les sorties de la semaine, écrire tes critiques, composer ta vitrine et suivre d’autres membres.')}</p>
     <button class="btn google" type="button" data-act="google">${G_LOGO}Continuer avec Google</button>
     <div class="m-or"><span>ou avec un e-mail et un mot de passe</span></div>
     <form id="f-mail" data-mode="${mode}" novalidate>
@@ -1830,7 +1914,7 @@ function reviewHtml(x, withRelease) {
   const long = (x.tx || '').length > 520;
   return `<article class="rv${own ? ' own' : ''}">
     ${withRelease ? `<button class="rv-rel" type="button" data-rkey="${esc(x.k)}"><span class="cover">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : `<span class="ph" aria-hidden="true">${esc(initial(x.t))}</span>`}</span><span><b>${esc(x.t)}</b><span>${esc(x.a)}</span></span></button>`
-      : `<a class="rv-who" href="#u/${esc(x.h || '')}">${avatarHtml(x, 'sm')}<b>${esc(x.n || '?')}</b><span>@${esc(x.h || '')}</span>${own ? '<em>toi</em>' : isFriend(x.uid) ? '<em class="ami">ami</em>' : ''}</a>`}
+      : `<a class="rv-who" href="#u/${esc(x.h || '')}">${avatarHtml(x, 'sm')}<b>${esc(x.n || '?')}</b><span>@${esc(x.h || '')}</span>${own ? '<em>toi</em>' : isFollowing(x.uid) ? '<em class="ami">suivi</em>' : ''}</a>`}
     <div class="rv-meta">${x.r >= 1 ? noteStars(x.r, 'sm') : ''}<span>${esc(timeAgo(tsMs(x.at)))}</span></div>
     ${x.tx ? `<p class="rv-tx${long ? ' clamp' : ''}">${esc(x.tx)}</p>${long ? '<button class="rv-more" type="button" data-act="rv-more">Lire la suite</button>' : ''}` : ''}
   </article>`;
@@ -1845,16 +1929,16 @@ function paintRatings(r) {
   const mine = ME.reviews ? ME.reviews.get(r.key) || null : null;
   const texts = list ? list.filter(x => x.tx && x.r >= 1) : [];
   const silent = list ? list.filter(x => x.r >= 1 && !x.tx).length : 0;
-  const fr = list ? list.filter(x => isFriend(x.uid) && (x.r >= 1 || x.tr)) : [];
+  const fr = list ? list.filter(x => isFollowing(x.uid) && (x.r >= 1 || x.tr)) : [];
   el.innerHTML = `<h3 class="d-h3">Notes et critiques</h3>
     ${summaryHtml(list, a, w.state)}
-    ${fr.length ? `<div class="fr-notes"><span class="fr-l">Tes amis</span>${fr.map(x => `<a class="fr-n" href="#u/${esc(x.h)}" title="${esc(x.n)}">${avatarHtml(x, 'xs')}<b>${esc(x.n.split(' ')[0])}</b>${x.r >= 1 ? `<span>${fmtNote(x.r)}★</span>` : '<span>sons</span>'}</a>`).join('')}</div>` : ''}
+    ${fr.length ? `<div class="fr-notes"><span class="fr-l">Tes abonnements</span>${fr.map(x => `<a class="fr-n" href="#u/${esc(x.h)}" title="${esc(x.n)}">${avatarHtml(x, 'xs')}<b>${esc(x.n.split(' ')[0])}</b>${x.r >= 1 ? `<span>${fmtNote(x.r)}★</span>` : '<span>sons</span>'}</a>`).join('')}</div>` : ''}
     ${meHtml(r, w, mine, tracksOf(r))}
     ${c && c.err ? '<p class="rb-note">Les notes n’ont pas pu être chargées.</p>' : ''}`;
   const rl = $('#d-reviews');
   if (rl && rl.dataset.k === r.key) {
     rl.innerHTML = texts.length ? `<h3 class="d-h3">Critiques <span class="d-n">${texts.length}</span></h3>
-      <div class="rv-list">${[...texts].sort((x, y) => isFriend(y.uid) - isFriend(x.uid)).map(x => reviewHtml(x, false)).join('')}</div>
+      <div class="rv-list">${[...texts].sort((x, y) => isFollowing(y.uid) - isFollowing(x.uid)).map(x => reviewHtml(x, false)).join('')}</div>
       ${silent ? `<p class="rb-more">Et ${silent} ${plural(silent, 'note', 'notes')} sans critique.</p>` : ''}` : '';
   }
   paintTrackRatings(r);
@@ -2194,120 +2278,270 @@ function topRatedHtml(list) {
 function rateCtaHtml() {
   if (!FB_CONFIG || !ME.ready || (ME.user && ME.profile) || store.get('ctaOff', false)) return '';
   return `<div class="cta"><p><b>Note les sorties de la semaine.</b> Albums, EP, singles et chaque son se notent pendant leur semaine de sortie, du vendredi au jeudi.</p>
-    <button class="btn solid" type="button" data-act="${ME.user ? 'onboard' : 'signin'}">${ME.user ? 'Créer mon profil' : 'Se connecter avec Google'}</button>
+    <button class="btn solid" type="button" data-act="${ME.user ? 'onboard' : 'signin'}">${ME.user ? 'Créer mon profil' : 'Se connecter'}</button>
     <button class="icon-btn cta-x" type="button" data-act="cta-x" aria-label="Masquer ce message" title="Masquer">${I.x}</button></div>`;
 }
 
-/* ---------- amis ----------
-   Ajouter quelqu’un en ami ne demande pas son accord : ses notes sont déjà publiques,
-   on les retrouve simplement rassemblées (profil, fiches). La liste est dans users/{uid}.fr. */
-const USERS = new Map();      // uid -> profil public (cache)
-const myFriends = () => (ME.profile && Array.isArray(ME.profile.fr) ? ME.profile.fr.filter(x => typeof x === 'string') : []);
-const isFriend = uid => myFriends().includes(uid);
-async function userById(uid) {
-  if (USERS.has(uid)) return USERS.get(uid);
-  const u = await getDocData('users', uid).catch(() => null);
-  USERS.set(uid, u);
-  return u;
-}
-async function setFriends(list) {
-  const { F, db, auth } = FB;
-  const fr = [...new Set(list)].slice(0, 300);
-  await F.updateDoc(F.doc(db, 'users', auth.currentUser.uid), { fr, up: F.serverTimestamp() });
-  ME.profile = { ...ME.profile, fr };
-  FRIEND_FEED = null;
-}
-async function toggleFriend(uid, name) {
-  if (!ME.user) { openSignIn('Connecte-toi pour ajouter tes amis et voir leurs notes.'); return; }
-  if (!ME.profile) { openOnboarding(); return; }
-  if (uid === ME.user.uid) return;
-  const on = isFriend(uid);
-  try {
-    await setFriends(on ? myFriends().filter(x => x !== uid) : [...myFriends(), uid]);
-    if (!on) FRIEND_UI.q = '';   // ajouté : la recherche se vide
-    toast(on ? `${name} n’est plus dans tes amis` : `${name} est dans tes amis : tu verras ses notes`);
-    render();
-    const r = detailRelease(); if (r) paintRatings(r);
-  } catch (e) { toast('Enregistrement impossible pour le moment'); }
-}
-// activité : les dernières notes des amis (requêtes « uid in » par paquets de 30)
-let FRIEND_FEED = null;
-async function loadFriendFeed() {
-  const ids = myFriends();
-  if (!ids.length) return (FRIEND_FEED = { at: Date.now(), list: [] });
+/* ---------- abonnements ----------
+   Comme sur Letterboxd : on s’abonne à quelqu’un sans demande à accepter (les notes sont publiques).
+   Les abonnements sont dans users/{uid}.fr ; les abonnés se retrouvent par « fr contient son identifiant ». */
+const USERS = new Map();      // uid -> profil public, ou null s’il est introuvable
+const GONE = new Set();       // comptes supprimés (confirmé par une lecture réussie)
+const FOLLOWERS = new Map();  // uid -> { at, list, loading } : ses abonnés
+const MAX_FOLLOW = 300;
+const following = () => (ME.profile && Array.isArray(ME.profile.fr) ? ME.profile.fr.filter(x => typeof x === 'string') : []);
+const isFollowing = uid => following().includes(uid);
+const chunks = (a, n) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
+const byName = (a, b) => String(a.n || '').localeCompare(String(b.n || ''), 'fr', { sensitivity: 'base' });
+async function usersByIds(ids) {
   const { F, db } = await fb();
-  const out = [];
-  for (let i = 0; i < ids.length; i += 30) {
-    const snap = await F.getDocs(F.query(F.collection(db, 'reviews'), F.where('uid', 'in', ids.slice(i, i + 30)), F.limit(300)));
-    snap.docs.forEach(d => out.push({ id: d.id, ...d.data() }));
+  await Promise.all(chunks(ids, 30).map(async part => {
+    const snap = await F.getDocs(F.query(F.collection(db, 'users'), F.where(F.documentId(), 'in', part)));
+    const found = new Set();
+    snap.docs.forEach(d => { USERS.set(d.id, d.data()); found.add(d.id); });
+    part.forEach(i => { if (!found.has(i)) { USERS.set(i, null); GONE.add(i); } });
+  }));
+}
+async function followersOf(uid) {
+  const { F, db } = await fb();
+  const snap = await F.getDocs(F.query(F.collection(db, 'users'), F.where('fr', 'array-contains', uid), F.limit(1000)));
+  return snap.docs.map(d => ({ uid: d.id, ...d.data() })).sort(byName);
+}
+// abonnés d’un compte, relus au plus une fois par minute ; la vue se redessine quand ils arrivent
+function followersFor(uid) {
+  if (!uid) return null;
+  const c = FOLLOWERS.get(uid);
+  if (!c || (!c.loading && Date.now() - c.at > 60e3)) {
+    const e = { at: c ? c.at : 0, list: c ? c.list : null, loading: true };
+    FOLLOWERS.set(uid, e);
+    followersOf(uid).then(list => FOLLOWERS.set(uid, { at: Date.now(), list }), () => FOLLOWERS.set(uid, { at: Date.now(), list: e.list || [] }))
+      .then(() => { if (['user', 'profil', 'abonnements'].includes(S.view) && !S.detail) render(); });
   }
-  out.sort((a, b) => tsMs(b.up) - tsMs(a.up));
-  return (FRIEND_FEED = { at: Date.now(), list: out.slice(0, 40) });
+  return FOLLOWERS.get(uid).list;
 }
 async function searchUsers(q) {
   q = slug(q);
   if (q.length < 2) return [];
   const { F, db } = await fb();
-  const snap = await F.getDocs(F.query(F.collection(db, 'users'), F.where('h', '>=', q), F.where('h', '<', `${q}\uf8ff`), F.limit(8)));
-  return snap.docs.map(d => ({ uid: d.id, ...d.data() })).filter(u => !ME.user || u.uid !== ME.user.uid);
-}
-async function followersOf(uid) {
-  const { F, db } = await fb();
-  const snap = await F.getDocs(F.query(F.collection(db, 'users'), F.where('fr', 'array-contains', uid), F.limit(100)));
+  const snap = await F.getDocs(F.query(F.collection(db, 'users'), F.where('h', '>=', q), F.where('h', '<', `${q}`), F.limit(10)));
   return snap.docs.map(d => ({ uid: d.id, ...d.data() }));
 }
-const friendBtn = (uid, name) => (ME.user && uid === ME.user.uid) ? ''
-  : `<button class="btn ${isFriend(uid) ? '' : 'solid'}" type="button" data-act="friend" data-uid="${esc(uid)}" data-n="${esc(name)}">${isFriend(uid) ? '✓ Ami · retirer' : 'Ajouter en ami'}</button>`;
-const personHtml = (u, extra = '') => `<div class="person"><a class="person-l" href="#u/${esc(u.h)}">${avatarHtml(u, 'sm')}<span><b>${esc(u.n)}</b><span>@${esc(u.h)}</span></span></a>${extra}</div>`;
-function feedItemHtml(x) {
-  return `<article class="rv feed">
-    <a class="rv-who" href="#u/${esc(x.h || '')}">${avatarHtml(x, 'sm')}<b>${esc(x.n || '?')}</b><span>@${esc(x.h || '')} · ${esc(timeAgo(tsMs(x.up)))}</span></a>
-    <button class="rv-rel" type="button" data-rkey="${esc(x.k)}" data-from="feed"><span class="cover">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : `<span class="ph" aria-hidden="true">${esc(initial(x.t))}</span>`}</span><span><b>${esc(x.t)}</b><span>${esc(x.a)}</span></span></button>
-    <div class="rv-meta">${x.r >= 1 ? noteStars(x.r, 'sm') : `<span>${trDecode(x.tr).filter(Boolean).length} sons notés</span>`}</div>
-    ${x.tx ? `<p class="rv-tx clamp">${esc(x.tx)}</p>` : ''}
+async function setFollowing(list) {
+  const { F, db, auth } = FB;
+  const fr = [...new Set(list)].slice(0, MAX_FOLLOW);
+  await F.updateDoc(F.doc(db, 'users', auth.currentUser.uid), { fr, up: F.serverTimestamp() });
+  ME.profile = { ...ME.profile, fr };
+}
+async function toggleFollow(uid, name) {
+  if (!ME.user) { openSignIn('Connecte-toi pour t’abonner et suivre les notes des autres membres.'); return; }
+  if (!ME.profile) { openOnboarding(); return; }
+  if (!uid || uid === ME.user.uid) return;
+  const on = isFollowing(uid);
+  if (!on && following().length >= MAX_FOLLOW) { toast(`${MAX_FOLLOW} abonnements au maximum`); return; }
+  try {
+    await setFollowing(on ? following().filter(x => x !== uid) : [...following(), uid]);
+    const fl = FOLLOWERS.get(uid);
+    if (fl && fl.list) fl.list = on ? fl.list.filter(u => u.uid !== ME.user.uid) : [...fl.list, { uid: ME.user.uid, ...ME.profile }].sort(byName);
+    if (FEED) { FEED.items = FEED.items.filter(x => isFollowing(x.uid)); if (!on) FEED.stale = true; }
+    toast(on ? `Tu ne suis plus ${name}` : `Tu suis ${name}`);
+    if (!S.detail) render();
+    const r = detailRelease(); if (r) paintRatings(r);
+  } catch (e) { toast('Enregistrement impossible pour le moment'); }
+}
+const followBtn = (uid, name, sm) => (!uid || (ME.user && uid === ME.user.uid)) ? '' : isFollowing(uid)
+  ? `<button class="btn fol on${sm ? ' sm' : ''}" type="button" data-act="follow" data-uid="${esc(uid)}" data-n="${esc(name)}" aria-label="Abonné à ${esc(name)} : se désabonner"><span class="fol-a">Abonné</span><span class="fol-b" aria-hidden="true">Se désabonner</span></button>`
+  : `<button class="btn solid fol${sm ? ' sm' : ''}" type="button" data-act="follow" data-uid="${esc(uid)}" data-n="${esc(name)}">S’abonner</button>`;
+const personHtml = (u, extra = '', note = '') => `<div class="person"><a class="person-l" href="#u/${esc(u.h)}">${avatarHtml(u, 'md')}<span><b>${esc(u.n)}</b><span>@${esc(u.h)}${u.bio ? ` · ${esc(String(u.bio).replace(/\s+/g, ' ').slice(0, 90))}` : ''}</span>${note ? `<small>${esc(note)}</small>` : ''}</span></a>${extra}</div>`;
+const personFollowHtml = (u, note) => personHtml(u, followBtn(u.uid, u.n, true), note);
+const followsMe = u => !!(ME.user && u && Array.isArray(u.fr) && u.fr.includes(ME.user.uid));
+const folStatsHtml = (h, nFol, nFollowing, cls, extra = '') => `<p class="${cls}"><a href="#u/${esc(h)}/abonnes"><b>${nFol == null ? '…' : nFol}</b> ${plural(nFol || 0, 'abonné', 'abonnés')}</a><a href="#u/${esc(h)}/abonnements"><b>${nFollowing}</b> ${plural(nFollowing, 'abonnement', 'abonnements')}</a>${extra}</p>`;
+
+/* ---------- fil d’actualité (onglet Abonnements) ----------
+   Les notes des abonnements, semaine par semaine : « uid parmi 30 » + « semaine = w »,
+   ce qui ne demande aucun index composé dans Firestore. Tri du plus récent au plus ancien. */
+let FEED = null;              // { at, weeks, items, done, stale }
+let FEED_TAB = 'tout';        // tout | critiques
+const FEED_STEP = 4, FEED_MAX = 26;
+const weekList = (from, n) => Array.from({ length: n }, (_, i) => addDays(weekStartOf(today()), -7 * (from + i)));
+let feedLoading = null;
+function loadFeed(more) {
+  if (feedLoading) return feedLoading;
+  const ids = following();
+  const fresh = !FEED || FEED.stale;
+  const from = more && !fresh ? FEED.weeks : 0;
+  const weeks = weekList(from, FEED_STEP);
+  feedLoading = (async () => {
+    if (!ids.length) return (FEED = { at: Date.now(), weeks: FEED_STEP, items: [], done: true });
+    const { F, db } = await fb();
+    const got = [];
+    await Promise.all(weeks.flatMap(w => chunks(ids, 30).map(async part => {
+      const snap = await F.getDocs(F.query(F.collection(db, 'reviews'), F.where('uid', 'in', part), F.where('w', '==', w), F.limit(500)));
+      snap.docs.forEach(d => got.push({ id: d.id, ...d.data() }));
+    })));
+    // en rafraîchissant les semaines récentes, on garde les plus anciennes déjà chargées
+    const keep = fresh ? [] : FEED.items.filter(x => !weeks.includes(x.w));
+    const items = [...keep, ...got].filter(x => ids.includes(x.uid)).sort((a, b) => tsMs(b.up) - tsMs(a.up));
+    const n = more && !fresh ? from + FEED_STEP : fresh ? FEED_STEP : Math.max(FEED.weeks, FEED_STEP);
+    return (FEED = { at: Date.now(), weeks: n, items, done: n >= FEED_MAX });
+  })().finally(() => { feedLoading = null; });
+  return feedLoading;
+}
+// pastille sur l’onglet : ce qui a été publié depuis la dernière visite du fil
+function paintFeedBadge() {
+  let seen = store.get('feedSeen', 0);
+  if (!seen && ME.user) { seen = Date.now(); store.set('feedSeen', seen); }
+  const n = ME.user && ME.profile && FEED ? FEED.items.filter(x => x.uid !== ME.user.uid && tsMs(x.up) > seen).length : 0;
+  $$('[data-badge="abonnements"]').forEach(el => {
+    el.textContent = n ? (n > 99 ? '99+' : String(n)) : '';
+    el.closest('a').setAttribute('aria-label', n ? `Abonnements, ${n} ${plural(n, 'nouveauté', 'nouveautés')}` : 'Abonnements');
+  });
+}
+setInterval(() => {
+  if (document.visibilityState === 'visible' && S.view !== 'abonnements' && ME.user && ME.profile && following().length) loadFeed().then(paintFeedBadge, () => {});
+}, 5 * 60e3);
+function postHtml(x) {
+  const tv = trDecode(x.tr), t = tv.filter(Boolean).length;
+  // sons notés sans note du projet : le son le mieux noté résume le post
+  let bi = -1;
+  tv.forEach((v, i) => { if (v && (bi < 0 || v > tv[bi])) bi = i; });
+  const best = bi >= 0 && !(x.r >= 1) ? `<span class="post-best">Meilleur son : ${esc(trackTitles(x.k, x)[bi] || `titre ${bi + 1}`)} <b>${fmtNote(tv[bi])}★</b></span>` : '';
+  const what = x.r >= 1 ? (x.tx ? 'a écrit une critique' : 'a noté') : `a noté ${t} ${plural(t, 'son', 'sons')} de`;
+  const long = (x.tx || '').length > 420;
+  const prof = `#u/${esc(x.h || '')}`;
+  return `<article class="post">
+    <a class="post-av" href="${prof}" tabindex="-1" aria-hidden="true">${avatarHtml(x, 'md')}</a>
+    <div class="post-b">
+      <p class="post-h"><a href="${prof}"><b>${esc(x.n || '?')}</b></a><span>@${esc(x.h || '')}</span><span aria-hidden="true">·</span><time datetime="${new Date(tsMs(x.up) || Date.now()).toISOString()}">${esc(timeAgo(tsMs(x.up)))}</time></p>
+      <p class="post-a">${esc(what)}</p>
+      <button class="post-rel" type="button" data-rkey="${esc(x.k)}" data-from="feed">
+        <span class="cover">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : `<span class="ph" aria-hidden="true">${esc(initial(x.t))}</span>`}</span>
+        <span class="post-rt"><b>${esc(x.t)}</b><span>${esc(x.a)}${TYPE_LABEL[x.rt] ? ` · ${esc(TYPE_LABEL[x.rt])}` : ''}</span>
+          ${x.r >= 1 || t ? `<span class="post-n">${x.r >= 1 ? `${noteStars(x.r, 'sm')}<i>${fmtNote(x.r)}</i>` : best}${t && x.r >= 1 ? `<em>+ ${t} ${plural(t, 'son noté', 'sons notés')}</em>` : ''}</span>` : ''}</span>
+      </button>
+      ${x.tx ? `<p class="post-tx${long ? ' clamp' : ''}">${esc(x.tx)}</p>${long ? '<button class="rv-more" type="button" data-act="rv-more">Lire la suite</button>' : ''}` : ''}
+    </div>
   </article>`;
 }
-let FRIEND_UI = { q: '', results: null, followers: null };
-async function paintFriendSearch(q) {
-  FRIEND_UI.q = q;
-  const box = $('#fr-results');
-  if (!box) return;
-  if (slug(q).length < 2) { box.innerHTML = ''; return; }
-  box.innerHTML = '<p class="muted">Recherche…</p>';
-  try {
-    const list = await searchUsers(q);
-    if (FRIEND_UI.q !== q || !$('#fr-results')) return;
-    box.innerHTML = list.length ? list.map(u => personHtml(u, friendBtn(u.uid, u.n))).join('') : '<p class="muted">Aucun pseudo ne commence par ça.</p>';
-  } catch (e) { box.innerHTML = '<p class="muted">Recherche indisponible pour le moment.</p>'; }
+// personnes à suivre : celles qui te suivent sans retour, puis les plus actives de la semaine
+function suggestions() {
+  const me = ME.user ? ME.user.uid : '';
+  const out = new Map();
+  const mine = me ? followersFor(me) : null;
+  for (const u of mine || []) if (!isFollowing(u.uid)) out.set(u.uid, { ...u, why: 'Te suit' });
+  const ws = weekStartOf(today());
+  const wr = WEEKREV.get(ws);
+  if (!wr || (!wr.loading && Date.now() - wr.at > 300e3)) ensureWeekRatings(ws).then(() => { if (S.view === 'abonnements' && !S.detail) render(); });
+  const count = new Map();
+  for (const x of (wr && wr.list) || []) if (x.uid !== me && !isFollowing(x.uid) && x.h) count.set(x.uid, { n: ((count.get(x.uid) || {}).n || 0) + 1, x });
+  [...count.entries()].sort((a, b) => b[1].n - a[1].n).forEach(([uid, { n, x }]) => {
+    if (!out.has(uid)) out.set(uid, { uid, h: x.h, n: x.n, ph: x.ph, why: `${n} ${plural(n, 'note', 'notes')} cette semaine` });
+  });
+  return [...out.values()].slice(0, 6);
 }
-let frTimer = null;
-document.addEventListener('input', e => { if (e.target.id === 'fr-q') { clearTimeout(frTimer); frTimer = setTimeout(() => paintFriendSearch(e.target.value), 250); } });
-// section « Amis » du profil (le sien)
-function friendsSectionHtml() {
-  const ids = myFriends();
-  const known = ids.filter(uid => USERS.get(uid)).map(uid => ({ uid, ...USERS.get(uid) }));
-  const missing = ids.filter(uid => !USERS.has(uid));
-  if (missing.length) Promise.all(missing.map(userById)).then(() => { if (S.view === 'profil') render(); });
-  const fol = FRIEND_UI.followers;
-  if (!fol || Date.now() - (FRIEND_UI.fat || 0) > 60e3) {
-    FRIEND_UI.fat = Date.now();
-    followersOf(ME.user.uid).then(l => { const was = JSON.stringify((FRIEND_UI.followers || []).map(u => u.uid)); FRIEND_UI.followers = l; if (S.view === 'profil' && was !== JSON.stringify(l.map(u => u.uid))) render(); }, () => { FRIEND_UI.followers = FRIEND_UI.followers || []; });
+let PEOPLE = { q: '', list: null, err: false };
+function peopleResHtml() {
+  if (slug(PEOPLE.q).length < 2) return '';
+  if (PEOPLE.err) return '<p class="muted">Recherche indisponible pour le moment.</p>';
+  if (!PEOPLE.list) return '<p class="muted">Recherche…</p>';
+  const list = PEOPLE.list.filter(u => !ME.user || u.uid !== ME.user.uid);
+  return list.length ? list.map(u => personFollowHtml(u, followsMe(u) ? 'Te suit' : '')).join('') : '<p class="muted">Aucun membre avec ce pseudo.</p>';
+}
+async function paintPeopleSearch(q) {
+  PEOPLE = { q, list: null, err: false };
+  const box = $('#people-res');
+  if (box) box.innerHTML = peopleResHtml();
+  if (slug(q).length < 2) return;
+  let list = null, err = false;
+  try { list = await searchUsers(q); } catch (e) { err = true; }
+  if (PEOPLE.q !== q) return;
+  PEOPLE = { q, list, err };
+  const b = $('#people-res');
+  if (b) b.innerHTML = peopleResHtml();
+}
+let peopleTimer = null;
+document.addEventListener('input', e => { if (e.target.id === 'people-q') { clearTimeout(peopleTimer); peopleTimer = setTimeout(() => paintPeopleSearch(e.target.value), 250); } });
+function viewFeed() {
+  const signed = !!(FB_CONFIG && ME.ready && ME.user && ME.profile);
+  const ids = signed ? following() : [];
+  const fol = signed ? followersFor(ME.user.uid) : null;
+  $head.innerHTML = `<div class="head-main"><p class="kicker">Fil d’actualité</p><h1 class="h1">Abonnements</h1>
+    <p class="sub">Les notes et les critiques des membres que tu suis, des plus récentes aux plus anciennes.</p>
+    ${signed ? folStatsHtml(ME.profile.h, fol ? fol.length : null, ids.length, 'feed-stats') : ''}</div>`;
+  if (!FB_CONFIG) { $content.innerHTML = '<div class="empty"><strong>Les abonnements arrivent bientôt.</strong></div>'; return; }
+  if (!ME.ready) { $content.innerHTML = '<div class="empty"><strong>Connexion…</strong></div>'; return; }
+  let main;
+  if (!signed) {
+    main = `<div class="empty"><strong>Suis les notes des autres membres.</strong>Abonne-toi à des membres pour retrouver ici leurs notes et leurs critiques, comme sur Letterboxd.<br>
+      <button class="btn solid" type="button" data-act="${ME.user ? 'onboard' : 'signin'}">${ME.user ? 'Créer mon profil' : 'Se connecter'}</button></div>`;
+  } else {
+    store.set('feedSeen', Date.now());
+    if (!ids.length) main = '<div class="empty"><strong>Tu ne suis personne pour l’instant.</strong>Cherche un pseudo ou choisis parmi les suggestions : leurs notes et leurs critiques s’afficheront ici.</div>';
+    else {
+      if (!FEED || FEED.stale || Date.now() - FEED.at > 90e3) {
+        loadFeed().then(() => { if (S.view === 'abonnements' && !S.detail) render(); }, () => { if (!FEED) { FEED = { at: Date.now(), weeks: FEED_STEP, items: [], done: true, failed: true }; if (S.view === 'abonnements') render(); } });
+      }
+      if (!FEED) main = `<div class="feed-sk" aria-label="Chargement">${'<div class="sk"></div>'.repeat(3)}</div>`;
+      else if (FEED.failed && !FEED.items.length) main = '<div class="empty"><strong>Le fil n’a pas pu être chargé.</strong>Vérifie ta connexion puis reviens sur cet onglet.</div>';
+      else {
+        const crit = FEED.items.filter(x => x.tx);
+        const items = FEED_TAB === 'critiques' ? crit : FEED.items;
+        main = `<div class="seg feed-tabs" role="group" aria-label="Afficher">
+            <button type="button" data-act="feed-tab" data-v="tout" aria-pressed="${FEED_TAB === 'tout'}">Tout <span class="n">${FEED.items.length}</span></button>
+            <button type="button" data-act="feed-tab" data-v="critiques" aria-pressed="${FEED_TAB === 'critiques'}">Critiques <span class="n">${crit.length}</span></button></div>
+          ${items.length ? `<div class="posts">${items.map(postHtml).join('')}</div>` : `<div class="empty"><strong>${FEED_TAB === 'critiques' ? 'Aucune critique écrite' : 'Rien de neuf'} depuis ${FEED.weeks} semaines.</strong>Les notes des membres que tu suis apparaîtront ici dès leur publication.</div>`}
+          ${FEED.done ? '' : '<p class="more-row feed-more"><button class="btn" type="button" data-act="feed-more">Voir plus ancien</button></p>'}`;
+      }
+    }
+    paintFeedBadge();
   }
-  const back = (fol || []).filter(u => !isFriend(u.uid));
-  return `<div class="fr-add"><label class="search"><span class="sr">Chercher un pseudo</span>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
-      <input id="fr-q" type="search" placeholder="Ajouter un ami : son pseudo" autocomplete="off" autocapitalize="none" spellcheck="false" value="${esc(FRIEND_UI.q)}"></label>
-      <div class="people" id="fr-results"></div></div>
-    ${known.length ? `<div class="people">${known.map(u => personHtml(u, `<button class="btn sm" type="button" data-act="friend" data-uid="${esc(u.uid)}" data-n="${esc(u.n)}">Retirer</button>`)).join('')}</div>`
-      : ids.length ? '<p class="muted">Chargement…</p>' : '<p class="muted">Ajoute tes amis avec leur pseudo pour voir leurs notes ici et dans chaque fiche. Partage aussi le lien de ton profil.</p>'}
-    ${back.length ? `<h3 class="d-h3">Ils t’ont ajouté</h3><div class="people">${back.map(u => personHtml(u, friendBtn(u.uid, u.n))).join('')}</div>` : ''}`;
+  const sug = suggestions();
+  const focus = document.activeElement && document.activeElement.id === 'people-q' ? document.activeElement.selectionStart : null;
+  $content.innerHTML = `<div class="feed-wrap">
+    <div class="feed-main">${main}</div>
+    <div class="feed-find"><h2 class="side-h">Trouver des membres</h2>
+      <label class="search"><span class="sr">Chercher un membre par son pseudo</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
+        <input id="people-q" type="search" placeholder="Pseudo" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="search" value="${esc(PEOPLE.q)}"></label>
+      <div class="people" id="people-res">${peopleResHtml()}</div></div>
+    ${sug.length ? `<div class="feed-sug"><h2 class="side-h">Suggestions</h2><div class="people">${sug.map(u => personFollowHtml(u, u.why)).join('')}</div></div>` : ''}
+  </div>`;
+  if (focus !== null) { const i = $('#people-q'); i.focus(); try { i.setSelectionRange(focus, focus); } catch (e) { /* champ de recherche */ } }
 }
-function feedSectionHtml() {
-  if (!myFriends().length) return '';
-  const f = FRIEND_FEED;
-  if (!f || Date.now() - f.at > 60e3) loadFriendFeed().then(() => { if (S.view === 'profil') render(); }, () => {});
-  if (!f) return section('Activité de tes amis', '', '<p class="muted">Chargement…</p>');
-  return section('Activité de tes amis', f.list.length, f.list.length ? `<div class="rv-list wide">${f.list.map(feedItemHtml).join('')}</div>` : '<p class="muted">Tes amis n’ont encore rien noté.</p>');
+
+/* ---------- abonnés et abonnements d’un profil ---------- */
+let peopleLoading = null;
+function viewPeople(u, uid, own) {
+  const sub = S.sub;
+  const fol = followersFor(uid);
+  const ids = (own ? following() : Array.isArray(u.fr) ? u.fr.filter(x => typeof x === 'string') : []).slice().reverse();  // les plus récents d’abord
+  let list = null;
+  if (sub === 'abonnes') list = fol;
+  else {
+    const missing = ids.filter(i => !USERS.has(i));
+    if (missing.length && !peopleLoading) {
+      peopleLoading = usersByIds(missing).catch(() => missing.forEach(i => { if (!USERS.has(i)) USERS.set(i, null); }))
+        .finally(() => { peopleLoading = null; if (S.view === 'user' && S.sub === 'abonnements' && !S.detail) render(); });
+    }
+    if (!missing.length) {
+      list = ids.map(i => USERS.get(i) && { uid: i, ...USERS.get(i) }).filter(Boolean);
+      // comptes supprimés depuis : on les retire de ses propres abonnements
+      if (own && ids.some(i => GONE.has(i))) setFollowing(following().filter(i => !GONE.has(i))).catch(() => {});
+    }
+  }
+  const nFollowing = list && sub === 'abonnements' ? list.length : ids.filter(i => !GONE.has(i)).length;
+  $head.innerHTML = `<div class="head-main"><a class="back" href="#u/${esc(u.h)}">${I.left}<span>${esc(u.n)}</span></a>
+    <h1 class="h1">${sub === 'abonnes' ? 'Abonnés' : 'Abonnements'}</h1>
+    <p class="sub">${sub === 'abonnes' ? (own ? 'Les membres qui te suivent.' : `Les membres qui suivent ${esc(u.n)}.`) : (own ? 'Les membres que tu suis.' : `Les membres que ${esc(u.n)} suit.`)}</p></div>`;
+  const tabs = `<nav class="seg people-tabs" aria-label="Listes">
+    <a href="#u/${esc(u.h)}/abonnes"${sub === 'abonnes' ? ' aria-current="page"' : ''}>Abonnés <span class="n">${fol ? fol.length : '…'}</span></a>
+    <a href="#u/${esc(u.h)}/abonnements"${sub === 'abonnements' ? ' aria-current="page"' : ''}>Abonnements <span class="n">${nFollowing}</span></a></nav>`;
+  const empty = sub === 'abonnes'
+    ? (own ? 'Personne ne te suit encore. Partage le lien de ton profil pour que d’autres membres puissent s’abonner.' : 'Personne ne suit ce profil pour l’instant.')
+    : (own ? 'Tu ne suis personne pour l’instant.' : 'Ce profil ne suit personne pour l’instant.');
+  $content.innerHTML = `${tabs}<div class="people wide">${list === null ? '<p class="muted">Chargement…</p>'
+    : list.length ? list.map(p => personFollowHtml(p, own && sub === 'abonnements' && followsMe(p) ? 'Te suit' : !own && followsMe(p) ? 'Te suit' : '')).join('')
+    : `<p class="muted people-empty">${esc(empty)}</p>`}</div>
+    ${own ? `<p class="more-row"><a class="btn" href="#abonnements">Trouver des membres</a>${sub === 'abonnes' ? ` <button class="btn" type="button" data-act="copy-profile" data-h="${esc(u.h)}">${I.link}Copier le lien de mon profil</button>` : ''}</p>` : ''}`;
 }
 
 /* ---------- profils ---------- */
@@ -2372,12 +2606,12 @@ function viewProfile() {
   if (S.view === 'profil') {
     if (!ME.ready) { $content.innerHTML = '<div class="empty"><strong>Connexion…</strong></div>'; return; }
     if (!ME.user) {
-      $head.innerHTML = '<div class="head-main"><p class="kicker">Profil</p><h1 class="h1">Ton profil</h1><p class="sub">Connecte-toi avec Google pour noter les sorties de la semaine, écrire tes critiques et composer ta vitrine de sorties préférées.</p></div>';
-      $content.innerHTML = `<div class="empty"><strong>Tu n’es pas connecté.</strong>Ton profil rassemble tes notes, tes critiques et ta vitrine.<br><button class="btn google" type="button" data-act="google">${G_LOGO}Continuer avec Google</button></div>`;
+      $head.innerHTML = '<div class="head-main"><p class="kicker">Profil</p><h1 class="h1">Ton profil</h1><p class="sub">Connecte-toi pour noter les sorties de la semaine, écrire tes critiques, composer ta vitrine et suivre d’autres membres.</p></div>';
+      $content.innerHTML = `<div class="empty"><strong>Tu n’es pas connecté.</strong>Ton profil rassemble tes notes, tes critiques, ta vitrine, tes abonnés et tes abonnements.<br><button class="btn solid" type="button" data-act="signin">Se connecter</button></div>`;
       return;
     }
     if (!ME.profile) { $content.innerHTML = `<div class="empty"><strong>Il te reste à choisir ton pseudo.</strong><br><button class="btn solid" type="button" data-act="onboard">Créer mon profil</button></div>`; return; }
-    data = { user: ME.profile, reviews: [...(ME.reviews || new Map()).values()].sort((a, b) => tsMs(b.up) - tsMs(a.up)), own: true };
+    data = { user: ME.profile, reviews: [...(ME.reviews || new Map()).values()].sort((a, b) => tsMs(b.up) - tsMs(a.up)), own: true, uid: ME.user.uid };
   } else {
     const c = PROFILES.get(S.handle);
     if (!c || Date.now() - c.at > 60e3) {
@@ -2387,9 +2621,12 @@ function viewProfile() {
     }
     if (c.missing) { $content.innerHTML = `<div class="empty"><strong>Aucun profil @${esc(S.handle)}.</strong>Vérifie le pseudo, ou il a peut-être été changé.</div>`; return; }
     data = { user: c.user, reviews: c.reviews, own: !!(ME.user && c.uid === ME.user.uid), uid: c.uid };
-    if (data.own && ME.profile) data = { user: ME.profile, reviews: [...(ME.reviews || new Map()).values()].sort((a, b) => tsMs(b.up) - tsMs(a.up)), own: true };
+    if (data.own && ME.profile) data = { user: ME.profile, reviews: [...(ME.reviews || new Map()).values()].sort((a, b) => tsMs(b.up) - tsMs(a.up)), own: true, uid: ME.user.uid };
   }
   const { user: u, reviews, own } = data;
+  if (S.view === 'user' && S.sub) { viewPeople(u, data.uid, own); return; }
+  const fol = followersFor(data.uid);
+  const nFollowing = (own ? following() : Array.isArray(u.fr) ? u.fr : []).filter(i => typeof i === 'string' && !GONE.has(i)).length;
   PROFILE_VIEW = reviews;
   PROFILE_SC = u.sc || [];
   const notes = reviews.filter(x => x.r >= 1);
@@ -2404,12 +2641,11 @@ function viewProfile() {
         <p class="prof-meta">@${esc(u.h)}${since ? ` · membre depuis ${esc(since)}` : ''}</p>
         ${u.bio ? `<p class="sub prof-bio">${esc(u.bio)}</p>` : own ? '<p class="sub muted">Ajoute une bio pour présenter tes goûts.</p>' : ''}
       </div>
-      <div class="actions">${own ? '<button class="btn" type="button" data-act="edit-profile">Modifier le profil</button><a class="btn" href="#parametres">Paramètres</a>' : friendBtn(data.uid, u.n)}<button class="btn" type="button" data-act="copy-profile" data-h="${esc(u.h)}">${I.link}Copier le lien</button></div>
+      <div class="actions">${own ? '<button class="btn" type="button" data-act="edit-profile">Modifier le profil</button><a class="btn" href="#parametres">Paramètres</a>' : followBtn(data.uid, u.n)}<button class="btn" type="button" data-act="copy-profile" data-h="${esc(u.h)}">${I.link}Copier le lien</button></div>
     </div>
+    ${folStatsHtml(u.h, fol ? fol.length : null, nFollowing, 'prof-fol', !own && followsMe(u) ? '<span class="prof-tag">Te suit</span>' : '')}
     ${statsHtml([[notes.length, plural(notes.length, 'note', 'notes')], [songs.length, plural(songs.length, 'son noté', 'sons notés')], [texts.length, plural(texts.length, 'critique', 'critiques')], [notes.length ? fmtAvg(avg) : '–', 'de moyenne'], [thisWeek, 'cette semaine']])}`;
-  let html = '';
-  if (own) html += feedSectionHtml();
-  html += section(own ? 'Ma vitrine' : 'Vitrine', '', showcaseHtml(u, own));
+  let html = section(own ? 'Ma vitrine' : 'Vitrine', '', showcaseHtml(u, own));
   if (notes.length) {
     html += section(own ? 'Mes notes' : 'Ses notes', notes.length, `${distHtml(notes)}<div class="grid sm">${notes.map(x => `<button class="card" type="button" data-rkey="${esc(x.k)}" data-from="rv">
       <span class="cover">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : `<span class="ph" aria-hidden="true">${esc(initial(x.t))}</span>`}</span>
@@ -2420,7 +2656,6 @@ function viewProfile() {
     html += section(own ? 'Mes sons préférés' : 'Ses sons préférés', songs.length, songsHtml(shown)
       + (songs.length > shown.length ? `<p class="more-row"><button class="btn" type="button" data-act="songs-all" data-h="${esc(u.h)}">Afficher les ${songs.length} sons notés</button></p>` : ''));
   }
-  if (own) html += section('Mes amis', myFriends().length || '', friendsSectionHtml());
   if (texts.length) html += section(own ? 'Mes critiques' : 'Ses critiques', texts.length, `<div class="rv-list wide">${texts.map(x => reviewHtml(x, true)).join('')}</div>`);
   if (!reviews.length) html += `<div class="empty"><strong>${own ? 'Tu n’as encore rien noté.' : 'Aucune note pour l’instant.'}</strong>${own ? 'Albums, EP, singles et chaque son se notent pendant leur semaine de sortie : ouvre une fiche dans « Cette semaine ».<br><a class="btn" href="#semaine">Voir les sorties de la semaine</a>' : ''}</div>`;
   $content.innerHTML = html;
@@ -2449,7 +2684,7 @@ function songsHtml(songs) {
 /* ---------- compte, dans les paramètres ---------- */
 function accountSettingsHtml() {
   if (!ME.ready) return '<p class="muted">Connexion…</p>';
-  if (!ME.user) return setRow('Pas connecté', 'Avec Google ou un e-mail et un mot de passe, pour noter, écrire des critiques et ajouter tes amis.', '<button class="btn sm solid" type="button" data-act="signin">Se connecter</button>');
+  if (!ME.user) return setRow('Pas connecté', 'Avec Google ou un e-mail et un mot de passe, pour noter, écrire des critiques et suivre d’autres membres.', '<button class="btn sm solid" type="button" data-act="signin">Se connecter</button>');
   const u = FB.auth.currentUser || ME.user;
   const how = isPwUser() ? 'E-mail et mot de passe' : 'Google';
   return setRow(ME.profile ? `${ME.profile.n} · @${ME.profile.h}` : 'Profil à créer', `Connecté avec ${how}${u.email ? ` (${esc(u.email)}, visible de toi seul)` : ''}.`,
@@ -2529,7 +2764,7 @@ document.addEventListener('click', e => {
     if (ME.user) location.hash = '#profil'; else if (ME.ready) openSignIn(); else fb().catch(() => toast('Connexion indisponible pour le moment'));
     return;
   }
-  if (el.dataset.rkey) { openStored(el.dataset.rkey, el.dataset.from === 'sc' ? PROFILE_SC : el.dataset.from === 'feed' ? (FRIEND_FEED ? FRIEND_FEED.list : []) : PROFILE_VIEW); return; }
+  if (el.dataset.rkey) { openStored(el.dataset.rkey, el.dataset.from === 'sc' ? PROFILE_SC : el.dataset.from === 'feed' ? (FEED ? FEED.items : []) : PROFILE_VIEW); return; }
   if (el.dataset.top) { TOP_TAB = el.dataset.top; render(); return; }
   const act = el.dataset.act, k = el.dataset.k;
   if (act === 'close-modal') closeModal();
@@ -2547,7 +2782,9 @@ document.addEventListener('click', e => {
   else if (act === 'mail-in') openSignIn('', 'in');
   else if (act === 'mail-reset') resetPassword(($('#f-mail [name=email]') || {}).value);
   else if (act === 'pw-change') resetPassword(FB && FB.auth.currentUser && FB.auth.currentUser.email);
-  else if (act === 'friend') toggleFriend(el.dataset.uid, el.dataset.n || 'Cette personne');
+  else if (act === 'follow') toggleFollow(el.dataset.uid, el.dataset.n || 'ce profil');
+  else if (act === 'feed-tab') { FEED_TAB = el.dataset.v; render(); }
+  else if (act === 'feed-more') { el.disabled = true; el.textContent = 'Chargement…'; loadFeed(true).then(() => render(), () => { el.disabled = false; el.textContent = 'Voir plus ancien'; }); }
   else if (act === 'cta-x') { store.set('ctaOff', true); const c = el.closest('.cta'); if (c) c.remove(); toast(matchMedia('(max-width: 860px)').matches ? 'Tu pourras te connecter depuis l’onglet Profil' : 'Tu pourras te connecter avec le bouton en haut à droite'); }
   else if (act === 'vit-add') openPicker();
   else if (act === 'vit-pick') pickShowcase(k);
@@ -2637,6 +2874,12 @@ $('#q').addEventListener('input', e => { clearTimeout(qTimer); qTimer = setTimeo
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && S.detail && !$('#modal').open) { closeDetail(); return; }
   if (e.key === '/' && !S.detail && !$('#modal').open && !e.ctrlKey && !e.metaKey && !e.altKey
+    && !/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement && document.activeElement.tagName) && $('#people-q') && S.view === 'abonnements') {
+    e.preventDefault();
+    $('#people-q').focus();
+    return;
+  }
+  if (e.key === '/' && !S.detail && !$('#modal').open && !e.ctrlKey && !e.metaKey && !e.altKey
     && !/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement && document.activeElement.tagName) && $('.ftool').offsetParent) {
     e.preventDefault();
     if ($filters.hidden) $('#ftoggle').click();
@@ -2660,11 +2903,11 @@ let routed = false;
 function route() {
   const base = location.hash.split('?')[0];   // adresse sans onglet : l'onglet d'ouverture choisi dans les paramètres
   const fm = location.hash.match(FICHE_RE);
-  const hm = base.match(/^#u\/([a-z0-9_]{3,20})$/);
-  const v = base === '#semaine' ? 'semaine' : base === '#concerts' ? 'concerts' : base === '#profil' ? 'profil' : base === '#parametres' ? 'parametres' : base === '#a-venir' ? 'a-venir' : hm ? 'user' : SET.start;
-  const handle = hm ? hm[1] : '';
+  const hm = base.match(/^#u\/([a-z0-9_]{3,20})(?:\/(abonnes|abonnements))?$/);
+  const v = base === '#semaine' ? 'semaine' : base === '#concerts' ? 'concerts' : base === '#abonnements' ? 'abonnements' : base === '#profil' ? 'profil' : base === '#parametres' ? 'parametres' : base === '#a-venir' ? 'a-venir' : hm ? 'user' : SET.start;
+  const handle = hm ? hm[1] : '', sub = (hm && hm[2]) || '';
   // même vue : seule la fiche s’ouvre ou se ferme (bouton retour, lien direct), la liste ne bouge pas
-  if (routed && v === S.view && handle === S.handle) {
+  if (routed && v === S.view && handle === S.handle && sub === S.sub) {
     if (fm) { if (S.detail !== fm[1]) openFiche(fm[1]); }
     else if (S.detail) { fichePushed = false; closeDetail({ fromRoute: true }); }
     return;
@@ -2674,6 +2917,7 @@ function route() {
   fichePushed = false;
   if (!first) SCROLL[S.view] = window.scrollY;
   S.handle = handle;
+  S.sub = sub;
   if (v === 'concerts') loadConcerts(false);
   const changed = v !== S.view || v === 'user';
   S.view = v;

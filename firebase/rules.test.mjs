@@ -1,7 +1,7 @@
 // Tests des règles Firestore sur l'émulateur (lancés par .github/workflows/rules.yml).
 import { readFileSync } from 'node:fs';
 import { initializeTestEnvironment, assertSucceeds, assertFails } from '@firebase/rules-unit-testing';
-import { doc, setDoc, updateDoc, deleteDoc, getDoc, getDocs, collection, query, where, writeBatch, serverTimestamp, deleteField, Timestamp } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, deleteDoc, getDoc, getDocs, collection, query, where, writeBatch, serverTimestamp, deleteField, Timestamp, documentId, limit } from 'firebase/firestore';
 
 const env = await initializeTestEnvironment({
   projectId: 'demo-affut',
@@ -89,11 +89,14 @@ await t('supprimer la note d’un autre refusé', () => assertFails(deleteDoc(do
 
 await t('vitrine de 4 sorties', () => assertSucceeds(updateDoc(doc(db('alice'), 'users', 'alice'), { sc: [1, 2, 3, 4].map(i => ({ k: `dz${i}`, t: 'T', a: 'A', img: '' })), up: serverTimestamp() })));
 await t('vitrine de 5 sorties refusée', () => assertFails(updateDoc(doc(db('alice'), 'users', 'alice'), { sc: [1, 2, 3, 4, 5].map(i => ({ k: `dz${i}` })), up: serverTimestamp() })));
-await t('amis : ajouter des amis', () => assertSucceeds(updateDoc(doc(db('alice'), 'users', 'alice'), { fr: ['bob'], up: serverTimestamp() })));
-await t('amis : 301 amis refusé', () => assertFails(updateDoc(doc(db('alice'), 'users', 'alice'), { fr: Array.from({ length: 301 }, (_, i) => `u${i}`), up: serverTimestamp() })));
-await t('amis : liste au mauvais format refusée', () => assertFails(updateDoc(doc(db('alice'), 'users', 'alice'), { fr: 'bob', up: serverTimestamp() })));
-await t('amis : modifier la liste d’un autre refusé', () => assertFails(updateDoc(doc(db('bob'), 'users', 'alice'), { fr: [], up: serverTimestamp() })));
-await t('amis : qui m’a ajouté (lecture publique)', () => assertSucceeds(getDocs(query(collection(db(null), 'users'), where('fr', 'array-contains', 'bob')))));
+await t('abonnements : s’abonner', () => assertSucceeds(updateDoc(doc(db('alice'), 'users', 'alice'), { fr: ['bob'], up: serverTimestamp() })));
+await t('abonnements : 301 abonnements refusé', () => assertFails(updateDoc(doc(db('alice'), 'users', 'alice'), { fr: Array.from({ length: 301 }, (_, i) => `u${i}`), up: serverTimestamp() })));
+await t('abonnements : liste au mauvais format refusée', () => assertFails(updateDoc(doc(db('alice'), 'users', 'alice'), { fr: 'bob', up: serverTimestamp() })));
+await t('abonnements : modifier les abonnements d’un autre refusé', () => assertFails(updateDoc(doc(db('bob'), 'users', 'alice'), { fr: [], up: serverTimestamp() })));
+await t('abonnés : qui me suit (lecture publique)', () => assertSucceeds(getDocs(query(collection(db(null), 'users'), where('fr', 'array-contains', 'bob'), limit(1000)))));
+await t('abonnements : profils par identifiants (lecture publique)', () => assertSucceeds(getDocs(query(collection(db(null), 'users'), where(documentId(), 'in', ['alice', 'bob'])))));
+await t('recherche d’un pseudo par son début (lecture publique)', () => assertSucceeds(getDocs(query(collection(db(null), 'users'), where('h', '>=', 'al'), where('h', '<', 'al\uf8ff'), limit(10)))));
+await t('fil des abonnements : notes de plusieurs membres pour une semaine', () => assertSucceeds(getDocs(query(collection(db('bob'), 'reviews'), where('uid', 'in', ['alice', 'carol']), where('w', '==', weekStart(today)), limit(500)))));
 await t('modifier le profil d’un autre refusé', () => assertFails(updateDoc(doc(db('bob'), 'users', 'alice'), { n: 'pirate', up: serverTimestamp() })));
 await t('prendre le pseudo d’un autre dans son profil refusé', () => assertFails(updateDoc(doc(db('bob'), 'users', 'bob'), { h: 'alice', up: serverTimestamp() })));
 await t('changer de pseudo', async () => {
