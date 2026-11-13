@@ -51,13 +51,15 @@ service cloud.firestore {
     }
 
     function validUser(u) {
-      return u.keys().hasOnly(['h', 'n', 'ph', 'bio', 'sc', 'since', 'up'])
+      return u.keys().hasOnly(['h', 'n', 'ph', 'bio', 'sc', 'fr', 'since', 'up'])
         && u.keys().hasAll(['h', 'n', 'since', 'up'])
         && u.h is string && u.h.matches('^[a-z0-9_]{3,20}$')
         && getAfter(/databases/$(database)/documents/handles/$(u.h)).data.uid == request.auth.uid
         && u.n is string && u.n.size() >= 1 && u.n.size() <= 50
         && okStr(u, 'ph', 600) && okStr(u, 'bio', 300)
         && (!('sc' in u) || (u.sc is list && u.sc.size() <= 4))
+        // amis : liste d'identifiants de comptes, 300 au plus
+        && (!('fr' in u) || (u.fr is list && u.fr.size() <= 300))
         && u.up == request.time;
     }
 

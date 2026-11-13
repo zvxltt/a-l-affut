@@ -89,6 +89,11 @@ await t('supprimer la note d’un autre refusé', () => assertFails(deleteDoc(do
 
 await t('vitrine de 4 sorties', () => assertSucceeds(updateDoc(doc(db('alice'), 'users', 'alice'), { sc: [1, 2, 3, 4].map(i => ({ k: `dz${i}`, t: 'T', a: 'A', img: '' })), up: serverTimestamp() })));
 await t('vitrine de 5 sorties refusée', () => assertFails(updateDoc(doc(db('alice'), 'users', 'alice'), { sc: [1, 2, 3, 4, 5].map(i => ({ k: `dz${i}` })), up: serverTimestamp() })));
+await t('amis : ajouter des amis', () => assertSucceeds(updateDoc(doc(db('alice'), 'users', 'alice'), { fr: ['bob'], up: serverTimestamp() })));
+await t('amis : 301 amis refusé', () => assertFails(updateDoc(doc(db('alice'), 'users', 'alice'), { fr: Array.from({ length: 301 }, (_, i) => `u${i}`), up: serverTimestamp() })));
+await t('amis : liste au mauvais format refusée', () => assertFails(updateDoc(doc(db('alice'), 'users', 'alice'), { fr: 'bob', up: serverTimestamp() })));
+await t('amis : modifier la liste d’un autre refusé', () => assertFails(updateDoc(doc(db('bob'), 'users', 'alice'), { fr: [], up: serverTimestamp() })));
+await t('amis : qui m’a ajouté (lecture publique)', () => assertSucceeds(getDocs(query(collection(db(null), 'users'), where('fr', 'array-contains', 'bob')))));
 await t('modifier le profil d’un autre refusé', () => assertFails(updateDoc(doc(db('bob'), 'users', 'alice'), { n: 'pirate', up: serverTimestamp() })));
 await t('prendre le pseudo d’un autre dans son profil refusé', () => assertFails(updateDoc(doc(db('bob'), 'users', 'bob'), { h: 'alice', up: serverTimestamp() })));
 await t('changer de pseudo', async () => {
