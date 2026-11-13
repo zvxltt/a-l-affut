@@ -1321,6 +1321,7 @@ async function signIn() {
   } catch (e) {
     const code = e && e.code;
     if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') return;
+    console.warn('Connexion Google impossible :', code || e);
     toast(code === 'auth/popup-blocked' ? 'Autorise les fenêtres surgissantes pour te connecter' : 'Connexion impossible pour le moment');
   }
 }
