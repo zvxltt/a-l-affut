@@ -50,7 +50,8 @@ await t('sans connexion refusé', () => assertFails(setDoc(doc(db(null), 'review
 await t('lecture publique des notes', () => assertSucceeds(getDocs(query(collection(db(null), 'reviews'), where('k', '==', K)))));
 await t('lecture publique d’un profil', () => assertSucceeds(getDoc(doc(db(null), 'users', 'alice'))));
 
-const snap = await env.withSecurityRulesDisabled(async c => (await getDoc(doc(c.firestore(), 'reviews', `${K}__alice`))).data());
+let snap; // withSecurityRulesDisabled ne renvoie pas le résultat du rappel
+await env.withSecurityRulesDisabled(async c => { snap = (await getDoc(doc(c.firestore(), 'reviews', `${K}__alice`))).data(); });
 await t('modifier sa note pendant la semaine', () => assertSucceeds(setDoc(doc(db('alice'), 'reviews', `${K}__alice`), review('alice', K, today, { r: 9, at: snap.at }))));
 await t('changer la date de création refusé', () => assertFails(setDoc(doc(db('alice'), 'reviews', `${K}__alice`), review('alice', K, today, { at: Timestamp.fromDate(new Date(2020, 0, 1)) }))));
 await t('modifier la note d’un autre refusé', () => assertFails(updateDoc(doc(db('bob'), 'reviews', `${K}__alice`), { r: 2, up: serverTimestamp() })));
