@@ -794,7 +794,7 @@ function concertRowHtml(c) {
   const where = [c.venue, c.city].filter(Boolean).join(', ') + (c.cc && c.cc !== 'FR' && COUNTRY[c.cc] ? ` · ${COUNTRY[c.cc]}` : '');
   const status = c.status === 'postponed' ? 'Reporté' : c.status === 'rescheduled' ? 'Nouvelle date' : '';
   const img = c.img ? `<img src="${esc(c.img)}" alt="" loading="lazy" decoding="async">` : `<span class="ph" aria-hidden="true">${esc(initial(c.artists[0] || c.name))}</span>`;
-  return `<a class="row crow" href="${esc(c.url)}" target="_blank" rel="noopener" aria-label="${esc(`${shown}, ${fmtShort(c.date)}${c.time ? ` à ${c.time.replace(':', 'h')}` : ''}, ${where}. Réserver sur Ticketmaster`)}">
+  return `<a class="row crow" href="${esc(c.url)}" target="_blank" rel="noopener" aria-label="${esc(`${shown}, ${fmtShort(c.date)}${c.time ? ` à ${c.time.replace(':', 'h')}` : ''}, ${where}. Voir les billets`)}">
     <span class="cover">${img}</span>
     <span class="row-t">
       <span class="row-title">${esc(shown)}</span>
@@ -823,11 +823,11 @@ function viewConcerts() {
   const cities = new Set(list.map(c => norm(c.city)).filter(Boolean)).size;
   $head.innerHTML = `
     <div class="head-main"><p class="kicker">Concerts et festivals</p><h1 class="h1">Concerts</h1>
-      <p class="sub">Les dates en France, en Belgique et en Suisse des artistes suivis, d’après la billetterie Ticketmaster. Touche une date pour réserver.</p></div>
+      <p class="sub">Les dates en France, en Belgique et en Suisse des artistes suivis, relevées dans les agendas de concerts des grandes villes. Touche une date pour voir les billets.</p></div>
     ${statsHtml([[list.length, plural(list.length, 'date', 'dates')], [soon, 'dans les 30 jours'], [fests, plural(fests, 'festival', 'festivals')], [cities, plural(cities, 'ville', 'villes')]])}`;
   if (!CONCERTS.loaded) { $content.innerHTML = '<div class="empty"><strong>Chargement des concerts…</strong></div>'; return; }
   if (!CONCERTS.items.length) {
-    $content.innerHTML = '<div class="empty"><strong>Les concerts arrivent bientôt.</strong>Le robot relève les dates dès que la billetterie est branchée, puis les met à jour deux fois par jour.</div>';
+    $content.innerHTML = '<div class="empty"><strong>Les concerts arrivent bientôt.</strong>Le robot relève les agendas des grandes villes deux fois par jour.</div>';
     return;
   }
   let html = '', month = '', open = false, g = null;

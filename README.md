@@ -14,7 +14,7 @@ Le robot (`scripts/build-data.mjs`) :
 3. récupère pour chaque sortie la tracklist, la durée de chaque titre, le label et les featurings exacts ;
 4. cherche les sorties annoncées : précommandes Apple Music, MusicBrainz, section « Upcoming releases » des pages Wikipédia « 20xx in hip-hop », fichier `data/annonces.json` ;
 5. lit la presse (Google Actualités, les flux des médias rap, des recherches par date pour les dix prochains vendredis et par artiste à tour de rôle) pour repérer les annonces faites sur Instagram et reprises par les médias, du type « X annonce son album pour le 4 décembre » ; seul le sujet de la phrase est retenu (« Star Academy : Léa Doffey annonce… » concerne Léa Doffey ; dans « l’album Cocoon », Cocoon est un titre), les articles déjà repérés sont relus à chaque passage avec les règles du jour, et l’article est cité comme source ;
-6. relève les concerts et festivals des artistes suivis en France, en Belgique et en Suisse sur un an (API Discovery de Ticketmaster, toutes les 12 heures ; clé gratuite à ranger dans le secret GitHub `TICKETMASTER_KEY`) ;
+6. relève les concerts et festivals des artistes suivis en France, en Belgique et en Suisse : agendas Songkick de 32 grandes villes (données structurées, sans clé), toutes les 12 heures ; si une clé Ticketmaster est rangée dans le secret GitHub `TICKETMASTER_KEY`, ses dates (avec prix et lien direct) s’ajoutent ;
 7. publie le tout sur GitHub Pages dans `data/releases.json`, `data/details.json` et `data/concerts.json`.
 
 Chaque passage réutilise le résultat précédent : seules les nouveautés sont téléchargées.

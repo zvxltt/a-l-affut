@@ -1178,17 +1178,81 @@ async function tmScan(cc, from, to, out) {
     out.push(...((j._embedded && j._embedded.events) || []));
   }
 }
+// Songkick publie pour chaque grande ville l’agenda complet des concerts, avec des données structurées
+// (schema.org MusicEvent) lisibles sans clé : on lit les agendas des grandes villes de France, de Belgique et de Suisse.
+const SK_METROS = [
+  ['28909-france-paris', 'FR'], ['28889-france-lyon', 'FR'], ['156979-france-marseille', 'FR'], ['28930-france-toulouse', 'FR'],
+  ['28851-france-bordeaux', 'FR'], ['28886-france-lille', 'FR'], ['28901-france-nantes', 'FR'], ['28928-france-strasbourg', 'FR'],
+  ['28896-france-montpellier', 'FR'], ['28903-france-nice', 'FR'], ['28916-france-rennes', 'FR'], ['28863-france-clermont-ferrand', 'FR'],
+  ['28918-france-rouen', 'FR'], ['28876-france-grenoble', 'FR'], ['28869-france-dijon', 'FR'], ['28894-france-metz', 'FR'],
+  ['28899-france-nancy', 'FR'], ['28932-france-tours', 'FR'], ['28855-france-caen', 'FR'], ['104876-france-saint-etienne', 'FR'],
+  ['28840-france-angers', 'FR'], ['182976-belgium-brussels', 'BE'], ['26862-belgium-liege', 'BE'], ['26852-belgium-antwerp', 'BE'],
+  ['35345-belgium-ghent', 'BE'], ['26855-belgium-charleroi', 'BE'], ['27453-switzerland-geneva', 'CH'], ['27454-switzerland-lausanne', 'CH'],
+  ['104761-switzerland-zurich', 'CH'], ['27451-switzerland-basel', 'CH'], ['27452-switzerland-bern', 'CH'], ['35384-switzerland-fribourg', 'CH'],
+];
+const SK_COUNTRY = { france: 'FR', belgium: 'BE', belgique: 'BE', switzerland: 'CH', suisse: 'CH' };
+const skGap = spaced(FAST ? 0 : 1200);
+async function songkickEvents() {
+  const out = [];
+  let pagesOk = 0, metrosOk = 0;
+  for (const [metro, cc] of SK_METROS) {
+    let got = false;
+    for (let page = 1; page <= 40; page++) {
+      if (Date.now() > DEADLINE) return { out, pagesOk, metrosOk };
+      let html;
+      try { html = await skGap(() => getText(`https://www.songkick.com/metro-areas/${metro}?page=${page}`)); }
+      catch (e) { break; }
+      const evs = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].flatMap(m => {
+        try { const j = JSON.parse(m[1]); return Array.isArray(j) ? j : [j]; } catch (e) { return []; }
+      }).filter(x => x && (x['@type'] === 'MusicEvent' || x['@type'] === 'Festival'));
+      if (!evs.length) break;
+      pagesOk++; got = true;
+      for (const e of evs) {
+        const loc = e.location || {}, addr = loc.address || {};
+        const status = String(e.eventStatus || '');
+        out.push({
+          id: `sk${(String(e.url || '').match(/concerts\/(\d+)/) || [])[1] || norm(e.name)}`,
+          d: String(e.startDate || '').slice(0, 10), h: (String(e.startDate || '').match(/T(\d\d:\d\d)/) || [])[1] || '',
+          name: String(e.name || '').replace(/\s+@\s+.*$/, ''), performers: (Array.isArray(e.performer) ? e.performer : [e.performer]).filter(Boolean).map(x => x.name),
+          venue: loc.name || '', city: addr.addressLocality || '', cc: SK_COUNTRY[spacedNorm(addr.addressCountry)] || cc,
+          url: String(e.url || '').replace(/\?.*$/, ''), img: e.image || '', price: 0,
+          status: /Cancelled/i.test(status) ? 'cancelled' : /Postponed/i.test(status) ? 'postponed' : /Rescheduled/i.test(status) ? 'rescheduled' : '',
+          fest: e['@type'] === 'Festival',
+        });
+      }
+      if (!/page=\d+#metro-area-calendar/.test(html) || !html.includes(`page=${page + 1}`)) break;
+    }
+    if (got) metrosOk++;
+  }
+  return { out, pagesOk, metrosOk };
+}
+async function ticketmasterEvents() {
+  const raw = [];
+  for (const cc of TM_COUNTRIES) {
+    try { await tmScan(cc, TODAY, addDays(TODAY, 365), raw); }
+    catch (e) { log(`concerts : Ticketmaster ${cc} indisponible (${e.message})`); if (e.status === 401 || e.status === 403) break; }
+  }
+  return uniqBy(raw, x => x.id).map(e => {
+    const v = (e._embedded && e._embedded.venues && e._embedded.venues[0]) || {};
+    const imgs = e.images || [];
+    const img = imgs.filter(i => i.ratio === '16_9' && i.width >= 500).sort((x, y) => x.width - y.width)[0] || imgs[0];
+    const prices = (e.priceRanges || []).map(q => q.min).filter(n => n > 0);
+    const code = e.dates && e.dates.status && e.dates.status.code;
+    const atts = (e._embedded && e._embedded.attractions) || [];
+    return {
+      id: `tm${e.id}`, d: (e.dates && e.dates.start && e.dates.start.localDate) || '', h: String((e.dates && e.dates.start && e.dates.start.localTime) || '').slice(0, 5),
+      name: e.name || '', performers: atts.map(x => x.name), venue: v.name || '', city: (v.city && v.city.name) || '',
+      cc: (v.country && v.country.countryCode) || '', url: e.url || '', img: img ? img.url : '', price: prices.length ? Math.min(...prices) : 0,
+      status: code === 'cancelled' ? 'cancelled' : code === 'postponed' || code === 'rescheduled' ? code : '', fest: atts.length >= 4,
+    };
+  });
+}
 async function concertsStep(state) {
   const prev = state.concerts || { t: 0, items: [] };
-  if (!TM_KEY) { log('concerts : pas encore de clé TICKETMASTER_KEY, onglet en attente'); return; }
   if (Date.now() - prev.t < 12 * HOUR || Date.now() > DEADLINE) return;
-  const raw = [];
-  let ok = 0;
-  for (const cc of TM_COUNTRIES) {
-    try { await tmScan(cc, TODAY, addDays(TODAY, 365), raw); ok++; }
-    catch (e) { log(`concerts : ${cc} indisponible (${e.message})`); if (e.status === 401 || e.status === 403) break; }
-  }
-  if (!ok) return;
+  const sk = await songkickEvents();
+  const tmList = TM_KEY ? await ticketmasterEvents() : [];
+  if (!sk.pagesOk && !tmList.length) { log('concerts : agendas indisponibles, on garde les dates d’avant'); return; }
   const byName = new Map();
   for (const [id, a] of Object.entries(state.artists)) {
     const k = norm(a.n);
@@ -1196,33 +1260,26 @@ async function concertsStep(state) {
   }
   const items = [];
   const seen = new Set();
-  for (const e of uniqBy(raw, x => x.id)) {
-    const status = e.dates && e.dates.status && e.dates.status.code;
-    const d = e.dates && e.dates.start && e.dates.start.localDate;
-    if (status === 'cancelled' || !isYmd(d) || d < TODAY) continue;
-    const atts = (e._embedded && e._embedded.attractions) || [];
-    const hits = uniqBy(atts.map(x => byName.get(norm(x.name))).filter(Boolean), x => x.id).sort((x, y) => pop(y) - pop(x));
+  // Ticketmaster d’abord quand il est branché : il donne le prix et le lien direct vers les billets
+  for (const e of [...tmList, ...sk.out]) {
+    if (e.status === 'cancelled' || !isYmd(e.d) || e.d < TODAY || e.d > addDays(TODAY, 400)) continue;
+    const hits = uniqBy(e.performers.map(n => byName.get(norm(n))).filter(Boolean), x => x.id).sort((x, y) => pop(y) - pop(x));
     if (!hits.length) continue;
     const c = leanCat(hits[0]);
     if (!c) continue;
-    const v = (e._embedded && e._embedded.venues && e._embedded.venues[0]) || {};
-    const city = (v.city && v.city.name) || '';
-    const key = `${norm(hits[0].n)}|${d}|${norm(city)}`;       // une même date vendue en plusieurs formules (VIP…)
+    const key = `${norm(hits[0].n)}|${e.d}|${norm(e.city)}`;   // même date vue sur plusieurs agendas ou en plusieurs formules
     if (seen.has(key)) continue;
     seen.add(key);
-    const imgs = e.images || [];
-    const img = imgs.filter(i => i.ratio === '16_9' && i.width >= 500).sort((x, y) => x.width - y.width)[0] || imgs[0];
-    const prices = (e.priceRanges || []).map(p => p.min).filter(n => n > 0);
     items.push({
-      id: e.id, d, h: String((e.dates.start && e.dates.start.localTime) || '').slice(0, 5), n: e.name || '', a: hits.map(h => h.n), c,
-      v: v.name || '', ci: city, cc: (v.country && v.country.countryCode) || '', u: e.url || '', im: img ? img.url : '',
-      pr: prices.length ? Math.min(...prices) : 0, st: status === 'postponed' || status === 'rescheduled' ? status : '',
-      fe: atts.length >= 4 ? 1 : 0, p: Math.round(pop(hits[0])),
+      id: e.id, d: e.d, h: e.h, n: e.name, a: hits.map(h => h.n), c, v: e.venue, ci: e.city, cc: e.cc, u: e.url, im: e.img,
+      pr: e.price, st: e.status, fe: e.fest || e.performers.length >= 4 ? 1 : 0, p: Math.round(pop(hits[0])),
     });
   }
   items.sort((x, y) => x.d.localeCompare(y.d) || y.p - x.p);
+  // un agenda resté muet ne doit pas effacer les dates déjà connues
+  if (items.length < (prev.items || []).filter(x => x.d >= TODAY).length * 0.5) { log(`concerts : seulement ${items.length} dates trouvées, on garde les précédentes`); return; }
   state.concerts = { t: Date.now(), items };
-  log(`concerts : ${raw.length} événements lus en ${TM_COUNTRIES.slice(0, ok).join(', ')}, ${items.length} concerts d’artistes suivis`);
+  log(`concerts : ${sk.metrosOk}/${SK_METROS.length} villes lues (${sk.pagesOk} pages, ${sk.out.length} événements)${TM_KEY ? `, ${tmList.length} Ticketmaster` : ''} → ${items.length} dates d’artistes suivis`);
 }
 
 /* ------------------------------------------------------------------ assemblage */
