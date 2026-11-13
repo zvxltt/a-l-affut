@@ -442,12 +442,41 @@ body.d-open .drawer { transform: none; visibility: visible; pointer-events: auto
 .acct { display: inline-flex; align-items: center; height: 36px; padding: 0 4px; border-radius: 999px; margin-right: 2px; }
 .acct .acct-l { padding: 7px 13px; border-radius: 999px; background: var(--ink); color: var(--bg); font-size: 13px; font-weight: 650; white-space: nowrap; }
 .acct:hover .acct-l { background: var(--ink-2); }
-.acct.in:hover .av { box-shadow: 0 0 0 2px var(--line); }
+/* photo de profil en haut à droite et dans la barre du bas : fin cercle noir (thème clair) ou blanc (thème sombre) */
+.acct.in .av:not(.sk) { box-shadow: inset 0 0 0 1px var(--line), 0 0 0 2px var(--bg), 0 0 0 3.5px var(--ink); }
+.acct.in:hover .av:not(.sk) { box-shadow: inset 0 0 0 1px var(--line), 0 0 0 2px var(--bg), 0 0 0 3.5px var(--ink), 0 0 0 7px var(--soft); }
+#bn-av .av { box-shadow: inset 0 0 0 1px var(--line), 0 0 0 1.5px var(--bg), 0 0 0 2.75px var(--ink); }
+.bn[aria-current="page"] #bn-av .av { box-shadow: inset 0 0 0 1px var(--line), 0 0 0 1.5px var(--soft), 0 0 0 2.75px var(--ink); }
 .av { display: inline-grid; place-items: center; flex: none; border-radius: 50%; overflow: hidden; background: var(--soft); color: var(--ink-2); font-weight: 750; box-shadow: inset 0 0 0 1px var(--line); }
 .av img { width: 100%; height: 100%; object-fit: cover; }
 .av.sm { width: 30px; height: 30px; font-size: 13px; }
 .av.xs { width: 24px; height: 24px; font-size: 11px; }
 .av.xl { width: 92px; height: 92px; font-size: 38px; }
+.av.lg { width: 56px; height: 56px; font-size: 22px; }
+.av.xxl { width: 132px; height: 132px; font-size: 52px; }
+/* ---------- photo de profil ---------- */
+.prof-av, .ph-mini { position: relative; display: inline-grid; padding: 0; border-radius: 50%; flex: none; }
+.prof-av .av, .ph-mini .av { transition: filter .15s; }
+.prof-av:hover .av, .ph-mini:hover .av { filter: brightness(.9); }
+.prof-cam { position: absolute; right: 0; bottom: 0; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: var(--bg); box-shadow: 0 0 0 3px var(--bg); }
+.prof-cam svg { width: 15px; height: 15px; }
+.ph-mini .prof-cam { width: 22px; height: 22px; right: -2px; bottom: -2px; box-shadow: 0 0 0 2px var(--bg); }
+.ph-mini .prof-cam svg { width: 12px; height: 12px; }
+.fld-ph { display: flex; align-items: center; gap: 16px; margin: 0 0 18px; }
+.fld-ph > div { display: grid; gap: 8px; justify-items: start; }
+.fld-ph b { font: 600 11px var(--font-mono); text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+.ph-now { display: grid; place-items: center; margin: 4px 0 22px; }
+.ph-acts { display: grid; gap: 8px; }
+.ph-pick { position: relative; overflow: hidden; cursor: pointer; }
+.ph-pick input { position: absolute; inset: 0; opacity: 0; cursor: pointer; font-size: 0; }
+.ph-pick:focus-within { outline: 2px solid var(--ink); outline-offset: 2px; }
+.crop { position: relative; width: var(--s); height: var(--s); margin: 4px auto 0; overflow: hidden; border-radius: 18px; background: var(--soft); touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+.crop.drag { cursor: grabbing; }
+.crop img { position: absolute; left: 50%; top: 50%; max-width: none; pointer-events: none; -webkit-user-drag: none; }
+.crop::after { content: ""; position: absolute; inset: 0; border-radius: 50%; box-shadow: 0 0 0 2px rgba(255, 255, 255, .92), 0 0 0 999px rgba(0, 0, 0, .5); pointer-events: none; }
+.crop-z { display: flex; align-items: center; gap: 10px; width: var(--s, 240px); max-width: 100%; margin: 16px auto 0; color: var(--muted); }
+.crop-z svg { width: 18px; height: 18px; flex: none; }
+.crop-z input { flex: 1; accent-color: var(--ink); }
 .av.sk { background: var(--line); animation: pulse 1.2s ease-in-out infinite alternate; }
 @keyframes pulse { to { opacity: .45; } }
 .muted { color: var(--muted); }
@@ -931,6 +960,7 @@ const S = {
   type: TYPE_LABEL[prefs.type] ? prefs.type : 'all',
   cc: COUNTRY[prefs.cc] ? prefs.cc : 'all',
   q: '', detail: null, handle: '', sub: '',
+  open: new Set(),   // sections dépliées en entier (« semaine:section »)
 };
 if (!['a-venir', 'semaine', 'concerts', 'abonnements'].includes(SET.start)) SET.start = 'a-venir';
 
@@ -1152,9 +1182,15 @@ function viewWeek() {
   const usedAt = wr ? wr.at : -1;
   let html = S.week === 0 ? rateCtaHtml() : '';
   if (FB_CONFIG) html += topRatedHtml(list);
-  if (albums.length) html += section('Albums', albums.length, `<div class="grid">${albums.map(cardHtml).join('')}</div>`, 'sec-albums');
-  if (eps.length) html += section('EP', eps.length, `<div class="grid">${eps.map(cardHtml).join('')}</div>`, 'sec-ep');
-  if (singles.length) html += section('Singles', singles.length, `<div class="rows">${singles.map(r => rowHtml(r, false)).join('')}</div>`, 'sec-singles');
+  // beaucoup de sorties chaque semaine : les plus attendues d’abord, le reste en un clic (tout s’affiche pendant une recherche)
+  const CAP = { 'sec-albums': 24, 'sec-ep': 12, 'sec-singles': 40 };
+  const full = id => !!S.q.trim() || S.open.has(`${S.week}:${id}`);
+  const cap = (id, arr) => (full(id) ? arr : arr.slice(0, CAP[id]));
+  const moreBtn = (id, arr, one, many) => (full(id) || arr.length <= CAP[id] ? ''
+    : `<p class="more-row sec-more"><button class="btn" type="button" data-open="${id}">${arr.length - CAP[id] === 1 ? `Afficher l’autre ${one}` : `Afficher les ${arr.length - CAP[id]} autres ${many}`}</button></p>`);
+  if (albums.length) html += section('Albums', albums.length, `<div class="grid">${cap('sec-albums', albums).map(cardHtml).join('')}</div>${moreBtn('sec-albums', albums, 'album', 'albums')}`, 'sec-albums');
+  if (eps.length) html += section('EP', eps.length, `<div class="grid">${cap('sec-ep', eps).map(cardHtml).join('')}</div>${moreBtn('sec-ep', eps, 'EP', 'EP')}`, 'sec-ep');
+  if (singles.length) html += section('Singles', singles.length, `<div class="rows">${cap('sec-singles', singles).map(r => rowHtml(r, false)).join('')}</div>${moreBtn('sec-singles', singles, 'single', 'singles')}`, 'sec-singles');
   const more = elsewhereHtml(base);
   if (!list.length) html += more ? `<div class="empty"><strong>Rien cette semaine pour « ${esc(S.q.trim())} ».</strong>Voici ce qui correspond ailleurs.</div>` : emptyHtml(base.length ? 'filters' : 'week');
   html += more;
@@ -1640,6 +1676,7 @@ async function onUser(user) {
 }
 function refreshAfterAuth() {
   FEED = null; FOLLOWERS.clear(); PEOPLE = { q: '', list: null, err: false }; paintFeedBadge();
+  if (ME.profile) photoReady();
   if (ME.user && ME.profile && following().length) loadFeed().then(paintFeedBadge, () => {});
   if (S.detail) { const r = detailRelease(); if (r) paintRatings(r); }
   if (['profil', 'user', 'semaine', 'parametres', 'abonnements'].includes(S.view)) render();
@@ -1749,14 +1786,18 @@ const isPwUser = () => !!(FB && FB.auth.currentUser && FB.auth.currentUser.provi
 const slug = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 20);
 function profileFormHtml(kind, p) {
   const u = ME.user || {};
-  let h = p ? p.h : slug(u.displayName || (u.email || '').split('@')[0]);
+  const d = kind === 'edit' ? EDIT_DRAFT : null;
+  EDIT_DRAFT = null;
+  let h = d ? d.h : p ? p.h : slug(u.displayName || (u.email || '').split('@')[0]);
   if (h.length < 3) h = `${h || 'fan'}${Math.floor(100 + Math.random() * 900)}`.slice(0, 20);
-  const n = p ? p.n : (u.displayName || 'Auditeur').slice(0, 50);
+  const n = d ? d.n : p ? p.n : (u.displayName || 'Auditeur').slice(0, 50);
+  const bio = d ? d.bio : (p && p.bio) || '';
   return `<form id="f-profile" data-kind="${kind}" novalidate>
+    ${kind === 'edit' && photoReady() ? photoRowHtml(p) : ''}
     <label class="fld"><span>Pseudo</span><span class="fld-at"><b>@</b><input name="h" value="${esc(h)}" maxlength="20" autocomplete="off" autocapitalize="none" spellcheck="false" required></span>
       <small>3 à 20 caractères : lettres minuscules, chiffres et _. C’est l’adresse de ton profil.</small></label>
     <label class="fld"><span>Nom affiché</span><input name="n" value="${esc(n)}" maxlength="50" required></label>
-    ${kind === 'edit' ? `<label class="fld"><span>Bio</span><textarea name="bio" maxlength="300" rows="3" placeholder="Ce que tu écoutes, ce que tu défends…">${esc(p.bio || '')}</textarea></label>` : ''}
+    ${kind === 'edit' ? `<label class="fld"><span>Bio</span><textarea name="bio" maxlength="300" rows="3" placeholder="Ce que tu écoutes, ce que tu défends…">${esc(bio)}</textarea></label>` : ''}
     <p class="m-err" id="f-err" role="alert"></p>
     <div class="m-actions"><button class="btn solid" type="submit">${kind === 'edit' ? 'Enregistrer' : 'Créer mon profil'}</button></div>
     ${kind === 'edit' ? `<div class="m-danger"><button class="btn danger" type="button" data-act="del-account">Supprimer mon compte</button></div>` : ''}
@@ -1816,11 +1857,11 @@ async function propagateAuthor() {
   const mine = [...(ME.reviews || new Map()).values()];
   for (let i = 0; i < mine.length; i += 400) {
     const b = F.writeBatch(db);
-    for (const x of mine.slice(i, i + 400)) b.update(F.doc(db, 'reviews', x.id), { h: ME.profile.h, n: ME.profile.n, ph: ME.profile.ph || '', up: F.serverTimestamp() });
+    for (const x of mine.slice(i, i + 400)) b.update(F.doc(db, 'reviews', x.id), { h: ME.profile.h, n: ME.profile.n, ph: phForReview(ME.profile.ph), up: F.serverTimestamp() });
     await b.commit();
   }
-  for (const x of mine) { x.h = ME.profile.h; x.n = ME.profile.n; }
-  REV.clear(); WEEKREV.clear();
+  for (const x of mine) { x.h = ME.profile.h; x.n = ME.profile.n; x.ph = phForReview(ME.profile.ph); }
+  REV.clear(); WEEKREV.clear(); FEED = null;
 }
 async function deleteAccount(btn) {
   if (btn.dataset.confirm !== '1') {
@@ -1845,6 +1886,7 @@ async function deleteAccount(btn) {
     }
     const b = F.writeBatch(db);
     b.delete(F.doc(db, 'users', u.uid));
+    b.delete(F.doc(db, 'photos', u.uid));
     if (ME.profile) b.delete(F.doc(db, 'handles', ME.profile.h));
     await b.commit();
     try { await A.deleteUser(u); }
@@ -2150,7 +2192,7 @@ async function writeReview(k, patch) {
   }
   const data = {
     k, uid, r, w, d: rel.date, t: rel.title.slice(0, 300), a: rel.artist.slice(0, 300),
-    img: (coverUrl(rel, 500) || '').slice(0, 600), rt: rel.rt, c: rel.cat, h: ME.profile.h, n: ME.profile.n, ph: (ME.profile.ph || '').slice(0, 600),
+    img: (coverUrl(rel, 500) || '').slice(0, 600), rt: rel.rt, c: rel.cat, h: ME.profile.h, n: ME.profile.n, ph: phForReview(ME.profile.ph),
   };
   if (tx) data.tx = tx;
   if (tr) { data.tr = tr; if (tl) data.tl = tl; }
@@ -2282,6 +2324,226 @@ function rateCtaHtml() {
     <button class="icon-btn cta-x" type="button" data-act="cta-x" aria-label="Masquer ce message" title="Masquer">${I.x}</button></div>`;
 }
 
+/* ---------- photo de profil ----------
+   Choisie et recadrée dans le navigateur. Une petite version (96 px) va dans le profil et sur chaque note,
+   une grande (320 px) dans photos/{uid}, lue seulement sur la page du profil. */
+const PH_SMALL = 96, PH_BIG = 320, CROP = 240;
+const CAM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.4"/></svg>';
+const ZOOM_I = (plus) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2M8.5 11h5${plus ? 'M11 8.5v5' : ''}"/></svg>`;
+const BIGPH = new Map();   // uid -> { at, d, loading } : grandes photos des profils
+let PHOTO = null;          // photo en cours de recadrage : { img, url, w, h, x, y, z }
+let PHOTO_FROM = '';       // « edit » : revenir ensuite à « Modifier le profil »
+let EDIT_DRAFT = null;     // champs de « Modifier le profil » gardés pendant le changement de photo
+const isDataPhoto = ph => String(ph || '').startsWith('data:image/');
+// Les règles qui autorisent les photos sont-elles publiées ? Lire photos/_ : refusé avec les anciennes règles,
+// permis (document absent) avec les nouvelles. Le bouton « photo » n’apparaît qu’une fois la réponse positive.
+let PHOTO_OK = null;   // null : pas encore vérifié ; 'wait' ; true ; false
+const photoRowHtml = p => `<div class="fld-ph"><button class="ph-mini" type="button" data-act="photo-edit" aria-label="Modifier la photo de profil">${avatarHtml(p, 'lg')}<span class="prof-cam" aria-hidden="true">${CAM}</span></button>
+  <div><b>Photo de profil</b><button class="btn sm" type="button" data-act="photo-edit">${p.ph ? 'Changer la photo' : 'Ajouter une photo'}</button></div></div>`;
+function photoReady() {
+  if (PHOTO_OK === null && FB_CONFIG) {
+    PHOTO_OK = 'wait';
+    fb().then(({ F, db }) => F.getDoc(F.doc(db, 'photos', '_')))
+      .then(() => true, e => !(e && e.code === 'permission-denied'))
+      .then(ok => {
+        PHOTO_OK = ok;
+        if (ok && (S.view === 'profil' || S.view === 'user') && !S.detail) render();
+        const f = ok && $('#f-profile[data-kind="edit"]');   // fenêtre déjà ouverte : on ajoute la ligne sans effacer la saisie
+        if (f && !f.querySelector('.fld-ph')) f.insertAdjacentHTML('afterbegin', photoRowHtml(ME.profile));
+      });
+  }
+  return PHOTO_OK === true;
+}
+// photo recopiée sur une note : la petite photo choisie (9 000 caractères au plus) ou l’adresse de la photo Google
+const phForReview = ph => { ph = String(ph || ''); return isDataPhoto(ph) ? (ph.length <= 9000 ? ph : '') : ph.slice(0, 600); };
+function bigPhotoOf(uid, u) {
+  if (!uid || !u || !isDataPhoto(u.ph)) return null;
+  const c = BIGPH.get(uid);
+  if (!c || (!c.loading && Date.now() - c.at > 10 * 60e3)) {
+    BIGPH.set(uid, { at: c ? c.at : 0, d: c ? c.d : null, loading: true });
+    getDocData('photos', uid).then(x => BIGPH.set(uid, { at: Date.now(), d: x && x.d ? x.d : null }), () => BIGPH.set(uid, { at: Date.now(), d: c ? c.d : null }))
+      .then(() => { const b = BIGPH.get(uid), im = $('#prof-ph'); if (b && b.d && im && im.dataset.uid === uid) im.src = b.d; });
+  }
+  return BIGPH.get(uid).d;
+}
+function googlePhoto() {
+  const u = FB && FB.auth.currentUser;
+  const g = u && (u.providerData || []).find(p => p.providerId === 'google.com');
+  return (g && g.photoURL) || '';
+}
+function openPhoto(from) {
+  if (!ME.user || !ME.profile) return;
+  if (from === 'edit') { const f = $('#f-profile'); EDIT_DRAFT = f ? { h: f.h.value, n: f.n.value, bio: f.bio ? f.bio.value : '' } : null; }
+  PHOTO_FROM = from || '';
+  dropPhoto();
+  paintPhoto();
+}
+function dropPhoto() { if (PHOTO) { URL.revokeObjectURL(PHOTO.url); PHOTO = null; } }
+function paintPhoto(err) {
+  const p = ME.profile;
+  if (!PHOTO) {
+    const big = bigPhotoOf(ME.user.uid, p), g = googlePhoto();
+    openModal('photo', `<h2 class="m-title" id="m-title">Photo de profil</h2>
+      <p class="m-sub">Elle s’affiche sur ton profil, en haut à droite du site et à côté de tes notes et de tes critiques.</p>
+      <div class="ph-now">${avatarHtml(big ? { ...p, ph: big } : p, 'xxl')}</div>
+      <div class="ph-acts">
+        <label class="btn solid ph-pick">${CAM}<span>${p.ph ? 'Choisir une autre photo' : 'Choisir une photo'}</span><input type="file" id="ph-file" accept="image/*"></label>
+        ${g && p.ph !== g ? '<button class="btn" type="button" data-act="ph-google">Reprendre ma photo Google</button>' : ''}
+        ${p.ph ? '<button class="btn" type="button" data-act="ph-remove">Retirer la photo</button>' : ''}
+      </div>
+      <p class="m-err" id="ph-err" role="alert">${esc(err || '')}</p>
+      ${PHOTO_FROM === 'edit' ? '<div class="m-actions"><button class="btn" type="button" data-act="ph-done">Retour au profil</button></div>' : ''}`);
+    return;
+  }
+  openModal('photo', `<h2 class="m-title" id="m-title">Cadrer la photo</h2>
+    <p class="m-sub">Fais glisser la photo et règle le zoom : le cercle montre ce qui sera affiché.</p>
+    <div class="crop" id="crop" style="--s:${CROP}px"><img id="crop-img" src="${PHOTO.url}" alt="" draggable="false"></div>
+    <label class="crop-z">${ZOOM_I(false)}<input type="range" id="crop-z" min="1" max="4" step="0.01" value="${PHOTO.z}" aria-label="Zoom">${ZOOM_I(true)}</label>
+    <p class="m-err" id="ph-err" role="alert"></p>
+    <div class="m-actions"><button class="btn" type="button" data-act="ph-cancel">Annuler</button><button class="btn solid" type="button" data-act="ph-save">Enregistrer</button></div>`);
+  placeCrop();
+}
+const cropScale = () => Math.max(CROP / PHOTO.w, CROP / PHOTO.h) * PHOTO.z;
+function placeCrop() {
+  const im = $('#crop-img');
+  if (!im || !PHOTO) return;
+  const s = cropScale(), mx = Math.max(0, (PHOTO.w * s - CROP) / 2), my = Math.max(0, (PHOTO.h * s - CROP) / 2);
+  PHOTO.x = Math.min(mx, Math.max(-mx, PHOTO.x));
+  PHOTO.y = Math.min(my, Math.max(-my, PHOTO.y));
+  im.style.width = `${PHOTO.w * s}px`;
+  im.style.height = `${PHOTO.h * s}px`;
+  im.style.transform = `translate(calc(-50% + ${PHOTO.x}px), calc(-50% + ${PHOTO.y}px))`;
+}
+function setZoom(z) {
+  if (!PHOTO) return;
+  const old = PHOTO.z;
+  PHOTO.z = Math.min(4, Math.max(1, z));
+  PHOTO.x *= PHOTO.z / old; PHOTO.y *= PHOTO.z / old;   // zoom autour du centre du cercle
+  const r = $('#crop-z');
+  if (r && Number(r.value) !== PHOTO.z) r.value = PHOTO.z;
+  placeCrop();
+}
+// glisser (souris, doigt) et pincer pour zoomer dans la zone de recadrage
+const PTRS = new Map();
+document.addEventListener('pointerdown', e => {
+  const c = e.target.closest && e.target.closest('#crop');
+  if (!c || !PHOTO) return;
+  e.preventDefault();
+  try { c.setPointerCapture(e.pointerId); } catch (err) { /* déjà capturé */ }
+  PTRS.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  c.classList.add('drag');
+});
+document.addEventListener('pointermove', e => {
+  if (!PHOTO || !PTRS.has(e.pointerId)) return;
+  const prev = PTRS.get(e.pointerId);
+  if (PTRS.size === 1) { PHOTO.x += e.clientX - prev.x; PHOTO.y += e.clientY - prev.y; placeCrop(); }
+  else {
+    const other = [...PTRS.entries()].find(([id]) => id !== e.pointerId)[1];
+    const d0 = Math.hypot(prev.x - other.x, prev.y - other.y), d1 = Math.hypot(e.clientX - other.x, e.clientY - other.y);
+    if (d0 > 8) setZoom(PHOTO.z * (d1 / d0));
+  }
+  PTRS.set(e.pointerId, { x: e.clientX, y: e.clientY });
+});
+const endPtr = e => { PTRS.delete(e.pointerId); if (!PTRS.size) { const c = $('#crop'); if (c) c.classList.remove('drag'); } };
+document.addEventListener('pointerup', endPtr);
+document.addEventListener('pointercancel', endPtr);
+document.addEventListener('wheel', e => {
+  if (!PHOTO || !(e.target.closest && e.target.closest('#crop'))) return;
+  e.preventDefault();
+  setZoom(PHOTO.z * (e.deltaY < 0 ? 1.08 : 1 / 1.08));
+}, { passive: false });
+document.addEventListener('input', e => { if (e.target.id === 'crop-z') setZoom(Number(e.target.value)); });
+document.addEventListener('change', e => {
+  if (e.target.id !== 'ph-file') return;
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  if (f.size > 30e6) { paintPhoto('Image trop lourde : 30 Mo au maximum.'); return; }
+  const url = URL.createObjectURL(f);
+  const img = new Image();
+  img.onload = () => {
+    if (!img.naturalWidth || !img.naturalHeight) { img.onerror(); return; }
+    PHOTO = { img, url, w: img.naturalWidth, h: img.naturalHeight, x: 0, y: 0, z: 1 };
+    paintPhoto();
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); paintPhoto('Ton navigateur ne lit pas ce format : choisis une photo JPEG, PNG ou WebP.'); };
+  img.src = url;
+});
+$modal.addEventListener('close', () => { dropPhoto(); PTRS.clear(); });
+// la zone gardée, rendue à `size` pixels : d’abord à 8 fois la taille au plus, puis réduite par moitiés (rendu net)
+function renderCrop(size) {
+  const s = cropScale();
+  let cur = Math.max(size, Math.min(Math.round(CROP / s), size * 8));
+  let cv = document.createElement('canvas');
+  cv.width = cv.height = cur;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, cur, cur);
+  ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+  const k = cur / CROP;
+  ctx.drawImage(PHOTO.img, (CROP / 2 + PHOTO.x - (PHOTO.w * s) / 2) * k, (CROP / 2 + PHOTO.y - (PHOTO.h * s) / 2) * k, PHOTO.w * s * k, PHOTO.h * s * k);
+  while (cur > size) {
+    const next = Math.max(size, Math.round(cur / 2));
+    const c2 = document.createElement('canvas');
+    c2.width = c2.height = next;
+    const x2 = c2.getContext('2d');
+    x2.imageSmoothingEnabled = true; x2.imageSmoothingQuality = 'high';
+    x2.drawImage(cv, 0, 0, next, next);
+    cv = c2; cur = next;
+  }
+  return cv;
+}
+// WebP si le navigateur sait l’écrire, sinon JPEG ; qualité baissée jusqu’à tenir dans `max` caractères
+function encodePhoto(cv, max) {
+  for (const q of [0.86, 0.78, 0.7, 0.6, 0.5, 0.4]) {
+    let d = cv.toDataURL('image/webp', q);
+    if (!d.startsWith('data:image/webp')) d = cv.toDataURL('image/jpeg', q);
+    if (d.length <= max) return d;
+  }
+  return null;
+}
+async function setPhoto(ph, big) {
+  const { F, db, auth } = FB, uid = auth.currentUser.uid;
+  const b = F.writeBatch(db);
+  b.update(F.doc(db, 'users', uid), { ph, up: F.serverTimestamp() });
+  if (big) b.set(F.doc(db, 'photos', uid), { d: big, up: F.serverTimestamp() });
+  else b.delete(F.doc(db, 'photos', uid));
+  await b.commit();
+  ME.profile = { ...ME.profile, ph };
+  BIGPH.set(uid, { at: Date.now(), d: big || null });
+  if (USERS.has(uid)) USERS.set(uid, { ...USERS.get(uid), ph });
+  PROFILES.clear();
+  try { await propagateAuthor(); } catch (e) { /* les notes garderont l’ancienne photo jusqu’à la prochaine modification */ }
+}
+async function photoDone(msg) {
+  dropPhoto();
+  paintAcct();
+  toast(msg);
+  if (PHOTO_FROM === 'edit') openEditProfile();
+  else closeModal();
+  if (S.view === 'profil' || (S.view === 'user' && ME.profile && S.handle === ME.profile.h)) render();
+  const r = detailRelease(); if (r) paintRatings(r);
+}
+async function photoAction(act, btn) {
+  if (act === 'ph-cancel') { dropPhoto(); paintPhoto(); return; }
+  if (act === 'ph-done') { dropPhoto(); openEditProfile(); return; }
+  const err = $('#ph-err');
+  btn.disabled = true;
+  const label = btn.textContent;
+  btn.textContent = 'Enregistrement…';
+  try {
+    if (act === 'ph-save') {
+      if (!PHOTO) return;
+      const big = encodePhoto(renderCrop(PH_BIG), 48000), small = encodePhoto(renderCrop(PH_SMALL), 8000);
+      if (!big || !small) throw new Error('photo trop lourde');
+      await setPhoto(small, big);
+      await photoDone('Photo de profil mise à jour');
+    } else if (act === 'ph-google') { await setPhoto(googlePhoto(), null); await photoDone('Photo Google remise'); }
+    else if (act === 'ph-remove') { await setPhoto('', null); await photoDone('Photo retirée'); }
+  } catch (e) {
+    btn.disabled = false; btn.textContent = label;
+    if (err) err.textContent = 'Enregistrement impossible pour le moment, réessaie dans un instant.';
+  }
+}
+
 /* ---------- abonnements ----------
    Comme sur Letterboxd : on s’abonne à quelqu’un sans demande à accepter (les notes sont publiques).
    Les abonnements sont dans users/{uid}.fr ; les abonnés se retrouvent par « fr contient son identifiant ». */
@@ -2360,6 +2622,7 @@ const folStatsHtml = (h, nFol, nFollowing, cls, extra = '') => `<p class="${cls}
    Les notes des abonnements, semaine par semaine : « uid parmi 30 » + « semaine = w »,
    ce qui ne demande aucun index composé dans Firestore. Tri du plus récent au plus ancien. */
 let FEED = null;              // { at, weeks, items, done, stale }
+const postTime = x => tsMs(x.at) || tsMs(x.up);
 let FEED_TAB = 'tout';        // tout | critiques
 const FEED_STEP = 4, FEED_MAX = 26;
 const weekList = (from, n) => Array.from({ length: n }, (_, i) => addDays(weekStartOf(today()), -7 * (from + i)));
@@ -2380,7 +2643,7 @@ function loadFeed(more) {
     })));
     // en rafraîchissant les semaines récentes, on garde les plus anciennes déjà chargées
     const keep = fresh ? [] : FEED.items.filter(x => !weeks.includes(x.w));
-    const items = [...keep, ...got].filter(x => ids.includes(x.uid)).sort((a, b) => tsMs(b.up) - tsMs(a.up));
+    const items = [...keep, ...got].filter(x => ids.includes(x.uid)).sort((a, b) => postTime(b) - postTime(a));
     const n = more && !fresh ? from + FEED_STEP : fresh ? FEED_STEP : Math.max(FEED.weeks, FEED_STEP);
     return (FEED = { at: Date.now(), weeks: n, items, done: n >= FEED_MAX });
   })().finally(() => { feedLoading = null; });
@@ -2390,7 +2653,7 @@ function loadFeed(more) {
 function paintFeedBadge() {
   let seen = store.get('feedSeen', 0);
   if (!seen && ME.user) { seen = Date.now(); store.set('feedSeen', seen); }
-  const n = ME.user && ME.profile && FEED ? FEED.items.filter(x => x.uid !== ME.user.uid && tsMs(x.up) > seen).length : 0;
+  const n = ME.user && ME.profile && FEED ? FEED.items.filter(x => x.uid !== ME.user.uid && postTime(x) > seen).length : 0;
   $$('[data-badge="abonnements"]').forEach(el => {
     el.textContent = n ? (n > 99 ? '99+' : String(n)) : '';
     el.closest('a').setAttribute('aria-label', n ? `Abonnements, ${n} ${plural(n, 'nouveauté', 'nouveautés')}` : 'Abonnements');
@@ -2411,7 +2674,7 @@ function postHtml(x) {
   return `<article class="post">
     <a class="post-av" href="${prof}" tabindex="-1" aria-hidden="true">${avatarHtml(x, 'md')}</a>
     <div class="post-b">
-      <p class="post-h"><a href="${prof}"><b>${esc(x.n || '?')}</b></a><span>@${esc(x.h || '')}</span><span aria-hidden="true">·</span><time datetime="${new Date(tsMs(x.up) || Date.now()).toISOString()}">${esc(timeAgo(tsMs(x.up)))}</time></p>
+      <p class="post-h"><a href="${prof}"><b>${esc(x.n || '?')}</b></a><span>@${esc(x.h || '')}</span><span aria-hidden="true">·</span><time datetime="${new Date(postTime(x) || Date.now()).toISOString()}">${esc(timeAgo(postTime(x)))}</time></p>
       <p class="post-a">${esc(what)}</p>
       <button class="post-rel" type="button" data-rkey="${esc(x.k)}" data-from="feed">
         <span class="cover">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : `<span class="ph" aria-hidden="true">${esc(initial(x.t))}</span>`}</span>
@@ -2635,8 +2898,10 @@ function viewProfile() {
   const avg = notes.length ? notes.reduce((s, x) => s + x.r, 0) / notes.length / 2 : 0;
   const thisWeek = reviews.filter(x => x.w === weekStartOf(today())).length;
   const since = sinceLabel(u.since);
+  const big = bigPhotoOf(data.uid, u);
+  const av = avatarHtml(big ? { ...u, ph: big } : u, 'xl').replace('<img ', `<img id="prof-ph" data-uid="${esc(data.uid || '')}" `);
   $head.innerHTML = `<div class="prof">
-      ${avatarHtml(u, 'xl')}
+      ${own && photoReady() ? `<button class="prof-av" type="button" data-act="photo" aria-label="Modifier la photo de profil" title="Modifier la photo">${av}<span class="prof-cam" aria-hidden="true">${CAM}</span></button>` : av}
       <div class="prof-t"><p class="kicker">${own ? 'Mon profil' : 'Profil'}</p><h1 class="h1">${esc(u.n)}</h1>
         <p class="prof-meta">@${esc(u.h)}${since ? ` · membre depuis ${esc(since)}` : ''}</p>
         ${u.bio ? `<p class="sub prof-bio">${esc(u.bio)}</p>` : own ? '<p class="sub muted">Ajoute une bio pour présenter tes goûts.</p>' : ''}
@@ -2783,6 +3048,9 @@ document.addEventListener('click', e => {
   else if (act === 'mail-reset') resetPassword(($('#f-mail [name=email]') || {}).value);
   else if (act === 'pw-change') resetPassword(FB && FB.auth.currentUser && FB.auth.currentUser.email);
   else if (act === 'follow') toggleFollow(el.dataset.uid, el.dataset.n || 'ce profil');
+  else if (act === 'photo') openPhoto('');
+  else if (act === 'photo-edit') openPhoto('edit');
+  else if (act === 'ph-save' || act === 'ph-cancel' || act === 'ph-google' || act === 'ph-remove' || act === 'ph-done') photoAction(act, el);
   else if (act === 'feed-tab') { FEED_TAB = el.dataset.v; render(); }
   else if (act === 'feed-more') { el.disabled = true; el.textContent = 'Chargement…'; loadFeed(true).then(() => render(), () => { el.disabled = false; el.textContent = 'Voir plus ancien'; }); }
   else if (act === 'cta-x') { store.set('ctaOff', true); const c = el.closest('.cta'); if (c) c.remove(); toast(matchMedia('(max-width: 860px)').matches ? 'Tu pourras te connecter depuis l’onglet Profil' : 'Tu pourras te connecter avec le bouton en haut à droite'); }
@@ -2824,7 +3092,7 @@ document.addEventListener('touchmove', e => { if (!SET.zoom && e.touches && e.to
 const savePrefs = () => store.set('prefs', { cat: S.cat, type: S.type, cc: S.cc });
 
 document.addEventListener('click', e => {
-  const el = e.target.closest('[data-key],[data-week],[data-cat],[data-type],[data-cc],[data-play],[data-copy],[data-share],[data-jump],[data-reset],[data-set],.tab,.bn,#ftoggle,#scrim,#d-close,#d-share');
+  const el = e.target.closest('[data-key],[data-week],[data-cat],[data-type],[data-cc],[data-play],[data-copy],[data-share],[data-jump],[data-reset],[data-set],[data-open],.tab,.bn,#ftoggle,#scrim,#d-close,#d-share');
   if (!el) return;
   const ds = el.dataset;
   if (el.id === 'd-share') { if (S.detail) shareRelease(S.detail); return; }
@@ -2839,6 +3107,7 @@ document.addEventListener('click', e => {
   }
   if (ds.share) { shareRelease(ds.share); return; }
   if (ds.jump) { const t = document.getElementById(ds.jump); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  if (ds.open) { S.open.add(`${S.week}:${ds.open}`); render(); return; }
   if (el.id === 'scrim' || el.id === 'd-close') { closeDetail(); return; }
   if (el.id === 'ftoggle') {
     const open = $filters.hidden;
