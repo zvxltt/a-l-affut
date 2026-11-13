@@ -552,9 +552,9 @@ async function linksStep(state, items) {
   items.forEach(it => it.dz && attach(it));
   if (FAST) return;
   const from = addDays(TODAY, -14);
-  const todo = items.filter(it => it.dz && it.d >= from && (!cache[it.dz] || (!cache[it.dz].sp && Date.now() - cache[it.dz].t > 2 * DAY)))
+  const todo = items.filter(it => it.dz && it.d >= from && (!cache[it.dz] || (!cache[it.dz].sp && Date.now() - cache[it.dz].t > (cache[it.dz].err || !cache[it.dz].yt ? 6 * HOUR : 2 * DAY))))
     .sort((a, b) => b.p - a.p).slice(0, 25);
-  let n = 0;
+  let n = 0; const errs = {};
   for (const it of todo) {
     if (Date.now() > DEADLINE - 3 * MIN) break;
     try {
@@ -563,13 +563,15 @@ async function linksStep(state, items) {
       cache[it.dz] = { sp: (L.spotify && L.spotify.url) || '', yt: (L.youtubeMusic && L.youtubeMusic.url) || (L.youtube && L.youtube.url) || '', t: Date.now() };
       attach(it); n++;
     } catch (e) {
+      const why = e.status ? `HTTP ${e.status}` : (e.name === 'AbortError' ? 'délai' : String(e.message || e).slice(0, 60));
+      errs[why] = (errs[why] || 0) + 1;
       if (e.status === 429) break;
-      cache[it.dz] = { sp: '', yt: '', t: Date.now() };
+      cache[it.dz] = { sp: '', yt: '', t: Date.now(), err: 1 };
     }
   }
   const live = new Set(items.map(i => String(i.dz)));
   for (const k of Object.keys(cache)) if (!live.has(k)) delete cache[k];
-  if (todo.length) log(`liens Spotify et YouTube : ${n}/${todo.length} sorties`);
+  if (todo.length) log(`liens Spotify et YouTube : ${n}/${todo.length} sorties${Object.keys(errs).length ? ` · erreurs ${JSON.stringify(errs)}` : ''}`);
 }
 
 function buildDeezerReleases(artists, discos, albums) {
