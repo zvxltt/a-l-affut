@@ -16,11 +16,16 @@ service cloud.firestore {
     function okStr(m, k, max) { return !(k in m) || (m[k] is string && m[k].size() <= max); }
 
     function validReview(r) {
-      return r.keys().hasOnly(['k', 'uid', 'r', 'tx', 'w', 'd', 't', 'a', 'img', 'rt', 'c', 'h', 'n', 'ph', 'at', 'up'])
+      return r.keys().hasOnly(['k', 'uid', 'r', 'tx', 'w', 'd', 't', 'a', 'img', 'rt', 'c', 'h', 'n', 'ph', 'at', 'up', 'tr', 'tl'])
         && r.keys().hasAll(['k', 'uid', 'r', 'w', 'd', 't', 'a', 'at', 'up'])
         && r.uid == request.auth.uid
         && r.k is string && r.k.matches('^[A-Za-z0-9_-]{2,80}$')
-        && r.r is int && r.r >= 1 && r.r <= 10
+        && r.r is int && r.r >= 0 && r.r <= 10
+        // notes des sons : un caractère par titre, 0 = pas de note, 1 à 9, a = 10
+        && (!('tr' in r) || (r.tr is string && r.tr.matches('^[0-9a]{1,150}$')))
+        // sans note d'ensemble, il faut au moins un son noté
+        && (r.r >= 1 || ('tr' in r && r.tr.matches('^[0-9a]*[1-9a][0-9a]*$')))
+        && okStr(r, 'tl', 8000)
         && isDate(r.d) && isDate(r.w) && dateOf(r.w) == weekStartOf(r.d)
         && r.t is string && r.t.size() <= 300 && r.a is string && r.a.size() <= 300
         && okStr(r, 'tx', 3000) && okStr(r, 'img', 600) && okStr(r, 'rt', 10) && okStr(r, 'c', 10)

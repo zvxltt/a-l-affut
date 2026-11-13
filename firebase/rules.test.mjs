@@ -1,7 +1,7 @@
 // Tests des règles Firestore sur l'émulateur (lancés par .github/workflows/rules.yml).
 import { readFileSync } from 'node:fs';
 import { initializeTestEnvironment, assertSucceeds, assertFails } from '@firebase/rules-unit-testing';
-import { doc, setDoc, updateDoc, deleteDoc, getDoc, getDocs, collection, query, where, writeBatch, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, deleteDoc, getDoc, getDocs, collection, query, where, writeBatch, serverTimestamp, deleteField, Timestamp } from 'firebase/firestore';
 
 const env = await initializeTestEnvironment({
   projectId: 'demo-affut',
@@ -56,10 +56,33 @@ await t('modifier sa note pendant la semaine', () => assertSucceeds(setDoc(doc(d
 await t('changer la date de création refusé', () => assertFails(setDoc(doc(db('alice'), 'reviews', `${K}__alice`), review('alice', K, today, { at: Timestamp.fromDate(new Date(2020, 0, 1)) }))));
 await t('modifier la note d’un autre refusé', () => assertFails(updateDoc(doc(db('bob'), 'reviews', `${K}__alice`), { r: 2, up: serverTimestamp() })));
 
+// notes des sons (tr : un caractère par titre, 0 = pas de note, a = 10) et titres (tl)
+const S = 'dz777';
+const titles = ['Intro', 'Deux', 'Trois', 'Quatre'].join('\n');
+await t('notes des sons sans note d’ensemble', () => assertSucceeds(setDoc(doc(db('bob'), 'reviews', `${S}__bob`), review('bob', S, today, { r: 0, tr: '80a', tl: titles }))));
+await t('modifier les notes des sons (comme le site : updateDoc)', () => assertSucceeds(updateDoc(doc(db('bob'), 'reviews', `${S}__bob`), { tr: '80a5', up: serverTimestamp() })));
+await t('ajouter la note d’ensemble et la critique', () => assertSucceeds(updateDoc(doc(db('bob'), 'reviews', `${S}__bob`), { r: 7, tx: 'Bon projet.', up: serverTimestamp() })));
+await t('retirer la critique (deleteField)', () => assertSucceeds(updateDoc(doc(db('bob'), 'reviews', `${S}__bob`), { tx: deleteField(), up: serverTimestamp() })));
+await t('retirer la note d’ensemble en gardant les sons', () => assertSucceeds(updateDoc(doc(db('bob'), 'reviews', `${S}__bob`), { r: 0, up: serverTimestamp() })));
+await t('plus rien de noté refusé (il faut supprimer)', () => assertFails(updateDoc(doc(db('bob'), 'reviews', `${S}__bob`), { tr: deleteField(), tl: deleteField(), up: serverTimestamp() })));
+await t('ni note ni son refusé', () => assertFails(setDoc(doc(db('bob'), 'reviews', `y1__bob`), review('bob', 'y1', today, { r: 0 }))));
+await t('sons tous à zéro refusé', () => assertFails(setDoc(doc(db('bob'), 'reviews', `y2__bob`), review('bob', 'y2', today, { r: 0, tr: '000' }))));
+await t('caractère inconnu dans les sons refusé', () => assertFails(setDoc(doc(db('bob'), 'reviews', `y3__bob`), review('bob', 'y3', today, { r: 8, tr: '8b' }))));
+await t('151 sons refusé', () => assertFails(setDoc(doc(db('bob'), 'reviews', `y4__bob`), review('bob', 'y4', today, { r: 8, tr: '5'.repeat(151) }))));
+await t('150 sons permis', () => assertSucceeds(setDoc(doc(db('bob'), 'reviews', `y5__bob`), review('bob', 'y5', today, { r: 8, tr: '5'.repeat(150) }))));
+await t('sons en nombre refusé', () => assertFails(setDoc(doc(db('bob'), 'reviews', `y6__bob`), review('bob', 'y6', today, { r: 8, tr: 85 }))));
+await t('titres trop longs refusé', () => assertFails(setDoc(doc(db('bob'), 'reviews', `y7__bob`), review('bob', 'y7', today, { r: 0, tr: '9', tl: 'x'.repeat(8001) }))));
+await t('single noté (rt single)', () => assertSucceeds(setDoc(doc(db('bob'), 'reviews', `y8__bob`), review('bob', 'y8', today, { rt: 'single' }))));
+await t('deuxième écriture d’une note créée dans la séance (sans renvoyer at)', async () => {
+  await assertSucceeds(setDoc(doc(db('bob'), 'reviews', `y9__bob`), review('bob', 'y9', today, { r: 6 })));
+  await assertSucceeds(updateDoc(doc(db('bob'), 'reviews', `y9__bob`), { r: 9, up: serverTimestamp() }));
+});
+
 // une vieille note, écrite hors des règles pour le test
 const OLD = addDays(today, -30);
 await env.withSecurityRulesDisabled(c => setDoc(doc(c.firestore(), 'reviews', `old1__alice`), { ...review('alice', 'old1', OLD), at: Timestamp.fromDate(new Date(OLD)), up: Timestamp.fromDate(new Date(OLD)) }));
 await t('vieille note : changer la note refusé', () => assertFails(updateDoc(doc(db('alice'), 'reviews', 'old1__alice'), { r: 2, up: serverTimestamp() })));
+await t('vieille note : noter un son refusé', () => assertFails(updateDoc(doc(db('alice'), 'reviews', 'old1__alice'), { tr: '9', tl: 'Intro', up: serverTimestamp() })));
 await t('vieille note : recopier le nouveau pseudo permis', () => assertSucceeds(updateDoc(doc(db('alice'), 'reviews', 'old1__alice'), { h: 'alice2', n: 'Alice', up: serverTimestamp() })));
 await t('vieille note : supprimer permis', () => assertSucceeds(deleteDoc(doc(db('alice'), 'reviews', 'old1__alice'))));
 await t('supprimer la note d’un autre refusé', () => assertFails(deleteDoc(doc(db('bob'), 'reviews', `${K}__alice`))));

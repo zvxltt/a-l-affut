@@ -387,6 +387,7 @@ body.d-open .drawer { transform: none; visibility: visible; pointer-events: auto
 .stars { position: relative; display: inline-block; width: max-content; justify-self: start; line-height: 1; font-size: 15px; letter-spacing: 1px; color: var(--line); white-space: nowrap; vertical-align: -1px; }
 .stars .on { position: absolute; inset: 0 auto 0 0; width: var(--v); overflow: hidden; color: var(--ink); }
 .stars.sm { font-size: 12.5px; }
+.stars.xs { font-size: 11.5px; letter-spacing: .5px; }
 .rt { font: 650 11px var(--font-mono); color: var(--ink); background: var(--soft); border-radius: 999px; padding: 2px 7px; letter-spacing: .02em; }
 
 .rb { margin-top: 6px; }
@@ -415,6 +416,24 @@ body.d-open .drawer { transform: none; visibility: visible; pointer-events: auto
 .rb-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .rb-hint { margin-left: auto; font: 500 11px var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
 .rb-more { margin: 12px 0 0; color: var(--muted); font-size: 13.5px; }
+.rb-tip { margin: 0; color: var(--muted); font-size: 13.5px; }
+.rb-mine .btn { margin-left: auto; min-height: 32px; padding: 0 13px; font-size: 13px; }
+
+/* notes des sons, dans la tracklist */
+.trk-st { margin-left: 10px; text-transform: none; letter-spacing: 0; color: var(--ink-2); }
+.trk-hint { margin: -2px 0 8px; color: var(--muted); font-size: 13px; line-height: 1.45; }
+.trk-x { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 12px; margin-top: 4px; }
+.trk-x:empty { display: none; }
+.trate { position: relative; display: inline-block; font-size: 19px; line-height: 1.5; letter-spacing: 2px; color: var(--line); cursor: pointer; touch-action: pan-y; user-select: none; -webkit-user-select: none; border-radius: 6px; white-space: nowrap; }
+.trate .on { position: absolute; inset: 0 auto 0 0; width: var(--v); overflow: hidden; color: var(--ink); }
+.trate:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.trate-v { font: 650 12px var(--font-mono); color: var(--ink-2); margin-left: -6px; min-width: 3ch; }
+.trate-v:empty { display: none; }
+.trk-mine { display: inline-flex; align-items: center; }
+.trk-avg { display: inline-flex; align-items: baseline; gap: 5px; font: 650 11.5px var(--font-mono); color: var(--ink); background: var(--soft); border-radius: 999px; padding: 2px 8px; }
+.trk-avg small { font-size: 10px; font-weight: 500; color: var(--muted); }
+.trk.hl { animation: trk-hl 2.6s ease-out; }
+@keyframes trk-hl { 0%, 55% { background: var(--soft); box-shadow: inset 3px 0 0 var(--ink), inset 0 -1px 0 var(--line); } 100% { background: transparent; } }
 .rv-list { display: grid; gap: 0; margin-top: 18px; border-top: 1px solid var(--line); }
 .rv { padding: 16px 0; border-bottom: 1px solid var(--line); display: grid; gap: 8px; }
 .rv.own { background: linear-gradient(90deg, var(--soft), transparent 70%); padding-left: 10px; margin-left: -10px; border-radius: 10px 0 0 10px; }
@@ -446,8 +465,10 @@ body.d-open .drawer { transform: none; visibility: visible; pointer-events: auto
 .tr-t span { color: var(--ink-2); font-size: 13.5px; overflow-wrap: anywhere; }
 .tr-s { display: grid; justify-items: end; gap: 4px; }
 .tr-s b { font: 700 18px var(--font-mono); letter-spacing: -0.02em; }
-.tr-s > span:last-child { font: 500 10.5px var(--font-mono); color: var(--muted); }
+.tr-s > span:last-child:not(.stars) { font: 500 10.5px var(--font-mono); color: var(--muted); }
 .tr-s .stars { justify-self: end; }
+.sec-h .toptabs { margin-left: auto; align-self: center; }
+.more-row { margin: 14px 0 0; }
 
 .prof { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 22px; flex-basis: 100%; }
 .prof .h1 { margin-top: 4px; }
@@ -857,7 +878,7 @@ function rowHtml(r, upcoming) {
   const len = r.n > 1 ? `${r.n} titres` : r.dur ? fmtDur(r.dur) : '';
   const side = upcoming
     ? `<span class="pill ${esc(r.rt)}">${esc(TYPE_LABEL[r.rt])}</span>`
-    : `<span>${esc(fmtShort(r.date))}</span><span>${esc(CATS[r.cat])}${len ? ` · ${esc(len)}` : ''}</span>`;
+    : `${FB_CONFIG ? rtChip(r) : ''}<span>${esc(fmtShort(r.date))}</span><span>${esc(CATS[r.cat])}${len ? ` · ${esc(len)}` : ''}</span>`;
   return `<button class="row" type="button" data-key="${esc(r.key)}">
     <span class="cover">${coverHtml(r, 120)}</span>
     <span class="row-t">
@@ -1125,13 +1146,15 @@ function paintDetail(r, failed) {
   else if (!rows.length) tracks = `<p class="d-msg">${released ? 'Tracklist indisponible pour ce projet.' : 'La tracklist n’est pas encore dévoilée.'}</p>`;
   else {
     const partial = r.n && rows.length < r.n ? ` · ${rows.length} ${plural(rows.length, 'titre dévoilé', 'titres dévoilés')} sur ${r.n}` : '';
-    tracks = `<h3 class="d-h3">Tracklist${partial}</h3><ol class="tracks">${rows.map(x => {
+    tracks = `<h3 class="d-h3">Tracklist${partial}<span class="trk-st" id="trk-st" aria-live="polite"></span></h3>
+      ${FB_CONFIG ? '<p class="trk-hint" id="trk-hint" hidden>Touche les étoiles pour noter chaque son. Tes notes s’enregistrent toutes seules ; touche à nouveau la même note pour l’enlever.</p>' : ''}
+      <ol class="tracks" id="d-tracks" data-k="${esc(r.key)}">${rows.map((x, i) => {
       const [n, title, fts, by, d, ex, id, pv] = x;
       const prev = pv || (id && previews.get(id)) || '';
       const credits = [by ? `avec ${esc(by)}` : '', fts && fts.length ? `feat. ${esc(fts.join(', '))}` : ''].filter(Boolean).join(' · ');
       const on = prev && playing === prev;
       return `<li class="trk"><span class="trk-n">${n}</span>
-        <span class="trk-m"><span class="trk-t">${esc(title)}${ex ? '<span class="ex" title="Explicite">E</span>' : ''}</span>${credits ? `<span class="trk-f">${credits}</span>` : ''}</span>
+        <span class="trk-m"><span class="trk-t">${esc(title)}${ex ? '<span class="ex" title="Explicite">E</span>' : ''}</span>${credits ? `<span class="trk-f">${credits}</span>` : ''}${FB_CONFIG ? `<span class="trk-x" data-i="${i}"></span>` : ''}</span>
         <span class="trk-d">${d ? fmtDur(d) : ''}</span>
         ${prev ? `<button class="play" type="button" data-play="${esc(prev)}" aria-pressed="${on}" aria-label="Écouter un extrait de ${esc(title)}">${on ? I.pause : I.play}</button>` : '<span></span>'}
       </li>`;
@@ -1155,6 +1178,17 @@ function paintDetail(r, failed) {
       <p class="d-src">Source : ${esc(srcText(r))}</p>
     </div>`;
   if (FB_CONFIG && RATEABLE.has(r.rt)) paintRatings(r);
+  // ouverture depuis un classement de sons : on montre le titre dans la tracklist
+  // (la fiche est redessinée plusieurs fois à l’ouverture : la mise en évidence dure quelques secondes)
+  if (FB_CONFIG && FOCUS_TRK && FOCUS_TRK.k === r.key && rows && rows.length) {
+    const age = Date.now() - FOCUS_TRK.t;
+    const li = $$('#d-tracks .trk')[FOCUS_TRK.i];
+    if (age > 4000) FOCUS_TRK = null;
+    else if (li) {
+      li.classList.add('hl');
+      if (age < 1500) requestAnimationFrame(() => li.scrollIntoView({ block: 'center' }));
+    }
+  }
 }
 
 const audio = new Audio();
@@ -1177,7 +1211,11 @@ function syncPlay() {
    ===================================================================== */
 const FB_CONFIG = {"apiKey":"AIzaSyAFvgC0vexSgUiX8pFHoNNCbp6EJNVff6Q","authDomain":"a-l-affut.firebaseapp.com","projectId":"a-l-affut","storageBucket":"a-l-affut.firebasestorage.app","messagingSenderId":"1015111370208","appId":"1:1015111370208:web:131f671aea381bab3dd785"};
 const FB_SDK = 'https://www.gstatic.com/firebasejs/10.14.1';
-const RATEABLE = new Set(['album', 'ep', 'compile']);
+const RATEABLE = new Set(['album', 'ep', 'compile', 'single']);
+// notes des sons : un caractère par titre, dans l’ordre de la tracklist (0 = pas de note, 1 à 9, a = 10)
+const TR_CH = '0123456789a', TR_MAX = 150;
+const trDecode = s => [...String(s || '').slice(0, TR_MAX)].map(ch => Math.max(0, TR_CH.indexOf(ch)));
+const trEncode = arr => arr.slice(0, TR_MAX).map(v => TR_CH[Number.isInteger(v) && v >= 1 && v <= 10 ? v : 0]).join('').replace(/0+$/, '');
 const HANDLE_RE = /^[a-z0-9_]{3,20}$/;
 let FB = null, fbLoading = null;
 const ME = { ready: !FB_CONFIG, user: null, profile: null, reviews: null, failed: false };
@@ -1187,6 +1225,11 @@ const WEEKREV = new Map();    // début de semaine -> { at, list, agg }
 const PROFILES = new Map();   // pseudo -> { at, uid, user, reviews } ou { missing }
 const DRAFT = new Map();      // clé de sortie -> { r, tx, del } : saisie en cours, conservée entre deux affichages
 const EXTRA = new Map();      // sorties ouvertes depuis un profil mais absentes des données de la semaine
+const TRDRAFT = new Map();    // clé de sortie -> notes des sons pas encore enregistrées
+const TRT = new Map();        // clé de sortie -> minuteur d’enregistrement des notes des sons
+const WQ = new Map();         // clé de sortie -> écriture en cours (une à la fois par sortie)
+let tracksOff = false;        // la base refuse les notes des sons (règles pas encore publiées)
+let FOCUS_TRK = null;         // son à mettre en évidence à l’ouverture d’une fiche
 const $modal = $('#modal'), $mbody = $('#m-body');
 
 function fb() {
@@ -1240,13 +1283,30 @@ async function queryReviews(field, value) {
 function aggregate(list) {
   const m = new Map();
   for (const x of list) {
-    const a = m.get(x.k) || { n: 0, sum: 0, dist: new Array(10).fill(0), texts: 0 };
-    a.n++; a.sum += x.r; a.dist[x.r - 1]++;
-    if (x.tx) a.texts++;
-    m.set(x.k, a);
+    let a = m.get(x.k);
+    if (!a) { a = { n: 0, sum: 0, dist: new Array(10).fill(0), texts: 0, raters: 0, tracks: [], tl: '' }; m.set(x.k, a); }
+    const r = Number.isInteger(x.r) && x.r >= 1 && x.r <= 10 ? x.r : 0;
+    if (r) { a.n++; a.sum += r; a.dist[r - 1]++; if (x.tx) a.texts++; }
+    let any = false;
+    trDecode(x.tr).forEach((v, i) => {
+      if (!v) return;
+      any = true;
+      const e = a.tracks[i] || (a.tracks[i] = { n: 0, sum: 0, avg: 0 });
+      e.n++; e.sum += v;
+    });
+    if (any) { a.raters++; if (!a.tl && typeof x.tl === 'string') a.tl = x.tl; }
   }
-  for (const a of m.values()) a.avg = a.sum / a.n / 2;
+  for (const a of m.values()) {
+    a.avg = a.n ? a.sum / a.n / 2 : 0;
+    for (const e of a.tracks) if (e) e.avg = e.sum / e.n / 2;
+  }
   return m;
+}
+const relOf = k => INDEX.get(k) || DATA.byKey.get(k) || EXTRA.get(k) || null;
+function trackTitles(k, a) {
+  const rows = DETAILS && DETAILS[k];
+  if (rows && rows.length) return rows.map(x => String(x[1] || ''));
+  return a && a.tl ? String(a.tl).split('\n') : [];
 }
 // moyenne lissée pour le classement : une seule note à 5 ne passe pas devant dix notes à 4,5
 const bayes = a => (a.sum / 2 + 3 * 2) / (a.n + 2);
@@ -1464,36 +1524,46 @@ function windowOf(r) {
   const t = today(), ws = weekStartOf(r.date), we = addDays(ws, 6);
   return { ws, we, from: r.date > ws ? r.date : ws, state: r.date > t ? 'soon' : t <= we ? 'open' : 'closed' };
 }
+const tracksOf = r => (DETAILS ? DETAILS[r.key] || [] : null);
+const multiTrack = rows => !!(rows && rows.length >= 2);
 function summaryHtml(list, a, state) {
   if (!list) return '<div class="rb-sum"><div class="sk" style="height:64px;width:100%"></div></div>';
-  if (!a) return `<p class="rb-empty">${state === 'open' ? 'Pas encore de note. Sois le premier à donner la tienne.' : state === 'soon' ? 'Pas encore sortie.' : 'Personne n’a noté cette sortie pendant sa semaine.'}</p>`;
+  if (!a || !a.n) {
+    const t = a && a.raters ? 'Pas encore de note d’ensemble. Les notes des sons sont dans la tracklist.'
+      : state === 'open' ? 'Pas encore de note. Sois le premier à donner la tienne.' : state === 'soon' ? 'Pas encore sortie.' : 'Personne n’a noté cette sortie pendant sa semaine.';
+    return `<p class="rb-empty">${t}</p>`;
+  }
   const max = Math.max(...a.dist, 1);
   return `<div class="rb-sum">
-    <div class="rb-avg"><b>${fmtAvg(a.avg)}</b>${starsHtml(a.avg * 20, `${fmtAvg(a.avg)} sur 5`)}<span>${a.n} ${plural(a.n, 'note', 'notes')}${a.texts ? ` · ${a.texts} ${plural(a.texts, 'critique', 'critiques')}` : ''}</span></div>
+    <div class="rb-avg"><b>${fmtAvg(a.avg)}</b>${starsHtml(a.avg * 20, `${fmtAvg(a.avg)} sur 5`)}<span>${a.n} ${plural(a.n, 'note', 'notes')}${a.texts ? ` · ${a.texts} ${plural(a.texts, 'critique', 'critiques')}` : ''}${a.raters ? ` · sons notés par ${a.raters}` : ''}</span></div>
     <div class="hist" role="img" aria-label="Répartition des notes">${a.dist.map((v, i) => `<span style="--h:${Math.round((v / max) * 100)}%" title="${fmtNote(i + 1)} : ${v} ${plural(v, 'note', 'notes')}"></span>`).join('')}</div>
   </div>`;
 }
-function meHtml(r, w, mine) {
+function meHtml(r, w, mine, rows) {
+  const multi = multiTrack(rows) && !tracksOff;
+  const d = DRAFT.get(r.key) || { r: mine ? mine.r || 0 : 0, tx: mine ? mine.tx || '' : '' };
+  const delBtn = `<button class="btn" type="button" data-act="rv-del" data-k="${esc(r.key)}">${d.del ? 'Confirmer la suppression' : 'Supprimer'}</button>`;
   if (w.state === 'soon') return `<p class="rb-note">La note ouvrira le ${esc(fmtDay(r.date))}, jour de sa sortie, jusqu’au ${esc(fmtDay(w.we))}.</p>`;
   if (w.state === 'closed') {
     return `<p class="rb-note">La note était ouverte la semaine de sa sortie, du ${esc(fmtDay(w.from))} au ${esc(fmtDay(w.we))}.</p>
-      ${mine ? `<p class="rb-mine">Ta note ${noteStars(mine.r, 'sm')}</p>` : ''}`;
+      ${mine ? `<div class="rb-mine">${mine.r ? `<span>Ta note</span>${noteStars(mine.r, 'sm')}` : '<span>Tu as noté des sons de cette sortie</span>'}${delBtn}</div>` : ''}`;
   }
   if (!ME.ready) return '<div class="sk" style="height:46px"></div>';
-  if (!ME.user) return `<div class="rb-cta"><p>Note cette sortie et écris ta critique, jusqu’au ${esc(fmtDay(w.we))}.</p><button class="btn solid" type="button" data-act="signin">Se connecter pour noter</button></div>`;
+  if (!ME.user) return `<div class="rb-cta"><p>Note cette sortie${multi ? ' et chacun de ses sons' : ''}, écris ta critique, jusqu’au ${esc(fmtDay(w.we))}.</p><button class="btn solid" type="button" data-act="signin">Se connecter pour noter</button></div>`;
   if (!ME.profile) return `<div class="rb-cta"><p>Crée ton profil pour noter cette sortie.</p><button class="btn solid" type="button" data-act="onboard">Créer mon profil</button></div>`;
-  const d = DRAFT.get(r.key) || { r: mine ? mine.r : 0, tx: mine ? mine.tx || '' : '' };
+  const noted = !!(mine && mine.r);
   return `<div class="rb-form">
     <div class="rate-row">
       <div class="rate-in" id="rate-in" role="slider" tabindex="0" aria-label="Ta note sur 5" aria-valuemin="0" aria-valuemax="5" aria-valuenow="${d.r / 2}" aria-valuetext="${d.r ? `${fmtNote(d.r)} sur 5` : 'pas de note'}" data-k="${esc(r.key)}" data-v="${d.r}" style="--v:${d.r * 10}%"><span aria-hidden="true">★★★★★</span><span class="on" aria-hidden="true">★★★★★</span></div>
-      <span class="rate-val" id="rate-val">${d.r ? fmtNote(d.r) : mine ? '' : 'Ta note'}</span>
+      <span class="rate-val" id="rate-val">${d.r ? fmtNote(d.r) : noted ? '' : 'Ta note'}</span>
     </div>
     <textarea id="rv-text" data-k="${esc(r.key)}" maxlength="3000" rows="4" placeholder="Ta critique (facultatif) : ce qui t’a marqué, les meilleurs morceaux…">${esc(d.tx)}</textarea>
     <div class="rb-actions">
-      <button class="btn solid" type="button" data-act="rv-save" data-k="${esc(r.key)}">${mine ? 'Mettre à jour' : 'Publier'}</button>
-      ${mine ? `<button class="btn" type="button" data-act="rv-del" data-k="${esc(r.key)}">${d.del ? 'Confirmer la suppression' : 'Supprimer'}</button>` : ''}
+      <button class="btn solid" type="button" data-act="rv-save" data-k="${esc(r.key)}">${noted ? 'Mettre à jour' : 'Publier'}</button>
+      ${noted ? delBtn : ''}
       <span class="rb-hint">Ouvert jusqu’au ${esc(fmtDay(w.we))}</span>
     </div>
+    ${multi ? '<p class="rb-tip">Tu peux aussi noter chaque son, dans la tracklist juste en dessous.</p>' : ''}
   </div>`;
 }
 function reviewHtml(x, withRelease) {
@@ -1502,7 +1572,7 @@ function reviewHtml(x, withRelease) {
   return `<article class="rv${own ? ' own' : ''}">
     ${withRelease ? `<button class="rv-rel" type="button" data-rkey="${esc(x.k)}"><span class="cover">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : `<span class="ph" aria-hidden="true">${esc(initial(x.t))}</span>`}</span><span><b>${esc(x.t)}</b><span>${esc(x.a)}</span></span></button>`
       : `<a class="rv-who" href="#u/${esc(x.h || '')}">${avatarHtml(x, 'sm')}<b>${esc(x.n || '?')}</b><span>@${esc(x.h || '')}</span>${own ? '<em>toi</em>' : ''}</a>`}
-    <div class="rv-meta">${noteStars(x.r, 'sm')}<span>${esc(timeAgo(tsMs(x.at)))}</span></div>
+    <div class="rv-meta">${x.r >= 1 ? noteStars(x.r, 'sm') : ''}<span>${esc(timeAgo(tsMs(x.at)))}</span></div>
     ${x.tx ? `<p class="rv-tx${long ? ' clamp' : ''}">${esc(x.tx)}</p>${long ? '<button class="rv-more" type="button" data-act="rv-more">Lire la suite</button>' : ''}` : ''}
   </article>`;
 }
@@ -1514,61 +1584,168 @@ function paintRatings(r) {
   const a = list ? aggregate(list).get(r.key) || null : null;
   const w = windowOf(r);
   const mine = ME.reviews ? ME.reviews.get(r.key) || null : null;
-  const texts = list ? list.filter(x => x.tx) : [];
-  const silent = list ? list.length - texts.length : 0;
+  const texts = list ? list.filter(x => x.tx && x.r >= 1) : [];
+  const silent = list ? list.filter(x => x.r >= 1 && !x.tx).length : 0;
   el.innerHTML = `<h3 class="d-h3">Notes et critiques</h3>
     ${summaryHtml(list, a, w.state)}
-    ${meHtml(r, w, mine)}
+    ${meHtml(r, w, mine, tracksOf(r))}
     ${texts.length ? `<div class="rv-list">${texts.map(x => reviewHtml(x, false)).join('')}</div>` : ''}
     ${silent && texts.length ? `<p class="rb-more">Et ${silent} ${plural(silent, 'note', 'notes')} sans critique.</p>` : ''}
     ${c && c.err ? '<p class="rb-note">Les notes n’ont pas pu être chargées.</p>' : ''}`;
+  paintTrackRatings(r);
   if (!c || Date.now() - c.at > 60e3) loadReviews(r);
 }
-function setRate(el, v, commit) {
-  v = Math.max(0, Math.min(10, v));
+
+/* ---------- notes des sons, dans la tracklist ---------- */
+function myTracks(k) {
+  if (TRDRAFT.has(k)) return TRDRAFT.get(k);
+  const mine = ME.reviews && ME.reviews.get(k);
+  return trDecode(mine && mine.tr);
+}
+function canRateTracks(r, rows) {
+  return !!(FB_CONFIG && multiTrack(rows) && RATEABLE.has(r.rt) && windowOf(r).state === 'open'
+    && ME.ready && ME.user && ME.profile && !ME.failed && !tracksOff);
+}
+function trateHtml(k, i, v, title) {
+  return `<span class="trate" role="slider" tabindex="0" aria-label="Ta note pour ${esc(title || `le titre ${i + 1}`)}" aria-valuemin="0" aria-valuemax="5" aria-valuenow="${v / 2}" aria-valuetext="${v ? `${fmtNote(v)} sur 5` : 'pas de note'}" data-k="${esc(k)}" data-i="${i}" data-v="${v}" style="--v:${v * 10}%"><span aria-hidden="true">★★★★★</span><span class="on" aria-hidden="true">★★★★★</span></span><span class="trate-v">${v ? fmtNote(v) : ''}</span>`;
+}
+let trkPaintLater = false;
+function paintTrackRatings(r) {
+  const ol = $('#d-tracks');
+  if (!ol || ol.dataset.k !== r.key) return;
+  if (rateDrag && rateDrag.classList.contains('trate')) { trkPaintLater = true; return; }
+  const rows = tracksOf(r) || [];
+  const can = canRateTracks(r, rows);
+  const c = REV.get(r.key);
+  const a = c ? aggregate(c.list).get(r.key) || null : null;
+  const mine = ME.user && multiTrack(rows) ? myTracks(r.key) : [];
+  const act = document.activeElement;
+  const focusI = act && act.classList && act.classList.contains('trate') && ol.contains(act) ? act.dataset.i : null;
+  $$('.trk-x', ol).forEach(el => {
+    const i = Number(el.dataset.i);
+    const e = multiTrack(rows) ? a && a.tracks[i] : null;
+    const v = mine[i] || 0;
+    let h = '';
+    if (can && i < TR_MAX) h += trateHtml(r.key, i, v, rows[i] && rows[i][1]);
+    else if (v) h += `<span class="trk-mine" title="Ta note : ${fmtNote(v)} sur 5">${noteStars(v, 'xs')}</span>`;
+    if (e && e.n) h += `<span class="trk-avg" title="Moyenne de ${e.n} ${plural(e.n, 'note', 'notes')}">★ ${fmtAvg(e.avg)}<small>${e.n}</small></span>`;
+    el.innerHTML = h;
+  });
+  if (focusI !== null) { const f = $(`.trate[data-i="${focusI}"]`, ol); if (f) f.focus({ preventScroll: true }); }
+  const hint = $('#trk-hint');
+  if (hint) hint.hidden = !can;
+}
+const TRST = new Map();
+function trkStatus(k, s) {
+  const el = $('#trk-st'), ol = $('#d-tracks');
+  if (!el || !ol || ol.dataset.k !== k) return;
+  clearTimeout(TRST.get(k));
+  el.textContent = s === 'wait' ? 'enregistrement…' : s === 'ok' ? 'enregistré' : '';
+  if (s === 'ok') TRST.set(k, setTimeout(() => { if (el.isConnected) el.textContent = ''; }, 2500));
+}
+function setTrack(k, i, v) {
+  const arr = [...myTracks(k)];
+  while (arr.length <= i) arr.push(0);
+  arr[i] = v;
+  TRDRAFT.set(k, arr);
+  trkStatus(k, 'wait');
+  clearTimeout(TRT.get(k));
+  TRT.set(k, setTimeout(() => saveTracks(k), 900));
+}
+function flushTrackSave(k) { if (TRT.has(k)) { clearTimeout(TRT.get(k)); TRT.delete(k); } }
+async function saveTracks(k) {
+  TRT.delete(k);
+  try {
+    await queueWrite(k, () => writeReview(k, {}));
+    if (tracksOff) { trkStatus(k, ''); toast('Les notes des sons ne sont pas encore ouvertes, réessaie plus tard'); }
+    else trkStatus(k, TRT.has(k) ? 'wait' : 'ok');
+  } catch (e) {
+    TRDRAFT.delete(k);
+    trkStatus(k, '');
+    toast(e && e.code === 'permission-denied' ? 'La note de cette sortie est fermée' : 'Enregistrement impossible pour le moment, réessaie');
+  }
+  const r = detailRelease();
+  if (r && r.key === k) paintTrackRatings(r);
+  if (S.view === 'semaine' && !S.detail) render();
+}
+// en quittant la page, les notes des sons en attente partent tout de suite
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') for (const k of [...TRT.keys()]) { flushTrackSave(k); saveTracks(k); }
+});
+
+/* ---------- curseurs d’étoiles : note d’ensemble (#rate-in) et notes des sons (.trate) ---------- */
+const SLIDERS = '#rate-in, .trate';
+function showRate(el, v) {
   el.style.setProperty('--v', `${v * 10}%`);
   el.setAttribute('aria-valuenow', String(v / 2));
   el.setAttribute('aria-valuetext', v ? `${fmtNote(v)} sur 5` : 'pas de note');
-  const lab = $('#rate-val');
-  if (lab) lab.textContent = v ? fmtNote(v) : 'Ta note';
-  if (commit) {
+  if (el.id === 'rate-in') { const lab = $('#rate-val'); if (lab) lab.textContent = v ? fmtNote(v) : 'Ta note'; }
+  else { const lab = el.nextElementSibling; if (lab && lab.classList.contains('trate-v')) lab.textContent = v ? fmtNote(v) : ''; }
+}
+function commitRate(el, v, tap) {
+  if (el.id === 'rate-in') {
+    v = Math.max(1, Math.min(10, v));
     el.dataset.v = String(v);
+    showRate(el, v);
     const k = el.dataset.k;
     const d = DRAFT.get(k) || { r: 0, tx: ($('#rv-text') || {}).value || '' };
     d.r = v; DRAFT.set(k, d);
+    return;
   }
+  const cur = Number(el.dataset.v || 0);
+  if (tap && v === cur) v = 0;   // toucher à nouveau la même note l’enlève
+  v = Math.max(0, Math.min(10, v));
+  el.dataset.v = String(v);
+  showRate(el, v);
+  setTrack(el.dataset.k, Number(el.dataset.i), v);
 }
 const rateFromX = (el, x) => { const b = el.getBoundingClientRect(); return Math.max(1, Math.min(10, Math.ceil(((x - b.left) / b.width) * 10))); };
-let rateDrag = null;
+let rateDrag = null, rateX0 = 0;
+function afterDrag() {
+  if (!trkPaintLater) return;
+  trkPaintLater = false;
+  const r = detailRelease();
+  if (r) paintTrackRatings(r);
+}
 document.addEventListener('pointerdown', e => {
-  const el = e.target.closest('#rate-in');
-  if (!el) return;
-  rateDrag = el;
-  el.setPointerCapture(e.pointerId);
-  setRate(el, rateFromX(el, e.clientX), false);
+  const el = e.target.closest && e.target.closest(SLIDERS);
+  if (!el || e.button > 0) return;
+  rateDrag = el; rateX0 = e.clientX;
+  try { el.setPointerCapture(e.pointerId); } catch (err) { /* sans capture, le clic marche quand même */ }
+  showRate(el, rateFromX(el, e.clientX));
 });
 document.addEventListener('pointermove', e => {
-  const el = rateDrag || (e.pointerType === 'mouse' && e.target.closest('#rate-in'));
-  if (el) setRate(el, rateFromX(el, e.clientX), false);
+  const el = rateDrag || (e.pointerType === 'mouse' && e.target.closest && e.target.closest(SLIDERS));
+  if (el) showRate(el, rateFromX(el, e.clientX));
 });
 document.addEventListener('pointerup', e => {
   if (!rateDrag) return;
   const el = rateDrag;
   rateDrag = null;
-  setRate(el, rateFromX(el, e.clientX), true);
+  commitRate(el, rateFromX(el, e.clientX), Math.abs(e.clientX - rateX0) < 6);
+  afterDrag();
+});
+// sur téléphone, un glissement vertical fait défiler la page : le navigateur annule le geste, rien n’est noté
+document.addEventListener('pointercancel', () => {
+  if (!rateDrag) return;
+  const el = rateDrag;
+  rateDrag = null;
+  showRate(el, Number(el.dataset.v || 0));
+  afterDrag();
 });
 document.addEventListener('pointerout', e => {
-  const el = e.target.closest && e.target.closest('#rate-in');
-  if (el && !rateDrag && !el.contains(e.relatedTarget)) setRate(el, Number(el.dataset.v || 0), false);
+  const el = e.target.closest && e.target.closest(SLIDERS);
+  if (el && !rateDrag && !el.contains(e.relatedTarget)) showRate(el, Number(el.dataset.v || 0));
 });
 document.addEventListener('keydown', e => {
-  const el = e.target.closest && e.target.closest('#rate-in');
+  const el = e.target.closest && e.target.closest(SLIDERS);
   if (!el) return;
+  const track = el.classList.contains('trate');
   const v = Number(el.dataset.v || 0);
-  const next = { ArrowRight: v + 1, ArrowUp: v + 1, ArrowLeft: v - 1, ArrowDown: v - 1, Home: 1, End: 10 }[e.key];
+  const next = { ArrowRight: v + 1, ArrowUp: v + 1, ArrowLeft: v - 1, ArrowDown: v - 1, Home: 1, End: 10, ...(track ? { Delete: 0, Backspace: 0 } : {}) }[e.key];
   if (next === undefined) return;
   e.preventDefault();
-  setRate(el, Math.max(1, Math.min(10, next)), true);
+  commitRate(el, Math.max(track ? 0 : 1, Math.min(10, next)), false);
 });
 document.addEventListener('input', e => {
   if (e.target.id !== 'rv-text') return;
@@ -1577,6 +1754,96 @@ document.addEventListener('input', e => {
   const d = DRAFT.get(k) || { r: el ? Number(el.dataset.v || 0) : 0, tx: '' };
   d.tx = e.target.value; DRAFT.set(k, d);
 });
+
+/* ---------- écriture ---------- */
+// une écriture à la fois par sortie : chacune part de l’état enregistré par la précédente
+function queueWrite(k, fn) {
+  const next = (WQ.get(k) || Promise.resolve()).catch(() => {}).then(fn);
+  WQ.set(k, next);
+  const clear = () => { if (WQ.get(k) === next) WQ.delete(k); };
+  next.then(clear, clear);
+  return next;
+}
+const stamp = () => { const ms = Date.now(); return { toMillis: () => ms, seconds: Math.floor(ms / 1000) }; };
+function afterWrite(k, w, saved, cur) {
+  const c = REV.get(k);
+  if (c && ME.user) {
+    const list = c.list.filter(x => x.uid !== ME.user.uid);
+    if (saved) list.unshift(saved);
+    REV.set(k, { ...c, list });
+  }
+  WEEKREV.delete(w);
+  if (cur && cur.w && cur.w !== w) WEEKREV.delete(cur.w);
+  PROFILES.clear();
+}
+// enregistre la note d’ensemble, la critique et les notes des sons de la sortie k ;
+// patch.r et patch.tx remplacent la note et la critique, sinon on garde celles déjà enregistrées
+async function writeReview(k, patch) {
+  const rel = relOf(k);
+  if (!rel || !FB || !ME.profile || !FB.auth.currentUser) throw Object.assign(new Error('indisponible'), { code: 'unavailable' });
+  const { F, db, auth } = FB;
+  const uid = auth.currentUser.uid;
+  const id = `${k}__${uid}`, ref = F.doc(db, 'reviews', id);
+  const cur = (ME.reviews && ME.reviews.get(k)) || null;
+  const r = patch.r !== undefined ? patch.r : cur ? cur.r || 0 : 0;
+  const tx = String(patch.tx !== undefined ? patch.tx : cur ? cur.tx || '' : '').trim().slice(0, 3000);
+  const draft = TRDRAFT.get(k);
+  const tr = trEncode(tracksOff || !draft ? trDecode(cur && cur.tr) : draft);
+  const titles = tr ? trackTitles(k, cur) : [];
+  const tl = titles.length ? titles.map(t => t.replace(/\s+/g, ' ').slice(0, 120)).join('\n').slice(0, 8000) : '';
+  const w = weekStartOf(rel.date);
+  if (!r && !tr) {
+    if (cur) await F.deleteDoc(ref);
+    if (ME.reviews) ME.reviews.delete(k);
+    if (TRDRAFT.get(k) === draft) TRDRAFT.delete(k);
+    afterWrite(k, w, null, cur);
+    return null;
+  }
+  const data = {
+    k, uid, r, w, d: rel.date, t: rel.title.slice(0, 300), a: rel.artist.slice(0, 300),
+    img: (coverUrl(rel, 500) || '').slice(0, 600), rt: rel.rt, c: rel.cat, h: ME.profile.h, n: ME.profile.n, ph: (ME.profile.ph || '').slice(0, 600),
+  };
+  if (tx) data.tx = tx;
+  if (tr) { data.tr = tr; if (tl) data.tl = tl; }
+  const create = () => F.setDoc(ref, { ...data, at: F.serverTimestamp(), up: F.serverTimestamp() });
+  // une mise à jour ne renvoie jamais « at » : la date de première publication reste celle de la base
+  const update = () => F.updateDoc(ref, {
+    ...data, up: F.serverTimestamp(),
+    ...(tx ? {} : { tx: F.deleteField() }),
+    ...(tr ? (tl ? {} : { tl: F.deleteField() }) : { tr: F.deleteField(), tl: F.deleteField() }),
+  });
+  try {
+    try { await (cur ? update() : create()); }
+    catch (e) {
+      // la copie locale peut être en retard sur la base (autre appareil) : on tente l’autre écriture, une fois
+      if (cur && e && e.code === 'not-found') await create();
+      else if (!cur && e && e.code === 'permission-denied' && await getDocData('reviews', id)) await update();
+      else throw e;
+    }
+  } catch (e) {
+    if (e && e.code === 'permission-denied' && tr && !tracksOff && windowOf(rel).state === 'open' && !trDecode(cur && cur.tr).some(Boolean)) {
+      // les règles en ligne ne connaissent pas encore les notes des sons : on enregistre sans elles
+      tracksOff = true;
+      TRDRAFT.delete(k);
+      return writeReview(k, patch);
+    }
+    throw e;
+  }
+  const saved = { ...data, id, at: cur && cur.at ? cur.at : stamp(), up: stamp() };
+  ME.reviews = ME.reviews || new Map();
+  ME.reviews.set(k, saved);
+  if (TRDRAFT.get(k) === draft) TRDRAFT.delete(k);
+  afterWrite(k, w, saved, cur);
+  return saved;
+}
+async function removeReview(k) {
+  const { F, db, auth } = FB;
+  const cur = ME.reviews && ME.reviews.get(k);
+  await F.deleteDoc(F.doc(db, 'reviews', `${k}__${auth.currentUser.uid}`));
+  if (ME.reviews) ME.reviews.delete(k);
+  TRDRAFT.delete(k);
+  if (cur) afterWrite(k, cur.w, null, cur);
+}
 async function saveReview(k) {
   const r = detailRelease();
   if (!r || r.key !== k || !ME.profile) return;
@@ -1586,68 +1853,82 @@ async function saveReview(k) {
   const tx = ($('#rv-text') || {}).value || '';
   const btn = $('[data-act="rv-save"]');
   if (btn) btn.disabled = true;
-  const { F, db, auth } = FB;
-  const u = auth.currentUser;
-  const mine = ME.reviews && ME.reviews.get(k);
-  const data = {
-    k, uid: u.uid, r: v, w: weekStartOf(r.date), d: r.date, t: r.title.slice(0, 300), a: r.artist.slice(0, 300),
-    img: (coverUrl(r, 500) || '').slice(0, 600), rt: r.rt, c: r.cat, h: ME.profile.h, n: ME.profile.n, ph: (ME.profile.ph || '').slice(0, 600),
-    at: mine && mine.at ? mine.at : F.serverTimestamp(), up: F.serverTimestamp(),
-  };
-  if (tx.trim()) data.tx = tx.trim().slice(0, 3000);
+  const had = !!(ME.reviews && ME.reviews.get(k) && ME.reviews.get(k).r);
+  flushTrackSave(k);   // les notes des sons en attente partent avec la note
   try {
-    await F.setDoc(F.doc(db, 'reviews', `${k}__${u.uid}`), data);
-    const now = { toMillis: () => Date.now() };
-    const saved = { ...data, id: `${k}__${u.uid}`, at: mine && mine.at ? mine.at : now, up: now };
-    ME.reviews = ME.reviews || new Map();
-    ME.reviews.set(k, saved);
-    DRAFT.delete(k);
-    REV.delete(k); WEEKREV.delete(data.w); PROFILES.clear();
-    toast(mine ? 'Note mise à jour' : 'Note publiée');
-    paintRatings(r);
-    if (S.view === 'semaine') render();
+    await queueWrite(k, () => writeReview(k, { r: v, tx }));
   } catch (e) {
     if (btn) btn.disabled = false;
     toast(e && e.code === 'permission-denied' ? 'La note de cette sortie est fermée' : 'Publication impossible pour le moment, réessaie');
+    return;
   }
+  DRAFT.delete(k);
+  toast(had ? 'Note mise à jour' : 'Note publiée');
+  const now = detailRelease();
+  if (now && now.key === k) paintRatings(now);
+  if (S.view === 'semaine') render();
 }
 async function deleteReview(k) {
   const r = detailRelease();
   const d = DRAFT.get(k) || { r: 0, tx: '' };
-  if (!d.del) { d.del = true; DRAFT.set(k, d); if (r) paintRatings(r); return; }
+  if (!d.del) { d.del = true; DRAFT.set(k, d); if (r && r.key === k) paintRatings(r); return; }
+  const rel = relOf(k);
   try {
-    const { F, db, auth } = FB;
-    const mine = ME.reviews && ME.reviews.get(k);
-    await F.deleteDoc(F.doc(db, 'reviews', `${k}__${auth.currentUser.uid}`));
-    if (ME.reviews) ME.reviews.delete(k);
+    flushTrackSave(k);
+    // pendant la semaine, les notes des sons restent ; ensuite, la base n’accepte plus qu’une suppression complète
+    if (rel && windowOf(rel).state === 'open') await queueWrite(k, () => writeReview(k, { r: 0, tx: '' }));
+    else await queueWrite(k, () => removeReview(k));
     DRAFT.delete(k);
-    REV.delete(k); if (mine) WEEKREV.delete(mine.w); PROFILES.clear();
-    toast('Note supprimée');
-    if (r) paintRatings(r);
-    if (S.view === 'semaine') render();
-  } catch (e) { toast('Suppression impossible pour le moment'); }
+    toast(ME.reviews && ME.reviews.get(k) ? 'Note supprimée, tes notes des sons restent' : 'Note supprimée');
+  } catch (e) { DRAFT.delete(k); toast('Suppression impossible pour le moment'); }
+  const now = detailRelease();
+  if (now && now.key === k) paintRatings(now);
+  if (S.view === 'semaine') render();
 }
 
 /* ---------- classement et cartes de la semaine ---------- */
 function rtChip(r) {
   const a = RATEABLE.has(r.rt) ? ratingOf(r) : null;
-  return a ? `<span class="rt" title="${a.n} ${plural(a.n, 'note', 'notes')}">★ ${fmtAvg(a.avg)}</span>` : '';
+  return a && a.n ? `<span class="rt" title="${a.n} ${plural(a.n, 'note', 'notes')}">★ ${fmtAvg(a.avg)}</span>` : '';
 }
+// les sons de la semaine : titres notés un par un, et singles d’un seul titre notés comme sortie
+function topSongs(list) {
+  const out = [];
+  for (const r of list) {
+    const a = ratingOf(r);
+    if (!a) continue;
+    if (r.rt === 'single' && (r.n || 1) <= 1) { if (a.n) out.push({ r, i: -1, title: r.title, n: a.n, sum: a.sum, avg: a.avg }); continue; }
+    if (!a.raters) continue;
+    const titles = trackTitles(r.key, a);
+    a.tracks.forEach((e, i) => { if (e && e.n) out.push({ r, i, title: titles[i] || `Titre ${i + 1}`, n: e.n, sum: e.sum, avg: e.avg }); });
+  }
+  return out.sort((x, y) => bayes(y) - bayes(x) || y.n - x.n);
+}
+function trItem(r, idx, title, sub, a, ti) {
+  INDEX.set(r.key, r);
+  return `<li><button class="tr" type="button" data-key="${esc(r.key)}"${ti >= 0 ? ` data-ti="${ti}"` : ''}><span class="tr-n">${idx + 1}</span>
+    <span class="cover">${coverHtml(r, 120)}</span>
+    <span class="tr-t"><b>${esc(title)}</b><span>${esc(sub)}</span></span>
+    <span class="tr-s"><b>${fmtAvg(a.avg)}</b>${starsHtml(a.avg * 20, `${fmtAvg(a.avg)} sur 5`, 'sm')}<span>${a.n} ${plural(a.n, 'note', 'notes')}</span></span></button></li>`;
+}
+let TOP_TAB = 'p';
 function topRatedHtml(list) {
-  const rated = list.filter(r => RATEABLE.has(r.rt)).map(r => ({ r, a: ratingOf(r) })).filter(x => x.a)
+  const proj = list.filter(r => r.rt !== 'single').map(r => ({ r, a: ratingOf(r) })).filter(x => x.a && x.a.n)
     .sort((x, y) => bayes(y.a) - bayes(x.a) || y.a.n - x.a.n).slice(0, 5);
-  if (!rated.length) return '';
-  return section('Les mieux notés', rated.length, `<ol class="toprated">${rated.map(({ r, a }, i) => {
-    INDEX.set(r.key, r);
-    return `<li><button class="tr" type="button" data-key="${esc(r.key)}"><span class="tr-n">${i + 1}</span>
-      <span class="cover">${coverHtml(r, 120)}</span>
-      <span class="tr-t"><b>${esc(r.title)}</b><span>${esc(r.artist)}</span></span>
-      <span class="tr-s"><b>${fmtAvg(a.avg)}</b>${starsHtml(a.avg * 20, `${fmtAvg(a.avg)} sur 5`, 'sm')}<span>${a.n} ${plural(a.n, 'note', 'notes')}</span></span></button></li>`;
-  }).join('')}</ol>`);
+  const songs = topSongs(list).slice(0, 5);
+  if (!proj.length && !songs.length) return '';
+  const tab = (TOP_TAB === 's' && songs.length) || !proj.length ? 's' : 'p';
+  const tabs = proj.length && songs.length ? `<div class="seg toptabs" role="group" aria-label="Classement">
+      <button type="button" data-top="p" aria-pressed="${tab === 'p'}">Albums et EP</button>
+      <button type="button" data-top="s" aria-pressed="${tab === 's'}">Sons</button></div>` : '';
+  const items = tab === 'p'
+    ? proj.map(({ r, a }, i) => trItem(r, i, r.title, r.artist, a, -1))
+    : songs.map((s, i) => trItem(s.r, i, s.title, s.i < 0 ? s.r.artist : `${s.r.artist} · ${s.r.title}`, s, s.i));
+  return `<section class="sec"><div class="sec-h"><h2>${tab === 's' && !proj.length ? 'Les sons les mieux notés' : 'Les mieux notés'}</h2>${tabs}</div><ol class="toprated">${items.join('')}</ol></section>`;
 }
 function rateCtaHtml() {
   if (!FB_CONFIG || !ME.ready || (ME.user && ME.profile)) return '';
-  return `<div class="cta"><p><b>Note les sorties de la semaine.</b> Les albums et les EP se notent pendant leur semaine de sortie, du vendredi au jeudi.</p>
+  return `<div class="cta"><p><b>Note les sorties de la semaine.</b> Albums, EP, singles et chaque son se notent pendant leur semaine de sortie, du vendredi au jeudi.</p>
     <button class="btn solid" type="button" data-act="${ME.user ? 'onboard' : 'signin'}">${ME.user ? 'Créer mon profil' : 'Se connecter avec Google'}</button></div>`;
 }
 
@@ -1687,7 +1968,7 @@ function openStored(key, from) {
 }
 function distHtml(reviews) {
   const dist = new Array(10).fill(0);
-  for (const x of reviews) dist[x.r - 1]++;
+  for (const x of reviews) if (x.r >= 1 && x.r <= 10) dist[x.r - 1]++;
   const max = Math.max(...dist, 1);
   return `<div class="dist"><span class="dist-l">½</span><div class="hist">${dist.map((v, i) => `<span style="--h:${Math.round((v / max) * 100)}%" title="${fmtNote(i + 1)} : ${v}"></span>`).join('')}</div><span class="dist-l">5</span></div>`;
 }
@@ -1733,8 +2014,10 @@ function viewProfile() {
   const { user: u, reviews, own } = data;
   PROFILE_VIEW = reviews;
   PROFILE_SC = u.sc || [];
-  const texts = reviews.filter(x => x.tx);
-  const avg = reviews.length ? reviews.reduce((s, x) => s + x.r, 0) / reviews.length / 2 : 0;
+  const notes = reviews.filter(x => x.r >= 1);
+  const texts = notes.filter(x => x.tx);
+  const songs = songsOf(reviews);
+  const avg = notes.length ? notes.reduce((s, x) => s + x.r, 0) / notes.length / 2 : 0;
   const thisWeek = reviews.filter(x => x.w === weekStartOf(today())).length;
   const since = sinceLabel(u.since);
   $head.innerHTML = `<div class="prof">
@@ -1745,25 +2028,49 @@ function viewProfile() {
       </div>
       <div class="actions">${own ? '<button class="btn" type="button" data-act="edit-profile">Modifier le profil</button><button class="btn" type="button" data-act="signout">Se déconnecter</button>' : ''}<button class="btn" type="button" data-act="copy-profile" data-h="${esc(u.h)}">${I.link}Copier le lien</button></div>
     </div>
-    ${statsHtml([[reviews.length, plural(reviews.length, 'note', 'notes')], [texts.length, plural(texts.length, 'critique', 'critiques')], [reviews.length ? fmtAvg(avg) : '–', 'de moyenne'], [thisWeek, 'cette semaine']])}`;
+    ${statsHtml([[notes.length, plural(notes.length, 'note', 'notes')], [songs.length, plural(songs.length, 'son noté', 'sons notés')], [texts.length, plural(texts.length, 'critique', 'critiques')], [notes.length ? fmtAvg(avg) : '–', 'de moyenne'], [thisWeek, 'cette semaine']])}`;
   let html = section(own ? 'Ma vitrine' : 'Vitrine', '', showcaseHtml(u, own));
-  if (reviews.length) {
-    html += section(own ? 'Mes notes' : 'Ses notes', reviews.length, `${distHtml(reviews)}<div class="grid sm">${reviews.map(x => `<button class="card" type="button" data-rkey="${esc(x.k)}" data-from="rv">
+  if (notes.length) {
+    html += section(own ? 'Mes notes' : 'Ses notes', notes.length, `${distHtml(notes)}<div class="grid sm">${notes.map(x => `<button class="card" type="button" data-rkey="${esc(x.k)}" data-from="rv">
       <span class="cover">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : `<span class="ph" aria-hidden="true">${esc(initial(x.t))}</span>`}</span>
       <span class="card-t"><span class="card-title">${esc(x.t)}</span><span class="card-artist">${esc(x.a)}</span>${noteStars(x.r, 'sm')}</span></button>`).join('')}</div>`);
   }
+  if (songs.length) {
+    const all = SONGS_ALL === u.h, shown = all ? songs : songs.slice(0, 10);
+    html += section(own ? 'Mes sons préférés' : 'Ses sons préférés', songs.length, songsHtml(shown)
+      + (songs.length > shown.length ? `<p class="more-row"><button class="btn" type="button" data-act="songs-all" data-h="${esc(u.h)}">Afficher les ${songs.length} sons notés</button></p>` : ''));
+  }
   if (texts.length) html += section(own ? 'Mes critiques' : 'Ses critiques', texts.length, `<div class="rv-list wide">${texts.map(x => reviewHtml(x, true)).join('')}</div>`);
-  if (!reviews.length) html += `<div class="empty"><strong>${own ? 'Tu n’as encore rien noté.' : 'Aucune note pour l’instant.'}</strong>${own ? 'Les albums et les EP se notent pendant leur semaine de sortie : ouvre une fiche dans « Cette semaine ».<br><a class="btn" href="#semaine">Voir les sorties de la semaine</a>' : ''}</div>`;
+  if (!reviews.length) html += `<div class="empty"><strong>${own ? 'Tu n’as encore rien noté.' : 'Aucune note pour l’instant.'}</strong>${own ? 'Albums, EP, singles et chaque son se notent pendant leur semaine de sortie : ouvre une fiche dans « Cette semaine ».<br><a class="btn" href="#semaine">Voir les sorties de la semaine</a>' : ''}</div>`;
   $content.innerHTML = html;
 }
 let PROFILE_VIEW = [], PROFILE_SC = [];
+let SONGS_ALL = '';   // pseudo dont on affiche tous les sons notés
+// les sons notés d’un profil : titres notés un par un, et singles notés sans détail des titres
+function songsOf(reviews) {
+  const out = [];
+  for (const x of reviews) {
+    const t = trDecode(x.tr);
+    if (t.some(Boolean)) {
+      const titles = trackTitles(x.k, x);
+      t.forEach((v, i) => { if (v) out.push({ x, i, v, title: titles[i] || `Titre ${i + 1}` }); });
+    } else if (x.rt === 'single' && x.r >= 1) out.push({ x, i: -1, v: x.r, title: x.t });
+  }
+  return out.sort((a, b) => b.v - a.v || tsMs(b.x.up) - tsMs(a.x.up) || a.i - b.i);
+}
+function songsHtml(songs) {
+  return `<ol class="toprated songs">${songs.map((s, idx) => `<li><button class="tr" type="button" data-rkey="${esc(s.x.k)}" data-from="rv"${s.i >= 0 ? ` data-ti="${s.i}"` : ''}><span class="tr-n">${idx + 1}</span>
+    <span class="cover">${s.x.img ? `<img src="${esc(s.x.img)}" alt="" loading="lazy">` : `<span class="ph" aria-hidden="true">${esc(initial(s.title))}</span>`}</span>
+    <span class="tr-t"><b>${esc(s.title)}</b><span>${esc(s.x.a)}${s.i >= 0 ? ` · ${esc(s.x.t)}` : ''}</span></span>
+    <span class="tr-s"><b>${fmtNote(s.v)}</b>${noteStars(s.v, 'sm')}</span></button></li>`).join('')}</ol>`;
+}
 
 /* ---------- vitrine ---------- */
 function pickCandidates(q) {
   const seen = new Set();
   const out = [];
   const push = x => { if (!x.k || seen.has(x.k)) return; seen.add(x.k); out.push(x); };
-  for (const x of [...(ME.reviews || new Map()).values()].sort((a, b) => b.r - a.r)) push({ k: x.k, t: x.t, a: x.a, img: x.img, d: x.d, rt: x.rt, c: x.c, mine: x.r });
+  for (const x of [...(ME.reviews || new Map()).values()].sort((a, b) => b.r - a.r)) push({ k: x.k, t: x.t, a: x.a, img: x.img, d: x.d, rt: x.rt, c: x.c, mine: x.r >= 1 ? x.r : 0 });
   const t = today();
   for (const r of [...DATA.items].filter(r => r.date <= t).sort((a, b) => b.pop - a.pop)) push({ k: r.key, t: r.title, a: r.artist, img: coverUrl(r, 500), d: r.date, rt: r.rt, c: r.cat });
   const nq = norm(q);
@@ -1814,14 +2121,20 @@ async function removeShowcase(i) {
 document.addEventListener('submit', e => {
   if (e.target.id === 'f-profile') { e.preventDefault(); submitProfile(e.target); }
 });
+// avant l’ouverture de la fiche : le son à mettre en évidence dans la tracklist
 document.addEventListener('click', e => {
-  const el = e.target.closest('[data-act],[data-rkey],#acct');
+  const el = e.target.closest && e.target.closest('[data-ti]');
+  if (el) FOCUS_TRK = { k: el.dataset.key || el.dataset.rkey, i: Number(el.dataset.ti), t: Date.now() };
+}, true);
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act],[data-rkey],[data-top],#acct');
   if (!el) return;
   if (el.id === 'acct') {
     if (ME.user) location.hash = '#profil'; else if (ME.ready) openSignIn(); else fb().catch(() => toast('Connexion indisponible pour le moment'));
     return;
   }
   if (el.dataset.rkey) { openStored(el.dataset.rkey, el.dataset.from === 'sc' ? PROFILE_SC : PROFILE_VIEW); return; }
+  if (el.dataset.top) { TOP_TAB = el.dataset.top; render(); return; }
   const act = el.dataset.act, k = el.dataset.k;
   if (act === 'close-modal') closeModal();
   else if (act === 'signin') openSignIn();
@@ -1833,6 +2146,7 @@ document.addEventListener('click', e => {
   else if (act === 'rv-save') saveReview(k);
   else if (act === 'rv-del') deleteReview(k);
   else if (act === 'rv-more') { const p = el.previousElementSibling; if (p) p.classList.remove('clamp'); el.remove(); }
+  else if (act === 'songs-all') { SONGS_ALL = el.dataset.h; render(); }
   else if (act === 'vit-add') openPicker();
   else if (act === 'vit-pick') pickShowcase(k);
   else if (act === 'vit-del') removeShowcase(Number(el.dataset.i));
