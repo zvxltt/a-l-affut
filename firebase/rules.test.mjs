@@ -84,6 +84,7 @@ await env.withSecurityRulesDisabled(c => setDoc(doc(c.firestore(), 'reviews', `o
 await t('vieille note : changer la note refusé', () => assertFails(updateDoc(doc(db('alice'), 'reviews', 'old1__alice'), { r: 2, up: serverTimestamp() })));
 await t('vieille note : noter un son refusé', () => assertFails(updateDoc(doc(db('alice'), 'reviews', 'old1__alice'), { tr: '9', tl: 'Intro', up: serverTimestamp() })));
 await t('vieille note : recopier le nouveau pseudo permis', () => assertSucceeds(updateDoc(doc(db('alice'), 'reviews', 'old1__alice'), { h: 'alice2', n: 'Alice', up: serverTimestamp() })));
+await t('photo : recopiée sur une vieille note', () => assertSucceeds(updateDoc(doc(db('alice'), 'reviews', 'old1__alice'), { ph: `data:image/webp;base64,${'UklGR'.repeat(1200)}`, up: serverTimestamp() })));
 await t('vieille note : supprimer permis', () => assertSucceeds(deleteDoc(doc(db('alice'), 'reviews', 'old1__alice'))));
 await t('supprimer la note d’un autre refusé', () => assertFails(deleteDoc(doc(db('bob'), 'reviews', `${K}__alice`))));
 
@@ -97,6 +98,23 @@ await t('abonnés : qui me suit (lecture publique)', () => assertSucceeds(getDoc
 await t('abonnements : profils par identifiants (lecture publique)', () => assertSucceeds(getDocs(query(collection(db(null), 'users'), where(documentId(), 'in', ['alice', 'bob'])))));
 await t('recherche d’un pseudo par son début (lecture publique)', () => assertSucceeds(getDocs(query(collection(db(null), 'users'), where('h', '>=', 'al'), where('h', '<', 'al\uf8ff'), limit(10)))));
 await t('fil des abonnements : notes de plusieurs membres pour une semaine', () => assertSucceeds(getDocs(query(collection(db('bob'), 'reviews'), where('uid', 'in', ['alice', 'carol']), where('w', '==', weekStart(today)), limit(500)))));
+// photo de profil : petite image intégrée au profil et aux notes, grande image dans photos/{uid}
+const PHS = `data:image/webp;base64,${'UklGR'.repeat(1200)}`;            // ~6 000 caractères
+const PHB = `data:image/jpeg;base64,${'/9j/4A'.repeat(7000)}`;           // ~42 000 caractères
+await t('photo : petite image dans son profil', () => assertSucceeds(updateDoc(doc(db('alice'), 'users', 'alice'), { ph: PHS, up: serverTimestamp() })));
+await t('photo : adresse https (photo Google) permise', () => assertSucceeds(updateDoc(doc(db('bob'), 'users', 'bob'), { ph: 'https://lh3.googleusercontent.com/a/abc=s96-c', up: serverTimestamp() })));
+await t('photo : retirer (vide) permis', () => assertSucceeds(updateDoc(doc(db('bob'), 'users', 'bob'), { ph: '', up: serverTimestamp() })));
+await t('photo : trop lourde dans le profil refusée', () => assertFails(updateDoc(doc(db('alice'), 'users', 'alice'), { ph: `data:image/webp;base64,${'A'.repeat(9000)}`, up: serverTimestamp() })));
+await t('photo : adresse non https refusée', () => assertFails(updateDoc(doc(db('alice'), 'users', 'alice'), { ph: 'javascript:alert(1)', up: serverTimestamp() })));
+await t('photo : image d’un autre format refusée', () => assertFails(updateDoc(doc(db('alice'), 'users', 'alice'), { ph: 'data:image/svg+xml;base64,PHN2Zz4=', up: serverTimestamp() })));
+await t('photo : recopiée sur une note pendant la semaine', () => assertSucceeds(updateDoc(doc(db('alice'), 'reviews', `${K}__alice`), { ph: PHS, up: serverTimestamp() })));
+await t('photo : grande image enregistrée', () => assertSucceeds(setDoc(doc(db('alice'), 'photos', 'alice'), { d: PHB, up: serverTimestamp() })));
+await t('photo : grande image lisible par tous', () => assertSucceeds(getDoc(doc(db(null), 'photos', 'alice'))));
+await t('photo : grande image d’un autre refusée', () => assertFails(setDoc(doc(db('bob'), 'photos', 'alice'), { d: PHB, up: serverTimestamp() })));
+await t('photo : grande image trop lourde refusée', () => assertFails(setDoc(doc(db('alice'), 'photos', 'alice'), { d: `data:image/jpeg;base64,${'A'.repeat(60001)}`, up: serverTimestamp() })));
+await t('photo : champ inconnu refusé', () => assertFails(setDoc(doc(db('alice'), 'photos', 'alice'), { d: PHS, up: serverTimestamp(), x: 1 })));
+await t('photo : supprimer la sienne', () => assertSucceeds(deleteDoc(doc(db('alice'), 'photos', 'alice'))));
+await t('photo : supprimer celle d’un autre refusé', () => assertFails(deleteDoc(doc(db('bob'), 'photos', 'alice'))));
 await t('modifier le profil d’un autre refusé', () => assertFails(updateDoc(doc(db('bob'), 'users', 'alice'), { n: 'pirate', up: serverTimestamp() })));
 await t('prendre le pseudo d’un autre dans son profil refusé', () => assertFails(updateDoc(doc(db('bob'), 'users', 'bob'), { h: 'alice', up: serverTimestamp() })));
 await t('changer de pseudo', async () => {

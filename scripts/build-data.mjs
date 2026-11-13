@@ -60,6 +60,10 @@ function splitFeat(title) {
 }
 const FR_RE = /[éèêëàâùûçôîïœ]|\b(le|la|les|des|du|une?|et|est|pas|mon|ma|mes|ton|ta|tes|je|tu|il|elle|nous|vous|on|ce|ça|qui|que|pour|avec|sans|dans|sur|moi|toi|plus|tout|rien|jamais|vie|nuit|coeur|amour|frère|soleil|mal|bien|fou|folle)\b/i;
 const EN_RE = /\b(the|you|your|my|me|i|im|it|is|in|on|of|and|love|baby|night|dont|cant|we|they|money|life|feel|girl|time|world|up|down|out)\b/i;
+// titres en portugais, italien ou allemand : le rap étranger croisé dans les découvertes n’est pas du rap FR
+const PT_RE = /[ãõ]|\b(n[ãa]o|voc[êe]s?|cora[çc][ãa]o|pra|meu|minha|tudo|isso|essa|esse|muito|favela|quebrada|irm[ãa]o|t[ôo]|tamb[ée]m|quem|vamos|saudade|menina|menino|vagabundo|bandido)\b/i;
+const IT_RE = /\b(perch[ée]|pi[ùu]|sono|della|nella|questa|questo|voglio|sempre|cuore|notte|strada|fratello|soldi|mio|tuo|tua|amore|gli|tutto|niente|ancora|siamo|per|che|senza|anche|oggi|domani|ragazza|ragazzi|dove|nostro|nostra)\b/i;
+const DE_RE = /[äöüß]|\b(ich|nicht|und|der|mein|dein|kein|keine|wir|ihr|auf|f[üu]r|nur|immer|liebe|leben|geld|bruder|stra(?:ß|ss)e|zeit|alles|wenn|wieder|heute|nacht|herz|jetzt|dich|mich|sind|habe?|weil|schon|noch)\b/i;
 const ES_RE = /[ñáíóú¿¡]|\b(el|los|las|mi|para|una|del|por|como|corazón|noche|quiero|eres|vida|amor|baila|bebé|mami|papi|perreo|contigo|pero|todo|nada|soy|estoy|dime|ella|otra|vez|mucho)\b/i;
 
 /* ------------------------------------------------------------------ réseau */
@@ -168,6 +172,7 @@ async function loadAnnonces() {
 // « International » = le top 150 France et les très grandes stars, pas les artistes croisés au hasard des voisinages
 const minorInt = a => a.c === 'int' && !a.top && a.src !== 'seed' && (a.f || 0) < 2e6;
 function catOf(a, genreId, genreName, title) {
+  if (a.off) return null;   // découvert par erreur (pas du rap, ou rap d’une autre langue) : rien n’est publié
   if (a.c === 'int') return minorInt(a) ? null : 'int';
   // petit artiste découvert autour du rap (ro) : ses sorties rangées dans un autre genre ne sont pas gardées
   if (a.ro && ((genreId > 0 && genreId !== 116) || (!(genreId > 0) && genreName && !/rap|hip/i.test(genreName)))) return null;
@@ -188,6 +193,7 @@ function pop(a) {
 }
 // Sortie dont on ignore le genre (annonce presse, MusicBrainz) : on suit la discographie de l’artiste.
 function leanCat(a) {
+  if (a.off) return null;
   if (a.c === 'int') return minorInt(a) ? null : 'int';
   if (a.c === 'rfr' || a.c === 'rus' || a.c === 'mfr') return a.c;
   if (typeof a.rp === 'number') return a.rp >= 50 ? 'rfr' : 'mfr';
@@ -197,9 +203,9 @@ function leanCat(a) {
 /* ------------------------------------------------------------------ découverte d’artistes */
 // 1) Artistes « similaires » sur Deezer, sur deux niveaux (les artistes de départ, puis les plus suivis des découverts).
 const isRapCat = c => c === 'rfr' || c === 'fr' || c === 'rus';
-// en dessous de ces fans, un artiste découvert autour du rap n’apporte que ses sorties rap (ro)
-const RAP_ONLY_FANS = { rfr: 10000, fr: 10000, rus: 60000 };
-const roFor = (c, f) => (UG_ON && RAP_ONLY_FANS[c] && f < RAP_ONLY_FANS[c] ? { ro: 1 } : {});
+// tout artiste ajouté par la découverte élargie n’apporte que ses sorties rangées en rap (ro), et il est écarté
+// s’il s’avère ne pas faire de rap ou rapper dans une autre langue (voir fetchDiscographies)
+const UGRO = () => (UG_ON ? { ro: 1 } : {});
 async function discoverRelated(state) {
   const due = !state.relAt || Date.now() - state.relAt >= 6 * DAY || (UG_ON && state.relV !== UG_V);
   if (!due) return;
@@ -207,7 +213,7 @@ async function discoverRelated(state) {
   // points de départ : la liste de départ, les artistes très suivis et, avec la découverte élargie, tout le rap déjà suivi
   // à partir de 12 000 fans (60 000 en rap US) : leurs voisins font remonter la scène underground
   const base = Object.entries(artists)
-    .filter(([, a]) => a.c !== 'int' && (a.src === 'seed' || a.f >= 120000 || (UG_ON && isRapCat(a.c) && a.f >= (a.c === 'rus' ? 60000 : 12000))))
+    .filter(([, a]) => a.c !== 'int' && !a.off && (a.src === 'seed' || a.f >= 120000 || (UG_ON && !a.ro && ((a.c === 'rfr' && a.f >= 12000) || (a.c === 'rus' && a.f >= 60000)))))
     .sort((x, y) => (x[1].src === 'seed' ? -1 : 0) - (y[1].src === 'seed' ? -1 : 0) || y[1].f - x[1].f)
     .slice(0, UG_ON ? 2600 : 1200);
   log(`découverte : artistes similaires de ${base.length} artistes…`);
@@ -230,11 +236,12 @@ async function discoverRelated(state) {
   }).sort((a, b) => b.total - a.total || b.f - a.f);
   for (const v of cands) {
     const cat = v.top === 'mfr' ? 'frx' : v.top;
-    // découverte élargie : le rap FR jusqu’à 1 500 fans s’il est voisin d’au moins deux artistes suivis
-    const minFans = UG_ON ? (cat === 'rus' ? 25000 : cat === 'frx' ? 40000 : cat === 'fr' ? 5000 : 1500) : (cat === 'rus' ? 60000 : cat === 'frx' ? 40000 : 10000);
+    // découverte élargie (rap seulement) : le rap FR jusqu’à 1 500 fans s’il est voisin d’au moins deux artistes suivis
+    const ug = UG_ON && (cat === 'rfr' || cat === 'rus');
+    const minFans = ug ? (cat === 'rus' ? 25000 : 1500) : (cat === 'rus' ? 60000 : cat === 'frx' ? 40000 : 10000);
     if (v.f < minFans) continue;
-    if (v.total < 2 && v.f < (UG_ON && cat === 'rfr' ? 30000 : 250000)) continue;
-    artists[v.id] = { n: v.n, c: cat, f: v.f, src: 'rel', it: 0, ...roFor(cat, v.f) };
+    if (v.total < 2 && v.f < (ug && cat === 'rfr' ? 30000 : 250000)) continue;
+    artists[v.id] = { n: v.n, c: cat, f: v.f, src: 'rel', it: 0, ...(ug ? { ro: 1 } : {}) };
     if (++added >= (UG_ON ? 4000 : 1500)) break;
   }
   state.relAt = Date.now();
@@ -261,7 +268,7 @@ const WIKI_CATS = [
   { lang: 'fr', cat: 'Catégorie:Auteur-compositeur-interprète français', depth: 0, c: 'fr', min: 50000 },
   { lang: 'fr', cat: 'Catégorie:Chanteuse française de pop', depth: 0, c: 'fr', min: 40000 },
   { lang: 'fr', cat: 'Catégorie:Chanteur français de pop', depth: 0, c: 'fr', min: 40000 },
-  { lang: 'en', cat: 'Category:21st-century American rappers', depth: 1, c: 'rus', min: 60000, ug: 25000 },
+  { lang: 'en', cat: 'Category:21st-century American rappers', depth: 1, c: 'rus', min: 60000 },
   { lang: 'en', cat: 'Category:Underground rappers', depth: 0, c: 'rus', min: 60000, ug: 15000, ugOnly: true },
 ];
 async function wikiCategoryMembers(lang, cat, depth) {
@@ -320,7 +327,7 @@ async function discoverWikiCategories(state) {
     const m = (res.data || []).filter(a => norm(a.name) === norm(name)).sort((a, b) => b.nb_fan - a.nb_fan)[0];
     state.searched[norm(name)] = m ? m.id : 0;
     if (m && m.nb_fan >= min && !state.artists[m.id] && !IGNORE.has(m.id)) {
-      state.artists[m.id] = { n: m.name, c, f: m.nb_fan, src: 'cat', it: 0, ...roFor(c, m.nb_fan) };
+      state.artists[m.id] = { n: m.name, c, f: m.nb_fan, src: 'cat', it: 0, ...(c === 'rfr' || c === 'rus' ? UGRO() : {}) };
       added++;
     }
   }).catch(() => {})));
@@ -353,7 +360,7 @@ async function discoverUnderground(state, list) {
     if (!m && ms.length > 1) unsure++;
     state.ug[norm(name)] = { id: m ? m.id : 0, t: Date.now() };
     if (!m || state.artists[m.id] || IGNORE.has(m.id) || m.nb_fan < (c === 'rus' ? 1000 : 200)) return;
-    state.artists[m.id] = { n: m.name, c, f: m.nb_fan, src: 'ug', it: 0, ...roFor(c, m.nb_fan) };
+    state.artists[m.id] = { n: m.name, c, f: m.nb_fan, src: 'ug', it: 0, ro: 1 };
     added++;
   }).catch(() => {})));
   log(`découverte liste underground : ${todo.length} noms cherchés, ${added} artistes ajoutés${unsure ? `, ${unsure} homonymes écartés` : ''}`);
@@ -363,7 +370,7 @@ async function discoverUnderground(state, list) {
 const PL_QUERIES = [
   ...['rap fr underground', 'rap français underground', 'underground rap français', 'rap underground fr', 'rap fr indé', 'rap indépendant',
     'nouvelle scène rap fr', 'nouvelle école rap fr', 'rap fr pépites', 'pépites rap', 'rap fr découvertes', 'rap fr à découvrir', 'rap fr fresh',
-    'drill fr', 'trap fr', 'cloud rap fr', 'boom bap fr', 'rap conscient', 'rap fr old school', 'rap belge', 'rap suisse', 'rap québécois',
+    'drill fr', 'trap fr', 'cloud rap fr', 'boom bap fr', 'rap fr old school', 'rap belge', 'rap suisse', 'rap québécois',
     'rap marseille', 'rap lyon', 'rap toulouse', 'rap lille'].map(q => [q, 'rfr']),
   ...['underground hip hop', 'underground rap', 'boom bap', 'rap us underground', 'abstract hip hop', 'jazz rap', 'plugg', 'rage rap'].map(q => [q, 'rus']),
 ];
@@ -399,7 +406,7 @@ async function discoverPlaylists(state) {
     const c = (v.cats.rus || 0) > (v.cats.rfr || 0) ? 'rus' : 'rfr';
     const f = ar.nb_fan || 0;
     if (artists[v.id] || f < (c === 'rus' ? 5000 : 800)) return;
-    artists[v.id] = { n: ar.name || v.n, c, f, src: 'pl', it: 0, ...roFor(c, f) };
+    artists[v.id] = { n: ar.name || v.n, c, f, src: 'pl', it: 0, ro: 1 };
     added++;
   }).catch(() => {})));
   state.plAt = Date.now(); state.plV = UG_V;
@@ -438,7 +445,7 @@ async function fetchDiscographies(state) {
     if (e && !force) {
       const age = a.last ? (Date.parse(TODAY) - Date.parse(a.last)) / DAY : 9999;
       const future = e.items.some(x => x.date > TODAY);
-      const ttl = future || age <= 150 ? 0 : age <= 500 ? 6 * HOUR : 24 * HOUR;
+      const ttl = a.off ? 30 * DAY : future || age <= 150 ? 0 : age <= 500 ? 6 * HOUR : 24 * HOUR;
       if (ttl && now - e.t < ttl) { out.set(id, e.items.filter(x => x.date >= HISTORY_FROM)); continue; }
     }
     todo.push(id);
@@ -447,12 +454,13 @@ async function fetchDiscographies(state) {
   if (force) state.discoV = DISCO_V;
   await Promise.all(todo.map(id => dz(`/artist/${id}/albums?limit=1000`).then(res => {
     const items = [];
-    let last = '', rap = 0, rnb = 0, known = 0, fr = 0, en = 0, es = 0;
+    let last = '', rap = 0, rnb = 0, known = 0, fr = 0, en = 0, es = 0, xo = 0;
     for (const x of res.data || []) {
       if (x.genre_id > 0) { known++; if (x.genre_id === 116) rap++; if (x.genre_id === 165) rnb++; }
       const t = String(x.title || '').replace(/'/g, '');
       const isEs = ES_RE.test(t), isFr = FR_RE.test(t) && !isEs, isEn = EN_RE.test(t);
       if (isEs) es++; else if (isFr && !isEn) fr++; else if (isEn && !isFr) en++;
+      if (!isEs && (PT_RE.test(t) || IT_RE.test(t) || DE_RE.test(t)) && !/\b(je|tu|nous|vous|les|des|est|pas|c'?est|j'?ai)\b/i.test(x.title || '')) xo++;
       const d = x.release_date || '';
       if (!isYmd(d)) continue;
       if (d <= TODAY && d > last) last = d;
@@ -465,7 +473,11 @@ async function fetchDiscographies(state) {
     if (fr + en + es >= 6) { a.lf = Math.round((100 * fr) / (fr + en + es)); a.ls = Math.round((100 * es) / (fr + en + es)); }   // titres en français, en espagnol
     // Le rap US, c’est du rap : la pop, le R&B ou le reggaeton rangés là par voisinage passent en International.
     // Un artiste du top France aux titres anglais passe en International, et inversement aux titres français.
-    if (a.src !== 'seed') {
+    if (a.ro) {
+      // découverte élargie : pas de rap (au moins 3 sorties au genre connu, moins de 30 % de rap) ou rap d’une autre langue → écarté
+      const n = fr + en + es + xo, foreign = n >= 5 && (es + xo) / n >= 0.35 && (a.c === 'rus' || fr / n < 0.2);
+      if ((known >= 3 && a.rp < 30) || foreign) a.off = 1; else delete a.off;
+    } else if (a.src !== 'seed') {
       if (a.c === 'rus' && ((known >= 3 && a.rp < 30) || a.ls >= 30)) a.c = 'int';
       const top = a.src === 'top' || a.top;
       if (top && a.c === 'fr' && typeof a.lf === 'number' && a.lf < 15) a.c = 'int';
@@ -496,6 +508,12 @@ async function dryRunReport(state, before) {
   }
   const sub = { artists: Object.fromEntries(added), disco: {}, discoV: 2 };
   const discos = await fetchDiscographies(sub);
+  const off = added.filter(([, a]) => a.off).map(([, a]) => a).sort((x, y) => y.f - x.f);
+  log(`ESSAI : ${off.length} écartés après lecture des discographies (pas de rap ou autre langue) — ${off.slice(0, 80).map(a => `${a.n} (${a.c})`).join(', ')}`);
+  const kept = added.filter(([, a]) => !a.off).map(([, a]) => a);
+  const byCat = {};
+  for (const a of kept) (byCat[a.c] = byCat[a.c] || []).push(a);
+  for (const [c, list] of Object.entries(byCat)) log(`ESSAI : gardés ${c} : ${list.length} — ${list.sort((x, y) => y.f - x.f).slice(0, 70).map(a => `${a.n} (${a.f})`).join(', ')}`);
   const rel = buildDeezerReleases(sub.artists, discos.map, {});
   const ws = weekStartOf(TODAY), we = addDays(ws, 6), lw = addDays(ws, -7);
   const count = list => { const o = {}; for (const r of list) o[`${r.cat}/${r.rt}`] = (o[`${r.cat}/${r.rt}`] || 0) + 1; return JSON.stringify(o); };
@@ -902,7 +920,7 @@ function makeMatchers(artists) {
   for (const [id, a] of Object.entries(artists)) {
     const key = spacedNorm(a.n);
     if (!key || key.length < 2 || NOT_ARTIST.has(key)) continue;
-    if (a.ro && !key.includes(' ') && key.length <= 6) continue;   // petit artiste au nom court : trop de faux positifs
+    if (a.off || (a.ro && !key.includes(' ') && key.length <= 6)) continue;   // écarté, ou découvert au nom court : trop de faux positifs
     const strict = key.replace(/ /g, '').length <= 5 || COMMON.has(key);
     const m = { id, a, key, strict, re: strict ? new RegExp(`(^|[^\\p{L}\\p{N}])${escRe(a.n)}(?=$|[^\\p{L}\\p{N}])`, 'u') : null };
     const first = key.split(' ')[0];
@@ -1388,7 +1406,7 @@ async function concertsStep(state) {
   const byName = new Map();
   for (const [id, a] of Object.entries(state.artists)) {
     const k = norm(a.n);
-    if (k.length >= (a.ro ? 5 : 3) && !NOT_ARTIST.has(spacedNorm(a.n))) byName.set(k, { id, ...a });
+    if (!a.off && k.length >= (a.ro ? 5 : 3) && !NOT_ARTIST.has(spacedNorm(a.n))) byName.set(k, { id, ...a });
   }
   const items = [];
   const seen = new Set();
@@ -1588,7 +1606,7 @@ async function main() {
   items.sort((a, b) => b.d.localeCompare(a.d) || b.p - a.p);
   const generatedAt = new Date().toISOString();
   const upcoming = items.filter(i => i.d > TODAY).length;
-  await writeFile(`${OUT}/releases.json`, JSON.stringify({ v: 1, generatedAt, today: TODAY, artists: Object.keys(artists).length, items }));
+  await writeFile(`${OUT}/releases.json`, JSON.stringify({ v: 1, generatedAt, today: TODAY, artists: Object.values(artists).filter(a => !a.off).length, items }));
   await writeFile(`${OUT}/details.json`, JSON.stringify(details));
   const concerts = ((state.concerts && state.concerts.items) || []).filter(x => x.d >= TODAY);
   await writeFile(`${OUT}/concerts.json`, JSON.stringify({ v: 1, generatedAt, updatedAt: state.concerts ? new Date(state.concerts.t).toISOString() : null, items: concerts }));
