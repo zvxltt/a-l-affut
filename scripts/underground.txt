@@ -1,5 +1,5 @@
 # Rap underground, indépendant, classiques et nouvelle scène à suivre en plus de la découverte automatique.
-# Une ligne par artiste : Nom exact sur Deezer|catégorie (rfr : rap FR, BE, CH, QC ; rus : rap US et anglophone).
+# Une ligne par artiste : Nom exact sur Deezer|catégorie (rfr : rap FR, BE, CH, QC ; rus : rap US et UK, anglophone).
 # Le robot retrouve chaque nom sur Deezer (nom identique, sans homonyme aussi suivi) ; pour les petits artistes,
 # seules les sorties rangées en rap sont gardées. Les noms trop courants (Loud, Wiki, Blu…) sont évités exprès.
 
@@ -204,3 +204,181 @@ JID|rus
 Joey Valence & Brae|rus
 Fakemink|rus
 EsDeeKid|rus
+
+# --- Royaume-Uni : rap, grime, drill
+Skepta|rus
+Stormzy|rus
+J Hus|rus
+Headie One|rus
+Digga D|rus
+Aitch|rus
+Kano|rus
+Giggs|rus
+Wiley|rus
+Dizzee Rascal|rus
+Ghetts|rus
+Loyle Carner|rus
+D-Block Europe|rus
+Fredo|rus
+M Huncho|rus
+Nines|rus
+Krept & Konan|rus
+Tion Wayne|rus
+Russ Millions|rus
+ArrDee|rus
+Potter Payper|rus
+Clavish|rus
+Kwengface|rus
+Unknown T|rus
+K-Trap|rus
+Knucks|rus
+Pa Salieu|rus
+Bugzy Malone|rus
+Lady Leshurr|rus
+Ms Banks|rus
+Stefflon Don|rus
+Ivorian Doll|rus
+Shaybo|rus
+Lancey Foux|rus
+Jim Legxacy|rus
+Fimiguerrero|rus
+Jords|rus
+Wretch 32|rus
+Abra Cadabra|rus
+Dutchavelli|rus
+MoStack|rus
+Not3s|rus
+Yxng Bane|rus
+Hardy Caprio|rus
+Avelino|rus
+Kojey Radical|rus
+Ocean Wisdom|rus
+Lowkey|rus
+Akala|rus
+JME|rus
+P Money|rus
+Sneakbo|rus
+Young T & Bugsey|rus
+Tiny Boost|rus
+Sainté|rus
+AJ Tracey|rus
+Octavian|rus
+Lil Berete|rus
+Booter Bee|rus
+Nemzzz|rus
+Skrapz|rus
+Meekz|rus
+Rimzee|rus
+Bandokay|rus
+Double Lz|rus
+Loski|rus
+Harlem Spartans|rus
+Kairo Keyz|rus
+Dappy|rus
+Big Narstie|rus
+Lethal Bizzle|rus
+Teeway|rus
+S1mba|rus
+Sav'O|rus
+Novelist|rus
+D Double E|rus
+Jaykae|rus
+Mez|rus
+Lotto Ash|rus
+Nadia Rose|rus
+Flohio|rus
+ENNY|rus
+Central Cee|rus
+Dave|rus
+Kenny Allstar|rus
+Jay1|rus
+Hamza|rus
+Mowgs|rus
+Blade Brown|rus
+Ard Adz|rus
+Professor Green|rus
+Tinie Tempah|rus
+Bru-C|rus
+Cristale|rus
+
+# --- États-Unis : nouvelle scène, sud, drill, plugg
+Real Boston Richey|rus
+Rio Da Yung OG|rus
+BabyTron|rus
+Icewear Vezzo|rus
+Skilla Baby|rus
+Kenny Muney|rus
+Big30|rus
+Pooh Shiesty|rus
+Luh Tyler|rus
+Hunxho|rus
+King Von|rus
+Sheff G|rus
+Sleepy Hallow|rus
+Kay Flock|rus
+Dougie B|rus
+B-Lovee|rus
+Nardo Wick|rus
+Nine Vicious|rus
+Lucki|rus
+Summrs|rus
+Autumn!|rus
+Kankan|rus
+Rx Papi|rus
+1oneam|rus
+Prettifun|rus
+Yhapojj|rus
+That Mexican OT|rus
+Maxo Kream|rus
+Sauce Walka|rus
+Monaleo|rus
+Flo Milli|rus
+Mello Buckzz|rus
+Rylo Rodriguez|rus
+Lil Poppa|rus
+Toosii|rus
+Kevin Gates|rus
+Boosie Badazz|rus
+Young Dolph|rus
+Pi'erre Bourne|rus
+Lil Keed|rus
+Lil Gotit|rus
+Young Nudy|rus
+Quando Rondo|rus
+Lil Loaded|rus
+Duke Deuce|rus
+Lil Double 0|rus
+Peezy|rus
+Babyface Ray|rus
+Cash Kidd|rus
+Rob49|rus
+Lil Migo|rus
+TiaCorine|rus
+Sukihana|rus
+Cash Cobain|rus
+Bay Swag|rus
+Chow Lee|rus
+Lil Tony Official|rus
+2Rare|rus
+Kyle Richh|rus
+Jenn Carter|rus
+Lil Shine|rus
+Tisakorean|rus
+Glokk40Spaz|rus
+Lil Zay Osama|rus
+Doodie Lo|rus
+Lil Jairmy|rus
+Smokepurpp|rus
+Pouya|rus
+Fat Nick|rus
+SosMula|rus
+Chief Wuk|rus
+Earl Swavey|rus
+Veeze|rus
+Mike Sherm|rus
+Yung Kayo|rus
+Lil Wop|rus
+Zillakami|rus
+Sematary|rus
+Hackle|rus
+Kingpin Skinny Pimp|rus

@@ -142,65 +142,6 @@
 49569672|fr|966234|Imen Es
 10930872|fr|391922|Bramsito
 81612682|fr|20005|Bianca Costa
-8909272|mfr|2785111|Aya Nakamura
-1042268|mfr|1760149|Angèle
-310260|mfr|3503626|Stromae
-5835993|mfr|2034305|Vianney
-198|mfr|3747755|Céline Dion
-358|mfr|974465|Mylène Farmer
-11907|mfr|1100343|Christophe Maé
-11971|mfr|1899122|Vitaa
-296520|mfr|1289318|Slimane
-12526056|mfr|1504417|Tayc
-4803754|mfr|3312043|Dadju
-47|mfr|1304579|Indochine
-670|mfr|1363150|Francis Cabrel
-2691|mfr|1064998|Grand Corps Malade
-55936502|mfr|98619|Adèle Castillon
-66228482|mfr|536253|Ronisia
-4889156|mfr|1042799|Clara Luciani
-5848618|mfr|434034|Juliette Armanet
-112645512|mfr|326545|Zaho de Sagazan
-5811815|mfr|453169|Pierre Garnier
-258938052|mfr|253520|Héléna
-163325847|mfr|451163|Santa
-4453455|mfr|1996585|Louane
-5947658|mfr|2078553|Kendji Girac
-15887|mfr|1450552|Julien Doré
-144446|mfr|1845598|M. Pokora
-164704|mfr|791475|Amir
-29|mfr|1179027|Calogero
-1782|mfr|913476|Patrick Bruel
-6815|mfr|1075390|Florent Pagny
-71069|mfr|888193|ZAZ
-5382747|mfr|463826|Pomme
-1679838|mfr|773655|Hoshi
-2607221|mfr|256256|Gaël Faye
-9030084|mfr|474300|Eddy de Pretto
-51276942|mfr|206436|Videoclub
-2090121|mfr|203714|Suzane
-4043887|mfr|166266|L'Impératrice
-5623138|mfr|270672|Feu! Chatterton
-162540|mfr|367181|Ben Mazué
-2848|mfr|326341|Benjamin Biolay
-1520407|mfr|684365|Christine and the Queens
-318673|mfr|500809|Joyce Jonathan
-15029771|mfr|55376|Lous and The Yakuza
-7995536|mfr|540589|Lyna Mahyem
-80681022|mfr|526945|Wejdene
-9281246|mfr|509718|Joé Dwèt Filé
-147136312|mfr|240964|Mentissa
-67149402|mfr|115324|Pierre de Maere
-174351|mfr|948878|Cœur de pirate
-5417036|mfr|288740|Charlotte Cardin
-91132672|mfr|27386|Iliona
-91212482|mfr|140422|Nuit Incolore
-1120|mfr|1885178|Jean-Jacques Goldman
-468|mfr|867067|Jenifer
-917|mfr|293683|Nolwenn Leroy
-378751|mfr|1328126|Claudio Capéo
-7733482|mfr|94300|Emma Peters
-5951582|mfr|444192|Jain
 246791|rus|24133939|Drake
 525046|rus|6203968|Kendrick Lamar
 4495513|rus|3160004|Travis Scott

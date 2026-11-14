@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" id="vp" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>À l’affût</title>
-<meta name="description" content="Les sorties rap FR, rap US, musique française et des artistes les plus écoutés en France : la semaine en cours et tout ce qui arrive bientôt. Mis à jour automatiquement toutes les heures.">
+<meta name="description" content="Les sorties rap FR, rap US et rap UK : la semaine en cours, tout ce qui arrive bientôt et les concerts. Mis à jour automatiquement toutes les heures.">
 <meta name="theme-color" content="#FFFFFF">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="À l’affût">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta property="og:title" content="À l’affût">
-<meta property="og:description" content="Les sorties rap FR, rap US et musique française de la semaine, et celles à venir.">
+<meta property="og:description" content="Les sorties rap FR, rap US et rap UK de la semaine, celles à venir et les concerts.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://zvxltt.github.io/a-l-affut/">
 <meta property="og:image" content="https://zvxltt.github.io/a-l-affut/logo/a-l-affut-icone.png">
@@ -817,9 +817,7 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
     <div class="seg" role="group" aria-label="Genre">
       <button type="button" data-cat="all" aria-pressed="true">Tout <span class="n"></span></button>
       <button type="button" data-cat="rfr" aria-pressed="false">Rap FR <span class="n"></span></button>
-      <button type="button" data-cat="rus" aria-pressed="false">Rap US <span class="n"></span></button>
-      <button type="button" data-cat="mfr" aria-pressed="false">Musique FR <span class="n"></span></button>
-      <button type="button" data-cat="int" aria-pressed="false">International <span class="n"></span></button>
+      <button type="button" data-cat="rus" aria-pressed="false">Rap US/UK <span class="n"></span></button>
     </div>
     <div class="seg seg-cc" role="group" aria-label="Pays">
       <button type="button" data-cc="all" aria-pressed="true">Partout <span class="n"></span></button>
@@ -849,7 +847,7 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 </main>
 
 <footer class="foot">
-  <span id="foot-l">À l’affût · rap FR, rap US et musique française</span>
+  <span id="foot-l">À l’affût · rap FR, rap US et rap UK</span>
   <span>Sources : Deezer, Apple Music, MusicBrainz, Wikipédia, presse</span>
 </footer>
 
@@ -885,7 +883,10 @@ const CONCERTS_URL = 'data/concerts.json';
 const COUNTRY = { FR: 'France', BE: 'Belgique', CH: 'Suisse' };
 const POLL_MS = 3 * 60e3;           // le site vérifie s’il y a du nouveau toutes les 3 minutes
 const MAX_BACK = 8;                 // semaines consultables en arrière
-const CATS = { rfr: 'Rap FR', rus: 'Rap US', mfr: 'Musique FR', int: 'International' };
+const CATS = { rfr: 'Rap FR', rus: 'Rap US/UK' };
+// noms affichés, y compris les anciens genres (notes données avant que le site ne suive que le rap)
+const CAT_NAME = { ...CATS, mfr: 'Musique FR', int: 'International' };
+const catName = c => CAT_NAME[c] || '';
 const TYPE_LABEL = { album: 'Album', ep: 'EP', single: 'Single', compile: 'Compil' };
 const SRC_LABEL = { dz: 'Deezer', it: 'Apple Music', mb: 'MusicBrainz', wk: 'Wikipédia', pr: 'Presse', an: 'Presse' };
 
@@ -1080,7 +1081,7 @@ function paintStatus() {
   $('#up-n').textContent = up ? up : '';
   const co = CONCERTS.loaded ? CONCERTS.items.filter(x => x.date >= today()).length : DATA.co || 0;
   $('#co-n').textContent = co ? co : '';
-  if (DATA.artists) $('#foot-l').textContent = `À l’affût · ${DATA.artists.toLocaleString('fr-FR')} artistes suivis, dont le top 150 France`;
+  if (DATA.artists) $('#foot-l').textContent = `À l’affût · ${DATA.artists.toLocaleString('fr-FR')} rappeurs suivis`;
 }
 
 const matchQ = (r, q) => !q || norm(`${r.title} ${r.artist} ${r.feats.join(' ')}`).includes(q);
@@ -1111,7 +1112,7 @@ function elsewhereHtml(base) {
 }
 function paintFilters(base) {
   const q = norm(S.q);
-  const cc = { all: 0, rfr: 0, rus: 0, mfr: 0, int: 0 }, tc = { all: 0, album: 0, ep: 0, single: 0 };
+  const cc = { all: 0, rfr: 0, rus: 0 }, tc = { all: 0, album: 0, ep: 0, single: 0 };
   let mine = 0;
   for (const r of base) {
     if (!matchQ(r, q)) continue;
@@ -1198,7 +1199,7 @@ function cardHtml(r) {
       <span class="card-title">${titleHtml(r)}</span>
       <span class="card-artist">${esc(r.artist)}</span>
       ${r.feats.length ? `<span class="card-feat">feat. ${esc(r.feats.join(', '))}</span>` : ''}
-      <span class="meta">${rtChip(r)}<span>${esc(CATS[r.cat])}</span><span class="md">${esc(fmtShort(r.date))}</span>${r.n > 1 ? `<span>${r.n} titres${r.dur ? ` · ${fmtTotal(r.dur)}` : ''}</span>` : ''}</span>
+      <span class="meta">${rtChip(r)}<span>${esc(catName(r.cat))}</span><span class="md">${esc(fmtShort(r.date))}</span>${r.n > 1 ? `<span>${r.n} titres${r.dur ? ` · ${fmtTotal(r.dur)}` : ''}</span>` : ''}</span>
     </span>
   </button>`;
 }
@@ -1207,13 +1208,13 @@ function rowHtml(r, upcoming) {
   const len = r.n > 1 ? `${r.n} titres` : r.dur ? fmtDur(r.dur) : '';
   const side = upcoming
     ? `<span class="pill ${esc(r.rt)}">${esc(TYPE_LABEL[r.rt])}</span>`
-    : `${FB_CONFIG ? rtChip(r) : ''}<span class="rs md">${esc(fmtShort(r.date))}</span><span class="rs">${esc(CATS[r.cat])}${len ? ` · ${esc(len)}` : ''}</span>`;
+    : `${FB_CONFIG ? rtChip(r) : ''}<span class="rs md">${esc(fmtShort(r.date))}</span><span class="rs">${esc(catName(r.cat))}${len ? ` · ${esc(len)}` : ''}</span>`;
   return `<button class="row" type="button" data-key="${esc(r.key)}">
     <span class="cover">${coverHtml(r, 120)}</span>
     <span class="row-t">
       <span class="row-title">${isNew(r) ? '<span class="dot" title="Nouveau depuis ta dernière visite"></span>' : ''}${titleHtml(r)}</span>
       <span class="row-artist">${esc(r.artist)}${r.feats.length ? ` <span class="feat">· feat. ${esc(r.feats.join(', '))}</span>` : ''}</span>
-      ${upcoming ? `<span class="row-cat">${esc(CATS[r.cat])}</span>` : `<span class="row-cat row-m">${esc(CATS[r.cat])}${len ? ` · ${esc(len)}` : ''} · ${esc(fmtShort(r.date))}</span>`}
+      ${upcoming ? `<span class="row-cat">${esc(catName(r.cat))}</span>` : `<span class="row-cat row-m">${esc(catName(r.cat))}${len ? ` · ${esc(len)}` : ''} · ${esc(fmtShort(r.date))}</span>`}
     </span>
     <span class="row-side">${side}</span>
   </button>`;
@@ -1385,7 +1386,7 @@ function viewConcerts() {
   for (const c of all) if ((!S.metro || c.metro === S.metro) && isMineConcert(c)) mine++;
   paintMine(mine);
   const base = all.filter(c => (!S.metro || c.metro === S.metro) && (!S.mine || isMineConcert(c)));
-  const cc = { all: 0, rfr: 0, rus: 0, mfr: 0, int: 0 }, kc = { all: 0, FR: 0, BE: 0, CH: 0 };
+  const cc = { all: 0, rfr: 0, rus: 0 }, kc = { all: 0, FR: 0, BE: 0, CH: 0 };
   for (const c of base) {
     if (S.cc === 'all' || c.cc === S.cc) { cc.all++; cc[c.cat]++; }
     if (S.cat === 'all' || c.cat === S.cat) { kc.all++; if (kc[c.cc] !== undefined) kc[c.cc]++; }
@@ -1442,7 +1443,7 @@ function viewSettings() {
     </section>
     <section class="set-sec"><h2 class="set-h">À propos</h2>
       ${setRow('Dernière mise à jour', 'Le site vérifie les nouvelles sorties toutes les heures.', `<span class="set-st" id="set-st" aria-live="polite">${statusHtml()}</span>`)}
-      <p class="set-about">À l’affût suit ${DATA.artists ? `${DATA.artists.toLocaleString('fr-FR')} artistes` : 'des milliers d’artistes'} : les sorties rap FR, rap US, musique française et du top 150 France, relevées chaque heure sur Deezer, Apple Music, MusicBrainz, Wikipédia et dans la presse. Les concerts viennent des agendas des grandes villes de France, de Belgique et de Suisse.</p>
+      <p class="set-about">À l’affût suit ${DATA.artists ? `${DATA.artists.toLocaleString('fr-FR')} rappeurs` : 'des milliers de rappeurs'} : les sorties rap FR (France, Belgique, Suisse, Québec), rap US et rap UK, du plus écouté à l’underground, relevées chaque heure sur Deezer, Apple Music, MusicBrainz, Wikipédia et dans la presse. Les concerts de ces rappeurs viennent des agendas des grandes villes de France, de Belgique et de Suisse.</p>
     </section>`;
 }
 function resetLocal(btn) {
@@ -1587,7 +1588,7 @@ function paintDetail(r, failed) {
   $dbody.innerHTML = `
     <div class="d-cover cover">${big ? `<img src="${esc(big)}" alt="Pochette de ${esc(r.title)}">` : `<span class="ph" aria-hidden="true">${esc(initial(r.title))}</span>`}</div>
     <div class="d-main">
-      <div class="meta"><span class="pill ${esc(r.rt)}">${esc(TYPE_LABEL[r.rt])}</span><span>${esc(CATS[r.cat])}</span>${r.ex ? '<span>Explicite</span>' : ''}${isNew(r) ? '<span>· Nouveau</span>' : ''}</div>
+      <div class="meta"><span class="pill ${esc(r.rt)}">${esc(TYPE_LABEL[r.rt])}</span><span>${esc(catName(r.cat))}</span>${r.ex ? '<span>Explicite</span>' : ''}${isNew(r) ? '<span>· Nouveau</span>' : ''}</div>
       <h2 class="d-title" id="d-title">${esc(r.title)}</h2>
       <p class="d-artist">${esc(r.artist)}</p>
       <p class="d-date">${released ? 'Sorti le' : 'Sortie prévue le'} ${esc(fmtLong(r.date))}${rel ? ` · ${esc(rel)}` : ''}</p>
@@ -3005,7 +3006,7 @@ function sinceLabel(ts) {
 }
 function storedRelease(x) {
   return {
-    key: x.k, title: x.t || '', artist: x.a || '', feats: [], date: isYmd(x.d) ? x.d : today(), rt: TYPE_LABEL[x.rt] ? x.rt : 'album', cat: CATS[x.c] ? x.c : 'rfr',
+    key: x.k, title: x.t || '', artist: x.a || '', feats: [], date: isYmd(x.d) ? x.d : today(), rt: TYPE_LABEL[x.rt] ? x.rt : 'album', cat: CAT_NAME[x.c] ? x.c : 'rfr',
     md5: '', cover: x.img || '', n: 0, dur: 0, label: '', genre: '', ex: false, pop: 0, src: [], dz: Number((String(x.k).match(/^dz(\d+)$/) || [])[1] || 0),
     am: '', mb: '', article: '', outlet: '',
   };

@@ -1,7 +1,7 @@
 {
   "name": "À l’affût — sorties rap et musique",
   "short_name": "À l’affût",
-  "description": "Les sorties rap FR, rap US et musique française : la semaine, ce qui arrive, les concerts, les notes.",
+  "description": "Les sorties rap FR, rap US et rap UK : la semaine, ce qui arrive, les concerts, les notes.",
   "lang": "fr",
   "start_url": "./",
   "scope": "./",
