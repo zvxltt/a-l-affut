@@ -66,7 +66,7 @@ const EN_RE = /\b(the|you|your|my|me|i|im|it|is|in|on|of|and|love|baby|night|don
 // titres en portugais, italien ou allemand : le rap étranger croisé dans les découvertes n’est pas du rap FR
 const PT_RE = /[ãõ]|\bs[óo] s[óo]\b|\b(s[óo]|n[ãa]o|voc[êe]s?|cora[çc][ãa]o|pra|meu|minha|tudo|isso|essa|esse|muito|favela|quebrada|irm[ãa]o|t[ôo]|tamb[ée]m|quem|vamos|saudade|menina|menino|vagabundo|bandido)\b/i;
 const IT_RE = /\b(perch[ée]|pi[ùu]|sono|della|nella|questa|questo|voglio|sempre|cuore|notte|strada|fratello|soldi|mio|tuo|tua|amore|gli|tutto|niente|ancora|siamo|per|che|senza|anche|oggi|domani|ragazza|ragazzi|dove|nostro|nostra)\b/i;
-const DE_RE = /[äöüß]|\b(ich|nicht|und|der|mein|dein|kein|keine|wir|ihr|auf|f[üu]r|nur|immer|liebe|leben|geld|bruder|stra(?:ß|ss)e|zeit|alles|wenn|wieder|heute|nacht|herz|jetzt|dich|mich|sind|habe?|weil|schon|noch)\b/i;
+const DE_RE = /[äöüß]|\b(kalt|seele|welt|mehr|ohne|viel|blut|frei|mann|junge|stadt|kopf|augen|warum|komm|digga|schwester|nachts|allein|zusammen|freunde?|ich|nicht|und|der|mein|dein|kein|keine|wir|ihr|auf|f[üu]r|nur|immer|liebe|leben|geld|bruder|stra(?:ß|ss)e|zeit|alles|wenn|wieder|heute|nacht|herz|jetzt|dich|mich|sind|habe?|weil|schon|noch)\b/i;
 const FR_SURE_RE = /\b(j|qu|n|m|s|t)'[a-zàâäéèêëîïôöùûüœh]|c'est|aujourd'hui|[œëïûî]|\b(les|des|une|est|pas|mon|ton|tes|je|nous|vous|ça|pour|avec|sans|dans|moi|toi|tout|toute|rien|jamais|vie|nuit|cœur|coeur|amour|frère|frérot|soleil|fou|folle|être|faut|veux|peux|toujours|quartier|bébé|ciel|mère|père|oui|rue|seul|seule|demain|ouais|wesh|argent|monde|temps|larmes|guerre|paix|noir|noire|blanc|comme|quand|pourquoi|chez|sous|voilà|petit|petite|belle|beau|tête|fête|mieux|trop|cette|ces|leur|gros|pote|potes|daron|daronne|reuf|bendo|tess|binks|igo|bande|dernier|premier|encore|histoire|ensemble)\b/i;
 const ES_RE = /[ñáíóú¿¡]|\b(el|los|las|mi|para|una|del|por|como|corazón|noche|quiero|eres|vida|amor|baila|bebé|mami|papi|perreo|contigo|pero|todo|nada|soy|estoy|dime|ella|otra|vez|mucho)\b/i;
 // autres langues : écritures non latines, turc, polonais, néerlandais, arabe en lettres latines (« sa7bi », « wld »…)
@@ -169,6 +169,12 @@ async function loadSeeds() {
   }
   return seeds;
 }
+// noms à ne jamais publier (scripts/exclus.txt)
+let EXCLUS = new Set();
+async function loadExclus() {
+  try { return new Set((await readFile('scripts/exclus.txt', 'utf8')).split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#')).map(norm)); }
+  catch (e) { return new Set(); }
+}
 async function loadAnnonces() {
   try { return JSON.parse(await readFile('data/annonces.json', 'utf8')).items || []; }
   catch (e) { return []; }
@@ -209,7 +215,10 @@ function leanCat(a) {
 function rapOnly(state) {
   let moved = 0, dropped = 0;
   for (const a of Object.values(state.artists)) {
-    if (a.src === 'seed' || a.off) continue;
+    if (a.src === 'seed') continue;
+    // exclu à la main : écarté pour de bon (plus jamais revérifié)
+    if (EXCLUS.has(norm(a.n)) && a.c !== 'no') { a.c = 'no'; a.off = 1; delete a.ro; dropped++; continue; }
+    if (a.off) continue;
     if (a.c === 'mfr' || a.c === 'frx') { a.off = 1; dropped++; }
     else if (a.c === 'fr') { a.c = 'rfr'; a.ro = 1; moved++; }
     else if (a.c === 'int') {
@@ -1565,6 +1574,7 @@ function catForExternal(a, genreName, title, fallback) {
 async function main() {
   await mkdir(OUT, { recursive: true });
   const seeds = await loadSeeds();
+  EXCLUS = await loadExclus();
   const prevState = await loadPrevious('state.json', null);
   const prevReleases = await loadPrevious('releases.json', null);
   const details = (await loadPrevious('details.json', null)) || {};

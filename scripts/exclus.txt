@@ -1,0 +1,12 @@
+# Artistes à ne jamais publier, même si la découverte automatique les trouve :
+# pas des rappeurs, ou rap dans une autre langue que le français et l’anglais.
+# Un nom exact par ligne, tel qu’il apparaît sur Deezer.
+Luciano
+Dopebwoy
+Teriyaki Boyz
+Travis Barker
+Tony Parker
+Kev Adams
+John Cena
+iShowSpeed
+Reda Taliani
