@@ -1611,6 +1611,16 @@ async function main() {
 
   const discos = await fetchDiscographies(state);
   if (discos.total > 20 && discos.fails > discos.total * 0.3) throw new Error(`trop d’échecs Deezer (${discos.fails}/${discos.total}), publication annulée`);
+  // nouveaux rappeurs suivis à ce passage, une fois leur discographie vérifiée
+  const fresh = Object.entries(artists).filter(([id]) => !before.has(id));
+  if (fresh.length) {
+    for (const c of ['rfr', 'rus']) {
+      const l = fresh.filter(([, a]) => leanCat(a) === c).sort((x, y) => y[1].f - x[1].f);
+      if (l.length) log(`nouveaux rappeurs ${c === 'rfr' ? 'FR' : 'US/UK'} : ${l.length} — ${l.slice(0, 80).map(([, a]) => `${a.n} (${a.f})`).join(', ')}`);
+    }
+    const off = fresh.filter(([, a]) => a.off).sort((x, y) => y[1].f - x[1].f);
+    if (off.length) log(`découverte : ${off.length} artistes écartés après lecture (pas du rap ou autre langue) — ${off.slice(0, 30).map(([, a]) => a.n).join(', ')}`);
+  }
   const releases = buildDeezerReleases(artists, discos.map, state.albums);
   log(`Deezer : ${releases.length} sorties entre ${HISTORY_FROM} et ${FUTURE_TO}`);
   await fetchAlbumDetails(releases, state, details);
@@ -1746,7 +1756,9 @@ async function main() {
   const concerts = ((state.concerts && state.concerts.items) || []).filter(x => x.d >= TODAY);
   await writeFile(`${OUT}/concerts.json`, JSON.stringify({ v: 1, generatedAt, updatedAt: state.concerts ? new Date(state.concerts.t).toISOString() : null, items: concerts }));
   await writeFile(`${OUT}/state.json`, JSON.stringify(state));
-  log(`terminé : ${items.length} sorties dont ${upcoming} à venir · requêtes ${JSON.stringify(stats)}`);
+  const byCat = {};
+  for (const it of items) byCat[it.c] = (byCat[it.c] || 0) + 1;
+  log(`terminé : ${items.length} sorties (${JSON.stringify(byCat)}) dont ${upcoming} à venir · ${Object.values(artists).filter(a => leanCat(a)).length} rappeurs publiés · requêtes ${JSON.stringify(stats)}`);
 }
 
 // même artiste, même jour, même format, même titre une fois les parenthèses et crochets retirés :
