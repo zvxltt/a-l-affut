@@ -241,3 +241,62 @@
 4438587|rus|945968|Ty Dolla $ign
 1384338|rus|1354375|2 Chainz
 12835615|rus|369048|Lil Skies
+8909272|no|2785111|Aya Nakamura
+1042268|no|1760149|Angèle
+310260|no|3503626|Stromae
+5835993|no|2034305|Vianney
+198|no|3747755|Céline Dion
+358|no|974465|Mylène Farmer
+11907|no|1100343|Christophe Maé
+11971|no|1899122|Vitaa
+296520|no|1289318|Slimane
+12526056|no|1504417|Tayc
+4803754|no|3312043|Dadju
+47|no|1304579|Indochine
+670|no|1363150|Francis Cabrel
+2691|no|1064998|Grand Corps Malade
+55936502|no|98619|Adèle Castillon
+66228482|no|536253|Ronisia
+4889156|no|1042799|Clara Luciani
+5848618|no|434034|Juliette Armanet
+112645512|no|326545|Zaho de Sagazan
+5811815|no|453169|Pierre Garnier
+258938052|no|253520|Héléna
+163325847|no|451163|Santa
+4453455|no|1996585|Louane
+5947658|no|2078553|Kendji Girac
+15887|no|1450552|Julien Doré
+144446|no|1845598|M. Pokora
+164704|no|791475|Amir
+29|no|1179027|Calogero
+1782|no|913476|Patrick Bruel
+6815|no|1075390|Florent Pagny
+71069|no|888193|ZAZ
+5382747|no|463826|Pomme
+1679838|no|773655|Hoshi
+2607221|no|256256|Gaël Faye
+9030084|no|474300|Eddy de Pretto
+51276942|no|206436|Videoclub
+2090121|no|203714|Suzane
+4043887|no|166266|L'Impératrice
+5623138|no|270672|Feu! Chatterton
+162540|no|367181|Ben Mazué
+2848|no|326341|Benjamin Biolay
+1520407|no|684365|Christine and the Queens
+318673|no|500809|Joyce Jonathan
+15029771|no|55376|Lous and The Yakuza
+7995536|no|540589|Lyna Mahyem
+80681022|no|526945|Wejdene
+9281246|no|509718|Joé Dwèt Filé
+147136312|no|240964|Mentissa
+67149402|no|115324|Pierre de Maere
+174351|no|948878|Cœur de pirate
+5417036|no|288740|Charlotte Cardin
+91132672|no|27386|Iliona
+91212482|no|140422|Nuit Incolore
+1120|no|1885178|Jean-Jacques Goldman
+468|no|867067|Jenifer
+917|no|293683|Nolwenn Leroy
+378751|no|1328126|Claudio Capéo
+7733482|no|94300|Emma Peters
+5951582|no|444192|Jain

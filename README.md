@@ -54,7 +54,7 @@ L’offre gratuite couvre 50 000 lectures et 20 000 écritures par jour ; au-del
 
 ## Modifier
 
-- **Artistes suivis** : `scripts/artists.txt`, une ligne par artiste `identifiant_deezer|catégorie|fans|Nom` (catégories `rfr` rap FR, `rus` rap US/UK, `fr` artiste français dont seules les sorties rap sont publiées). L’identifiant est le nombre dans l’adresse deezer.com/artist/**5542343**.
+- **Artistes suivis** : `scripts/artists.txt`, une ligne par artiste `identifiant_deezer|catégorie|fans|Nom` (catégories `rfr` rap FR, `rus` rap US/UK, `fr` artiste français dont seules les sorties rap sont publiées, `no` artiste écarté qui ne doit jamais être rajouté par la découverte). L’identifiant est le nombre dans l’adresse deezer.com/artist/**5542343**.
 - **Annonces relevées dans la presse** : `data/annonces.json`, au format `{"artist": "…", "title": "…", "date": "2026-12-04", "type": "album", "cat": "rfr", "source": "https://…"}`. Les dates passées sont ignorées toutes seules.
 - **Forcer une mise à jour** : onglet Actions › « Mise à jour des sorties » › Run workflow.
 

@@ -164,7 +164,8 @@ async function loadSeeds() {
   const seeds = {};
   for (const line of raw.trim().split('\n')) {
     const [id, cat, fans, name] = line.split('|');
-    seeds[id] = { n: name, c: cat, f: Number(fans) || 0, src: 'seed', it: itunes[id] || 0 };
+    // « no » : ancien artiste de la musique FR, gardé dans la liste pour ne jamais être redécouvert (rien n’est publié)
+    seeds[id] = { n: name, c: cat, f: Number(fans) || 0, src: 'seed', it: itunes[id] || 0, ...(cat === 'no' ? { off: 1 } : {}) };
   }
   return seeds;
 }
@@ -533,10 +534,12 @@ async function fetchDiscographies(state) {
         if (en / tot >= 0.3 && (es + xo) / tot < 0.15) a.c = 'rus';
         else foreign = true;
       } else if (!foreign && a.c === 'rus' && tot >= 4 && frs / tot >= 0.3 && fr > en) a.c = 'rfr';
-      if ((known >= 2 && rap === 0) || (known >= 3 && a.rp < 30) || foreign) a.off = 1; else delete a.off;
+      // vraiment du rap : au moins la moitié des sorties rangées en rap (dès 3 sorties au genre connu), pas surtout du R&B
+      if ((known >= 2 && rap === 0) || (known >= 3 && a.rp < 50) || (known >= 3 && a.rb >= 50) || foreign) a.off = 1; else delete a.off;
     } else if (a.src !== 'seed' && RAP.has(a.c)) {
       // rappeur suivi depuis longtemps (hors liste de départ) : même règle, sans changer de genre
-      if ((known >= 3 && a.rp < 30) || (a.c === 'rus' && (a.ls >= 30 || foreignTitles)) || (a.c === 'rfr' && foreignTitles && fr / n < 0.2)) a.off = 1;
+      const manyForeign = n >= 5 && (es + xo) / n >= 0.35;
+      if ((known >= 3 && a.rp < 30) || (a.c === 'rus' && (a.ls >= 30 || manyForeign)) || (a.c === 'rfr' && manyForeign && fr / n < 0.2)) a.off = 1;
       else delete a.off;
     }
     state.disco[id] = { t: Date.now(), items };
@@ -1194,7 +1197,7 @@ function extractAnnouncement(item, byFirst) {
   return subj.artist ? { aid: subj.artist.id, artist: subj.artist.a.n, ...base } : { unknown: subj.unknown, ...base };
 }
 // Sujets inconnus : on les cherche sur Deezer (nom exact) et on ne garde que ceux dont les artistes similaires
-// sont déjà suivis — la catégorie (rap FR, rap US, musique FR) vient de ces voisins.
+// sont déjà suivis — la catégorie (rap FR, rap US/UK) vient de ces voisins.
 async function discoverPressArtists(state, cands) {
   const artists = state.artists;
   state.pressSeen = state.pressSeen || {};
@@ -1571,7 +1574,8 @@ async function main() {
   // les artistes de la liste de départ font foi (nom, genre, identifiant Apple)
   for (const [id, s] of Object.entries(seeds)) {
     const old = state.artists[id] || {};
-    state.artists[id] = { ...old, ...s, it: s.it || old.it || 0, itT: old.itT };
+    // un artiste de la liste n’est jamais soumis aux vérifications de la découverte (ro, off), sauf « no »
+    state.artists[id] = { ...old, ...s, it: s.it || old.it || 0, itT: old.itT, ro: undefined, off: s.off };
   }
   for (const [id, a] of Object.entries(state.artists)) if (a.src === 'seed' && !seeds[id]) delete state.artists[id];
   KNOWN = new Set(Object.values(state.artists).map(a => norm(a.n)));
