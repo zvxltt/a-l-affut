@@ -23,6 +23,7 @@ const DRY = process.env.DRY === '1';
 const UG_V = 2;   // changer ce numéro relance toutes les découvertes au passage suivant
 // Le site ne suit que le rap : rap FR (France, Belgique, Suisse, Québec) et rap US/UK (anglophone).
 const RAP = new Set(['rfr', 'rus']);
+const RAP_V = 1;   // grand ménage « rap seulement » : toutes les discographies relues avant de relancer la découverte
 const log =(...a) => console.log(`[${String(Math.round((Date.now() - T0) / 1000)).padStart(4)} s]`, ...a);
 
 /* ------------------------------------------------------------------ dates */
@@ -233,7 +234,8 @@ async function discoverRelated(state) {
   // points de départ : la liste de départ, puis tout le rap déjà suivi à partir de 6 000 fans (20 000 en rap US/UK) :
   // leurs voisins font remonter la scène underground
   const byRank = (x, y) => (x[1].src === 'seed' ? -1 : 0) - (y[1].src === 'seed' ? -1 : 0) || y[1].f - x[1].f;
-  const rapOk = a => !a.off && voteCat(a.c);
+  // un point de départ est un vrai rappeur : au moins la moitié de rap, titres en français ou en anglais
+  const rapOk = a => !a.off && voteCat(a.c) && (a.c !== 'fr' || a.rp >= 50) && !(typeof a.rp === 'number' && a.rp < 50) && !(a.lx >= 25);
   const oldBase = Object.entries(artists).filter(([, a]) => rapOk(a) && (a.src === 'seed' || a.f >= 120000)).sort(byRank).slice(0, 1200);
   const inOld = new Set(oldBase.map(([id]) => id));
   // rap FR dont les titres sont en français (pas le rap suisse alémanique ou flamand des catégories Wikipédia)
@@ -265,6 +267,8 @@ async function discoverRelated(state) {
     const minFans = UG_ON ? (cat === 'rus' ? 6000 : 1000) : (cat === 'rus' ? 60000 : 10000);
     if (v.f < minFans) continue;
     if (v.total < 2 && v.f < (cat === 'rfr' ? 25000 : 150000)) continue;
+    // une star inconnue du suivi n’est presque jamais un rappeur : au-delà d’un million de fans, quatre voisins rappeurs au moins
+    if (v.f >= 1e6 && v.total < 4) continue;
     artists[v.id] = { n: v.n, c: cat, f: v.f, src: 'rel', it: 0, ro: 1 };
     if (++added >= (UG_ON ? 6000 : 1500)) break;
   }
@@ -425,15 +429,21 @@ async function discoverPlaylists(state) {
     }
   }).catch(() => {})));
   const votes = new Map();
+  let okPl = 0;
   await Promise.all(pls.map(p => dz(`/playlist/${p.id}/tracks?limit=400`).then(res => {
-    const inThis = new Set();
-    for (const t of res.data || []) {
-      const ar = t && t.artist;
-      if (!ar || !ar.id || inThis.has(ar.id)) continue;
-      inThis.add(ar.id);
+    const inThis = new Map();
+    for (const t of res.data || []) { const ar = t && t.artist; if (ar && ar.id && !inThis.has(ar.id)) inThis.set(ar.id, ar); }
+    // une vraie playlist de rap : au moins 5 rappeurs déjà suivis, et un quart de ses artistes ; son genre est celui de ces rappeurs
+    const known = {};
+    for (const id of inThis.keys()) { const c = artists[id] && leanCat(artists[id]); if (c) known[c] = (known[c] || 0) + 1; }
+    const nKnown = (known.rfr || 0) + (known.rus || 0);
+    if (nKnown < 5 || nKnown / inThis.size < 0.25) return;
+    okPl++;
+    const c = (known.rus || 0) > (known.rfr || 0) ? 'rus' : 'rfr';
+    for (const ar of inThis.values()) {
       if (artists[ar.id] || IGNORE.has(ar.id) || NOT_ARTIST.has(spacedNorm(ar.name))) continue;
       const v = votes.get(ar.id) || { id: ar.id, n: ar.name, pl: 0, cats: {} };
-      v.pl++; v.cats[p.c] = (v.cats[p.c] || 0) + 1;
+      v.pl++; v.cats[c] = (v.cats[c] || 0) + 1;
       votes.set(ar.id, v);
     }
   }).catch(() => {})));
@@ -442,12 +452,12 @@ async function discoverPlaylists(state) {
   await Promise.all(cands.map(v => dz(`/artist/${v.id}`).then(ar => {
     const c = (v.cats.rus || 0) > (v.cats.rfr || 0) ? 'rus' : 'rfr';
     const f = ar.nb_fan || 0;
-    if (artists[v.id] || f < (c === 'rus' ? 3000 : 600)) return;
+    if (artists[v.id] || f < (c === 'rus' ? 3000 : 600) || (f >= 1e6 && v.pl < 4)) return;
     artists[v.id] = { n: ar.name || v.n, c, f, src: 'pl', it: 0, ro: 1 };
     added++;
   }).catch(() => {})));
   state.plAt = Date.now(); state.plV = UG_V;
-  log(`découverte playlists : ${pls.length} playlists, ${votes.size} artistes non suivis, ${cands.length} dans 2 playlists ou plus, ${added} ajoutés`);
+  log(`découverte playlists : ${pls.length} playlists, ${okPl} de rap, ${votes.size} artistes non suivis, ${cands.length} dans 2 playlists ou plus, ${added} ajoutés`);
 }
 
 // Les artistes cités dans les annonces Wikipédia sont ajoutés s’ils existent sur Deezer.
@@ -510,6 +520,7 @@ async function fetchDiscographies(state) {
     const a = artists[id];
     if (known) { a.rp = Math.round((100 * rap) / known); a.rb = Math.round((100 * rnb) / known); }   // part de rap et de R&B
     if (fr + en + es >= 6) { a.lf = Math.round((100 * fr) / (fr + en + es)); a.ls = Math.round((100 * es) / (fr + en + es)); }   // titres en français, en espagnol
+    if (fr + en + es + xo >= 3) a.lx = Math.round((100 * (es + xo)) / (fr + en + es + xo)); else delete a.lx;   // titres dans une autre langue
     // Site 100 % rap, en français ou en anglais : un artiste qui ne fait pas (assez) de rap, ou qui rappe
     // dans une autre langue (espagnol, portugais, italien, allemand, néerlandais, arabe…), est écarté (off).
     const n = fr + en + es + xo;
@@ -540,18 +551,20 @@ async function fetchDiscographies(state) {
   return { map: out, fails, total: todo.length };
 }
 
+// Essai : effet du ménage « rap seulement » (genres, puis discographies relues) sur les artistes déjà suivis.
+function dryCleanupReport(state, old) {
+  const dist = o => { const d = {}; for (const a of Object.values(o)) { const k = `${a.c}${a.off ? '/off' : ''}${a.src === 'seed' ? '/liste' : ''}`; d[k] = (d[k] || 0) + 1; } return JSON.stringify(d); };
+  log(`ESSAI : genres avant : ${dist(old)}`);
+  log(`ESSAI : genres après le ménage : ${dist(state.artists)}`);
+  const list = (arr, f) => `${arr.length} — ${arr.sort((x, y) => y.f - x.f).slice(0, 110).map(f).join(', ')}`;
+  const was = Object.entries(state.artists).filter(([id]) => old[id]).map(([id, a]) => ({ ...a, was: old[id] }));
+  log(`ESSAI : écartés (pas du rap, ou autre langue) : ${list(was.filter(a => a.off && !a.was.off), a => `${a.n} (${a.was.c}, ${a.f})`)}`);
+  log(`ESSAI : écartés parmi le rap déjà publié : ${list(was.filter(a => a.off && !a.was.off && RAP.has(a.was.c)), a => `${a.n} (${a.was.c}, ${a.f})`)}`);
+  log(`ESSAI : gardés après changement de genre : ${list(was.filter(a => !a.off && a.c !== a.was.c), a => `${a.n} (${a.was.c}→${a.c}, ${a.f})`)}`);
+  log(`ESSAI : repris (n’étaient plus publiés) : ${list(was.filter(a => !a.off && a.was.off), a => `${a.n} (${a.c}, ${a.f})`)}`);
+}
 // Essai (DRY=1) : ce que la découverte ajouterait, et les sorties que ces artistes apporteraient.
 async function dryRunReport(state, before) {
-  // effet de « rap seulement » sur les artistes déjà suivis
-  const dist = () => { const d = {}; for (const a of Object.values(state.artists)) { const k = `${a.c}${a.off ? '/off' : ''}${a.src === 'seed' ? '/liste' : ''}`; d[k] = (d[k] || 0) + 1; } return JSON.stringify(d); };
-  log(`ESSAI : genres avant : ${dist()}`);
-  const old = Object.fromEntries(Object.entries(state.artists).map(([id, a]) => [id, { ...a }]));
-  rapOnly(state);
-  const dropped = Object.entries(state.artists).filter(([id, a]) => before.has(id) && a.off && !old[id].off).map(([id, a]) => ({ ...a, was: old[id].c })).sort((x, y) => y.f - x.f);
-  log(`ESSAI : écartés (pas du rap) : ${dropped.length} — ${dropped.slice(0, 90).map(a => `${a.n} (${a.was}, ${a.f})`).join(', ')}`);
-  const toRap = Object.entries(state.artists).filter(([id, a]) => before.has(id) && !a.off && old[id].c !== a.c).map(([id, a]) => ({ ...a, was: old[id].c })).sort((x, y) => y.f - x.f);
-  log(`ESSAI : passés en rap : ${toRap.length} — ${toRap.slice(0, 90).map(a => `${a.n} (${a.was}→${a.c}, ${a.f})`).join(', ')}`);
-  log(`ESSAI : genres après : ${dist()}`);
   const added = Object.entries(state.artists).filter(([id]) => !before.has(id));
   const groups = {};
   for (const [id, a] of added) (groups[`${a.src}/${a.c}${a.ro ? '/ro' : ''}`] = groups[`${a.src}/${a.c}${a.ro ? '/ro' : ''}`] || []).push([id, a]);
@@ -1563,15 +1576,28 @@ async function main() {
   for (const [id, a] of Object.entries(state.artists)) if (a.src === 'seed' && !seeds[id]) delete state.artists[id];
   KNOWN = new Set(Object.values(state.artists).map(a => norm(a.n)));
 
+  // « rap seulement » : au premier passage, grand ménage (genres revus, toutes les discographies relues pour écarter
+  // ce qui n’est pas du rap ou pas en français ou en anglais) ; la découverte reprend au passage suivant, à partir des seuls rappeurs
+  const cleanup = state.rapV !== RAP_V;
+  if (cleanup) {
+    const snap = DRY ? Object.fromEntries(Object.entries(state.artists).map(([id, a]) => [id, { ...a }])) : null;
+    rapOnly(state);
+    state.discoV = 0;
+    if (DRY) { await fetchDiscographies(state); dryCleanupReport(state, snap); }
+    state.rapV = RAP_V;
+  }
   const before = new Set(Object.keys(state.artists));
   await chartsStep(state);
   await wikipediaStep(state);
-  await discoverRelated(state);
-  if (UG_ON) {
-    try { await discoverUnderground(state, await loadUnderground()); } catch (e) { log(`liste underground : ${e.message}`); }
-    try { await discoverPlaylists(state); } catch (e) { log(`playlists : ${e.message}`); }
+  if (cleanup && !DRY) log('rap seulement : grand ménage à ce passage, la découverte d’artistes reprend au suivant');
+  else {
+    await discoverRelated(state);
+    if (UG_ON) {
+      try { await discoverUnderground(state, await loadUnderground()); } catch (e) { log(`liste underground : ${e.message}`); }
+      try { await discoverPlaylists(state); } catch (e) { log(`playlists : ${e.message}`); }
+    }
+    await discoverWikiCategories(state);
   }
-  await discoverWikiCategories(state);
   if (DRY) { await dryRunReport(state, before); return; }
   rapOnly(state);
   if (state.wiki) await discoverFromNames(state, state.wiki.items.map(x => x.artist).filter(n => n !== 'Divers artistes'));
