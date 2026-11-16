@@ -791,7 +791,8 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 /* ---------- refonte : bande des jours, sortie à la une, liste de titres, comptes à rebours ---------- */
 .dstrip { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(96px, 1fr); gap: 6px; margin: 4px 0 18px; padding-bottom: 18px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
 .dstrip::-webkit-scrollbar { display: none; }
-.dd-n em { font-style: normal; color: var(--muted); font-weight: 400; }
+.dd-d { white-space: nowrap; }
+.dd-d small { font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
 .dday { display: grid; gap: 6px; text-align: left; padding: 10px 12px 12px; border-radius: 12px; border: 1px solid transparent; transition: background-color .15s, border-color .15s; min-width: 0; }
 .dday:hover:not(:disabled) { background: var(--surface); }
 .dday[aria-pressed="true"] { background: var(--surface); border-color: var(--ink); }
@@ -827,7 +828,7 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 .rv-tx { font-family: var(--font-note); font-style: italic; font-size: 16.5px; line-height: 1.5; }
 
 @media (max-width: 720px) {
-  .dstrip { grid-auto-columns: 64px; gap: 4px; }
+  .dstrip { grid-auto-columns: 78px; gap: 4px; }
   .dday { padding: 8px 8px 10px; }
   .dd-d { font-size: 17px; }
   .dd-w { display: none; }
@@ -1320,8 +1321,8 @@ function dateStripHtml(list) {
   return `<div class="dstrip" role="group" aria-label="Prochaines dates de sortie">${days.map((d, i) => {
     const dt = parseYmd(d), on = S.day === d;
     return `<button class="dday" type="button" data-wday="${d}" aria-pressed="${on}" aria-label="${esc(`${cap(DOW[dt.getDay()])} ${dt.getDate()} ${MON[dt.getMonth()]} : ${n[i]} ${plural(n[i], 'sortie', 'sorties')}`)}">
-      <span class="dd-n">${esc(cap(DOW_S[dt.getDay()].replace('.', '')))}<em>${esc(MON_S[dt.getMonth()])}</em></span>
-      <span class="dd-d">${dt.getDate()}</span>
+      <span class="dd-n">${esc(cap(DOW_S[dt.getDay()].replace('.', '')))}</span>
+      <span class="dd-d">${dt.getDate()}<small> ${esc(MON_S[dt.getMonth()])}</small></span>
       <span class="dd-bar"><b style="width:${Math.round((100 * n[i]) / max)}%"></b></span>
       <span class="dd-k">${n[i]}<span class="dd-w"> ${plural(n[i], 'sortie', 'sorties')}</span></span>
     </button>`;
