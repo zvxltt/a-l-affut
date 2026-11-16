@@ -5,7 +5,7 @@ Site : **https://zvxltt.github.io/a-l-affut/**
 
 ## Comment ça marche
 
-Un robot (GitHub Actions, gratuit) prépare toutes les données **toutes les heures**, et toutes les 20 minutes dans la nuit du jeudi au vendredi, quand les sorties tombent. Le site n’a plus qu’à charger un seul fichier : il s’ouvre instantanément, et une page déjà ouverte se met à jour toute seule.
+Un robot (GitHub Actions, gratuit) prépare toutes les données **toutes les 15 minutes environ** (chaque passage relance le suivant ; les passages programmés toutes les heures servent de filet de sécurité), y compris dans la nuit du jeudi au vendredi, quand les sorties tombent. Le site n’a plus qu’à charger un seul fichier : il s’ouvre instantanément, et une page déjà ouverte se met à jour toute seule.
 
 Le robot (`scripts/build-data.mjs`) :
 

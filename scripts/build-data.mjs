@@ -749,7 +749,7 @@ async function appleIds(state) {
 }
 
 async function appleStep(state, details) {
-  const due = !state.apple || Date.now() - state.apple.t > 5.5 * HOUR;
+  const due = !state.apple || Date.now() - state.apple.t > 3 * HOUR;
   if (!due || Date.now() > DEADLINE) return;
   const artists = state.artists;
   // précommandes : sorties datées dans le futur
@@ -1262,7 +1262,7 @@ function dedupeNews(list) {
 }
 const newsGap = spaced(FAST ? 0 : 1300);
 async function pressStep(state) {
-  const due = !state.news || !state.news.raw || Date.now() - state.news.t > 2 * HOUR;
+  const due = !state.news || !state.news.raw || Date.now() - state.news.t > 1 * HOUR;
   const artists = state.artists;
   let byFirst = makeMatchers(artists);
   if (!due || Date.now() > DEADLINE) {

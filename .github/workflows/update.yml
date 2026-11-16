@@ -54,19 +54,20 @@ jobs:
     needs: publier
     if: always()
     runs-on: ubuntu-latest
-    timeout-minutes: 70
+    timeout-minutes: 25
     permissions:
       actions: write
     steps:
-      - name: Attendre l'heure suivante puis relancer
+      - name: Attendre le quart d'heure suivant puis relancer
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           RUN_ID: ${{ github.run_id }}
         run: |
           start=$(gh run view "$RUN_ID" -R "$REPO" --json createdAt --jq '.createdAt')
-          wait=$(( $(date -d "$start" +%s) + 3600 - $(date +%s) ))
-          if [ "$wait" -gt 3000 ]; then wait=3000; fi
+          # un passage toutes les 15 minutes : le suivant part 15 minutes après le départ de celui-ci (tout de suite s'il a duré plus)
+          wait=$(( $(date -d "$start" +%s) + 900 - $(date +%s) ))
+          if [ "$wait" -gt 900 ]; then wait=900; fi
           if [ "$wait" -gt 0 ]; then echo "attente ${wait} s"; sleep "$wait"; fi
           others=$(gh run list -R "$REPO" --workflow update.yml --limit 20 --json databaseId,status \
             --jq "[.[] | select(.databaseId != $RUN_ID) | select(.status != \"completed\")] | length")
