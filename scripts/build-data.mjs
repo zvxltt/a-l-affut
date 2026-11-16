@@ -20,7 +20,7 @@ const DEADLINE = T0 + (Number(process.env.BUDGET_MIN) || 38) * 60e3;
 // découverte élargie (rap underground, petits artistes) ; DRY=1 : essai sans rien publier, avec le résumé de ce qui serait ajouté
 const UG_ON = process.env.UG !== '0';   // UG=0 : revenir à l’ancienne découverte
 const DRY = process.env.DRY === '1';
-const UG_V = 2;   // changer ce numéro relance toutes les découvertes au passage suivant
+const UG_V = 3;   // changer ce numéro relance toutes les découvertes au passage suivant
 // Le site ne suit que le rap : rap FR (France, Belgique, Suisse, Québec) et rap US/UK (anglophone).
 const RAP = new Set(['rfr', 'rus']);
 const RAP_V = 1;   // grand ménage « rap seulement » : toutes les discographies relues avant de relancer la découverte
@@ -274,7 +274,7 @@ async function discoverRelated(state) {
   for (const v of cands) {
     const cat = v.top;
     // rap FR dès 1 000 fans, rap US/UK dès 6 000, s’il est voisin d’au moins deux artistes suivis
-    const minFans = UG_ON ? (cat === 'rus' ? 6000 : 1000) : (cat === 'rus' ? 60000 : 10000);
+    const minFans = UG_ON ? (cat === 'rus' ? 4000 : 700) : (cat === 'rus' ? 60000 : 10000);
     if (v.f < minFans) continue;
     if (v.total < 2 && v.f < (cat === 'rfr' ? 25000 : 150000)) continue;
     // une star inconnue du suivi n’est presque jamais un rappeur : au-delà d’un million de fans, quatre voisins rappeurs au moins
@@ -290,27 +290,27 @@ async function discoverRelated(state) {
 // 2) Catégories Wikipédia : rappeurs français, belges, suisses, québécois, américains et britanniques.
 // ug : seuil de fans de la découverte élargie ; ugOnly : catégorie lue seulement avec elle
 const WIKI_CATS = [
-  { lang: 'fr', cat: 'Catégorie:Rappeur français', depth: 2, c: 'rfr', min: 8000, ug: 1000 },
-  { lang: 'fr', cat: 'Catégorie:Rappeuse française', depth: 1, c: 'rfr', min: 8000, ug: 1000 },
-  { lang: 'fr', cat: 'Catégorie:Groupe français de hip-hop', depth: 1, c: 'rfr', min: 8000, ug: 1000 },
-  { lang: 'fr', cat: 'Catégorie:Rappeur belge', depth: 1, c: 'rfr', min: 8000, ug: 1000 },
-  { lang: 'fr', cat: 'Catégorie:Rappeuse belge', depth: 1, c: 'rfr', min: 8000, ug: 1000 },
-  { lang: 'fr', cat: 'Catégorie:Rappeur suisse', depth: 1, c: 'rfr', min: 8000, ug: 1000 },
-  { lang: 'fr', cat: 'Catégorie:Rappeuse suisse', depth: 1, c: 'rfr', min: 8000, ug: 1000, ugOnly: true },
-  { lang: 'fr', cat: 'Catégorie:Groupe belge de hip-hop', depth: 1, c: 'rfr', min: 8000, ug: 1000, ugOnly: true },
-  { lang: 'fr', cat: 'Catégorie:Groupe suisse de hip-hop', depth: 1, c: 'rfr', min: 8000, ug: 1000, ugOnly: true },
+  { lang: 'fr', cat: 'Catégorie:Rappeur français', depth: 2, c: 'rfr', min: 8000, ug: 700 },
+  { lang: 'fr', cat: 'Catégorie:Rappeuse française', depth: 1, c: 'rfr', min: 8000, ug: 700 },
+  { lang: 'fr', cat: 'Catégorie:Groupe français de hip-hop', depth: 1, c: 'rfr', min: 8000, ug: 700 },
+  { lang: 'fr', cat: 'Catégorie:Rappeur belge', depth: 1, c: 'rfr', min: 8000, ug: 700 },
+  { lang: 'fr', cat: 'Catégorie:Rappeuse belge', depth: 1, c: 'rfr', min: 8000, ug: 700 },
+  { lang: 'fr', cat: 'Catégorie:Rappeur suisse', depth: 1, c: 'rfr', min: 8000, ug: 700 },
+  { lang: 'fr', cat: 'Catégorie:Rappeuse suisse', depth: 1, c: 'rfr', min: 8000, ug: 700, ugOnly: true },
+  { lang: 'fr', cat: 'Catégorie:Groupe belge de hip-hop', depth: 1, c: 'rfr', min: 8000, ug: 700, ugOnly: true },
+  { lang: 'fr', cat: 'Catégorie:Groupe suisse de hip-hop', depth: 1, c: 'rfr', min: 8000, ug: 700, ugOnly: true },
   { lang: 'fr', cat: 'Catégorie:Rappeur québécois', depth: 1, c: 'rfr', min: 10000, ug: 2000 },
   { lang: 'fr', cat: 'Catégorie:Rappeuse québécoise', depth: 1, c: 'rfr', min: 10000, ug: 2000, ugOnly: true },
-  { lang: 'en', cat: 'Category:21st-century American rappers', depth: 1, c: 'rus', min: 60000, ug: 12000 },
-  { lang: 'en', cat: 'Category:American women rappers', depth: 1, c: 'rus', min: 60000, ug: 12000, ugOnly: true },
+  { lang: 'en', cat: 'Category:21st-century American rappers', depth: 1, c: 'rus', min: 60000, ug: 8000 },
+  { lang: 'en', cat: 'Category:American women rappers', depth: 1, c: 'rus', min: 60000, ug: 8000, ugOnly: true },
   { lang: 'en', cat: 'Category:20th-century American rappers', depth: 1, c: 'rus', min: 60000, ug: 30000, ugOnly: true },
   { lang: 'en', cat: 'Category:American hip-hop groups', depth: 1, c: 'rus', min: 60000, ug: 15000, ugOnly: true },
   { lang: 'en', cat: 'Category:Underground rappers', depth: 0, c: 'rus', min: 60000, ug: 8000, ugOnly: true },
-  { lang: 'en', cat: 'Category:British rappers', depth: 2, c: 'rus', min: 60000, ug: 3000, ugOnly: true },
-  { lang: 'en', cat: 'Category:Black British rappers', depth: 1, c: 'rus', min: 60000, ug: 3000, ugOnly: true },
-  { lang: 'en', cat: 'Category:UK drill musicians', depth: 0, c: 'rus', min: 60000, ug: 3000, ugOnly: true },
-  { lang: 'en', cat: 'Category:Grime music artists', depth: 1, c: 'rus', min: 60000, ug: 3000, ugOnly: true },
-  { lang: 'en', cat: 'Category:British hip-hop groups', depth: 1, c: 'rus', min: 60000, ug: 3000, ugOnly: true },
+  { lang: 'en', cat: 'Category:British rappers', depth: 2, c: 'rus', min: 60000, ug: 2000, ugOnly: true },
+  { lang: 'en', cat: 'Category:Black British rappers', depth: 1, c: 'rus', min: 60000, ug: 2000, ugOnly: true },
+  { lang: 'en', cat: 'Category:UK drill musicians', depth: 0, c: 'rus', min: 60000, ug: 2000, ugOnly: true },
+  { lang: 'en', cat: 'Category:Grime music artists', depth: 1, c: 'rus', min: 60000, ug: 2000, ugOnly: true },
+  { lang: 'en', cat: 'Category:British hip-hop groups', depth: 1, c: 'rus', min: 60000, ug: 2000, ugOnly: true },
 ];
 async function wikiCategoryMembers(lang, cat, depth) {
   const names = [];
@@ -462,7 +462,7 @@ async function discoverPlaylists(state) {
   await Promise.all(cands.map(v => dz(`/artist/${v.id}`).then(ar => {
     const c = (v.cats.rus || 0) > (v.cats.rfr || 0) ? 'rus' : 'rfr';
     const f = ar.nb_fan || 0;
-    if (artists[v.id] || f < (c === 'rus' ? 3000 : 600) || (f >= 1e6 && v.pl < 4)) return;
+    if (artists[v.id] || f < (c === 'rus' ? 2000 : 400) || (f >= 1e6 && v.pl < 4)) return;
     artists[v.id] = { n: ar.name || v.n, c, f, src: 'pl', it: 0, ro: 1 };
     added++;
   }).catch(() => {})));
