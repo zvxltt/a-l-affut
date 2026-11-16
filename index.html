@@ -16,12 +16,12 @@
 <meta property="og:url" content="https://zvxltt.github.io/a-l-affut/">
 <meta property="og:image" content="https://zvxltt.github.io/a-l-affut/logo/a-l-affut-icone.png">
 <meta name="twitter:card" content="summary">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20rx%3D%2222%22%20fill%3D%22%230A0A0A%22%2F%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2234%22%20fill%3D%22none%22%20stroke%3D%22%23FFFFFF%22%20stroke-width%3D%226%22%2F%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2219%22%20fill%3D%22none%22%20stroke%3D%22%23FFFFFF%22%20stroke-width%3D%223%22%20opacity%3D%22.5%22%2F%3E%3Cpath%20d%3D%22M50%2050%20L50.00%2016.00%20A34%2034%200%200%201%2079.44%2033.00%20Z%22%20fill%3D%22%23FFFFFF%22%20opacity%3D%22.35%22%2F%3E%3Cpath%20d%3D%22M50%2050%20L79.44%2033.00%22%20stroke%3D%22%23FFFFFF%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%225%22%20fill%3D%22%23FFFFFF%22%2F%3E%3Ccircle%20cx%3D%2235%22%20cy%3D%2263%22%20r%3D%225.5%22%20fill%3D%22%23FFFFFF%22%2F%3E%3C%2Fsvg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20rx%3D%2222%22%20fill%3D%22%230A0A0A%22%2F%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2234%22%20fill%3D%22none%22%20stroke%3D%22%23FFFFFF%22%20stroke-width%3D%226%22%2F%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2219%22%20fill%3D%22none%22%20stroke%3D%22%23FFFFFF%22%20stroke-width%3D%223%22%20opacity%3D%22.5%22%2F%3E%3Cg%20class%3D%22logo-sweep%22%3E%3Cpath%20d%3D%22M50%2050%20L50.00%2016.00%20A34%2034%200%200%201%2079.44%2033.00%20Z%22%20fill%3D%22%23FFFFFF%22%20opacity%3D%22.35%22%2F%3E%3Cpath%20d%3D%22M50%2050%20L79.44%2033.00%22%20stroke%3D%22%23FFFFFF%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fg%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%225%22%20fill%3D%22%23FFFFFF%22%2F%3E%3Ccircle%20cx%3D%2235%22%20cy%3D%2263%22%20r%3D%225.5%22%20fill%3D%22%23D9361E%22%2F%3E%3C%2Fsvg%3E">
 <link rel="apple-touch-icon" href="logo/icone-apple-180.png">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400..900;1,400..900&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400..900;1,400..900&amp;family=Newsreader:ital,opsz,wght@1,6..72,400..500&amp;display=swap">
 <link rel="preconnect" href="https://cdn-images.dzcdn.net">
 <script>
 try {
@@ -32,14 +32,17 @@ try {
 </script>
 <style>
 :root {
-  /* Direction : noir et blanc strict, comme le logo ; seules les pochettes apportent la couleur.
-     Mise en page : grille de pochettes (albums, EP), liste dense (singles), frise par date (à venir). */
-  --bg: #FFFFFF;
-  --soft: #F2F2F0;
-  --line: #E3E3E0;
-  --ink: #0A0A0A;
-  --ink-2: #3B3B3A;
-  --muted: #6E6E6C;
+  /* Direction : papier légèrement gris, encre presque noire, un seul rouge « signal » pour ce qui est neuf, explicite ou imminent.
+     Mise en page : bande des jours, sortie à la une, étagère de pochettes (albums, EP), liste de titres (singles), frise (à venir). */
+  --bg: #F4F3F0;
+  --surface: #FFFFFF;
+  --soft: #EAE8E3;
+  --line: #E0DED8;
+  --ink: #141413;
+  --ink-2: #44443F;
+  --muted: #7C7B76;
+  --signal: #D9361E;
+  --font-note: "Newsreader", Georgia, "Times New Roman", serif;
   --font-display: "Schibsted Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-body: "Schibsted Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: "Schibsted Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;   /* plus de police à chasse fixe : les chiffres restent alignés (tabular-nums) */
@@ -49,13 +52,13 @@ try {
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0B0B0B; --soft: #181817; --line: #272726; --ink: #F4F4F1; --ink-2: #CFCFCB; --muted: #9D9D99;
+    --bg: #121211; --surface: #1B1B1A; --soft: #232322; --line: #2B2B29; --ink: #F1F0EC; --ink-2: #C3C2BC; --muted: #8C8B86; --signal: #F0503A;
     --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 12px 32px rgba(0, 0, 0, .5);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0B0B0B; --soft: #181817; --line: #272726; --ink: #F4F4F1; --ink-2: #CFCFCB; --muted: #9D9D99;
+  --bg: #121211; --surface: #1B1B1A; --soft: #232322; --line: #2B2B29; --ink: #F1F0EC; --ink-2: #C3C2BC; --muted: #8C8B86; --signal: #F0503A;
   --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 12px 32px rgba(0, 0, 0, .5);
   color-scheme: dark;
 }
@@ -97,6 +100,9 @@ svg { flex: none; }
 .logo-g { stroke: var(--bg); fill: none; }
 .logo-d { fill: var(--bg); }
 .logo-x { fill: var(--ink); }
+.logo-s { fill: var(--signal); }
+.logo-sweep { transform-origin: 50px 50px; animation: logo-sweep 7s linear infinite; }
+@keyframes logo-sweep { to { transform: rotate(360deg); } }
 .logo-w { fill: var(--ink); }
 .tabs { display: flex; gap: 2px; flex: 1; min-width: 0; }
 .tab-sub { margin-left: auto; }
@@ -144,7 +150,7 @@ main {
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   min-height: 38px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line);
-  background: var(--bg); color: var(--ink); font-weight: 600; font-size: 14px; line-height: 1.2;
+  background: var(--surface); color: var(--ink); font-weight: 600; font-size: 14px; line-height: 1.2;
   text-decoration: none; white-space: nowrap; transition: border-color .15s, background-color .15s, color .15s;
 }
 .btn:hover:not(:disabled) { border-color: var(--ink); }
@@ -168,7 +174,7 @@ main {
 }
 .ftoggle svg { width: 16px; height: 16px; }
 .ftoggle:hover { box-shadow: 0 0 0 1px var(--line); }
-.ftoggle[aria-expanded="true"] { background: var(--bg); box-shadow: 0 0 0 1px var(--line); }
+.ftoggle[aria-expanded="true"] { background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
 .fcount:not(:empty) { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--ink); color: var(--bg); font: 600 11px/18px var(--font-mono); text-align: center; }
 .filters {
   display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px;
@@ -190,11 +196,11 @@ a.row { text-decoration: none; }
   font-size: 13px; font-weight: 600; color: var(--ink-2); white-space: nowrap; transition: background-color .15s, color .15s, box-shadow .15s;
 }
 .seg button:hover { color: var(--ink); }
-.seg button[aria-pressed="true"] { background: var(--bg); color: var(--ink); box-shadow: 0 0 0 1px var(--line), 0 1px 3px rgba(0, 0, 0, .07); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line), 0 1px 3px rgba(0, 0, 0, .07); }
 .seg .n { font: 500 11px var(--font-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
 .search { position: relative; margin-left: auto; flex: 0 1 270px; min-width: 190px; }
 .search input {
-  width: 100%; height: 38px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+  width: 100%; height: 38px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
   padding: 0 14px 0 38px; font: 400 14px var(--font-body); -webkit-appearance: none; appearance: none;
 }
 .search input::placeholder { color: var(--muted); }
@@ -243,7 +249,7 @@ a.row { text-decoration: none; }
 .pill.single { background: var(--soft); color: var(--ink-2); box-shadow: inset 0 0 0 1px var(--line); }
 .ex {
   display: inline-grid; place-items: center; width: 15px; height: 15px; border-radius: 3px; margin-left: 6px; vertical-align: 1px;
-  background: var(--soft); box-shadow: inset 0 0 0 1px var(--line); color: var(--muted); font: 600 9px/1 var(--font-mono);
+  background: var(--signal); color: #fff; font: 700 9.5px/1 var(--font-mono);
 }
 .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--ink); margin-right: 8px; vertical-align: 2px; }
 
@@ -300,7 +306,7 @@ a.row { text-decoration: none; }
 .scrim { position: fixed; inset: 0; z-index: 50; background: rgba(0, 0, 0, .45); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .25s, visibility .25s; }
 .drawer {
   position: fixed; z-index: 51; top: 0; right: 0; height: 100%; width: min(520px, 100%);
-  background: var(--bg); border-left: 1px solid var(--line); box-shadow: var(--shadow);
+  background: var(--surface); border-left: 1px solid var(--line); box-shadow: var(--shadow);
   transform: translateX(104%); visibility: hidden; transition: transform .32s cubic-bezier(.2, .8, .2, 1), visibility .32s;
   overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; pointer-events: none;
 }
@@ -330,7 +336,7 @@ body.d-open .drawer { transform: none; visibility: visible; pointer-events: auto
 .btn.sm svg { width: 14px; height: 14px; }
 .d-n { margin-left: 4px; color: var(--ink-2); }
 .facts { display: flex; flex-wrap: wrap; gap: 1px; margin: 24px 0 0; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
-.facts div { flex: 1 1 118px; background: var(--bg); padding: 12px 14px; min-width: 0; }
+.facts div { flex: 1 1 118px; background: var(--surface); padding: 12px 14px; min-width: 0; }
 .facts dt { font: 600 10.5px var(--font-mono); color: var(--muted); }
 .facts dd { margin: 5px 0 0; font-weight: 650; overflow-wrap: anywhere; }
 .d-h3 { font: 600 11px var(--font-mono); color: var(--muted); margin: 30px 0 10px; }
@@ -509,7 +515,7 @@ body.d-open .drawer { transform: none; visibility: visible; pointer-events: auto
 .rate-in:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
 .rate-val { font: 650 15px var(--font-mono); color: var(--ink-2); min-width: 4ch; }
 .rb-form textarea, .fld input, .fld textarea, .m-search {
-  width: 100%; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--ink); font: inherit; font-size: 15px; padding: 11px 13px; resize: vertical;
+  width: 100%; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font: inherit; font-size: 15px; padding: 11px 13px; resize: vertical;
 }
 .rb-form textarea:focus, .fld input:focus, .fld textarea:focus, .m-search:focus { outline: none; border-color: var(--ink); }
 .rb-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
@@ -553,7 +559,7 @@ body.d-open .drawer { transform: none; visibility: visible; pointer-events: auto
 
 .cta { position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin-top: 30px; padding: 18px 58px 18px 20px; border-radius: 16px; background: var(--soft); }
 .cta-x { position: absolute; top: 8px; right: 8px; width: 34px; height: 34px; color: var(--muted); }
-.cta-x:hover { color: var(--ink); background: var(--bg); }
+.cta-x:hover { color: var(--ink); background: var(--surface); }
 .cta p { margin: 0; max-width: 62ch; color: var(--ink-2); }
 .cta b { color: var(--ink); }
 .toprated { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 4px 36px; }
@@ -579,7 +585,7 @@ body.d-open .drawer { transform: none; visibility: visible; pointer-events: auto
 .vit { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
 .vit-item { position: relative; }
 .vit-item .card { width: 100%; }
-.vit-x { position: absolute; top: 8px; right: 8px; background: var(--bg); box-shadow: 0 1px 4px rgba(0, 0, 0, .2); width: 32px; height: 32px; }
+.vit-x { position: absolute; top: 8px; right: 8px; background: var(--surface); box-shadow: 0 1px 4px rgba(0, 0, 0, .2); width: 32px; height: 32px; }
 .vit-add { aspect-ratio: 1; display: grid; place-content: center; justify-items: center; gap: 6px; border: 1.5px dashed var(--line); border-radius: 10px; color: var(--muted); font-size: 14px; font-weight: 600; }
 .vit-add span { font-size: 34px; line-height: 1; font-weight: 300; }
 .vit-add:hover { border-color: var(--ink); color: var(--ink); }
@@ -592,7 +598,7 @@ body.d-open .drawer { transform: none; visibility: visible; pointer-events: auto
 body[data-view="profil"] .ftool, body[data-view="user"] .ftool { display: none; }
 body[data-view="profil"] .filters, body[data-view="user"] .filters { display: none; }
 
-.modal { width: min(520px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); border: 0; border-radius: 20px; padding: 0; background: var(--bg); color: var(--ink); box-shadow: 0 24px 80px rgba(0, 0, 0, .35); }
+.modal { width: min(520px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); border: 0; border-radius: 20px; padding: 0; background: var(--surface); color: var(--ink); box-shadow: 0 24px 80px rgba(0, 0, 0, .35); }
 .modal::backdrop { background: rgba(10, 10, 10, .5); backdrop-filter: blur(3px); }
 .m-in { position: relative; padding: 30px 28px 26px; }
 .m-x { position: absolute; top: 14px; right: 14px; }
@@ -658,7 +664,7 @@ body[data-view="abonnements"] .ftool, body[data-view="abonnements"] .filters { d
 .set-c .seg { flex-wrap: wrap; overflow: visible; border-radius: 18px; }
 .set-about { color: var(--ink-2); line-height: 1.6; margin: 8px 0 0; }
 .sw { position: relative; width: 50px; height: 30px; border-radius: 999px; background: var(--line); transition: background-color .2s; }
-.sw span { position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: var(--bg); box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: transform .2s; }
+.sw span { position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: transform .2s; }
 .sw[aria-checked="true"] { background: var(--ink); }
 .sw[aria-checked="true"] span { transform: translateX(20px); }
 /* ---------- connexion par e-mail ---------- */
@@ -697,7 +703,7 @@ body[data-view="abonnements"] .ftool, body[data-view="abonnements"] .filters { d
 .back svg { width: 18px; height: 18px; }
 .seg a { display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--ink-2); white-space: nowrap; text-decoration: none; transition: background-color .15s, color .15s, box-shadow .15s; }
 .seg a:hover { color: var(--ink); }
-.seg a[aria-current="page"] { background: var(--bg); color: var(--ink); box-shadow: 0 0 0 1px var(--line), 0 1px 3px rgba(0, 0, 0, .07); }
+.seg a[aria-current="page"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line), 0 1px 3px rgba(0, 0, 0, .07); }
 .people-tabs { margin-top: 30px; }
 body[data-view="abonnements"] main { padding-bottom: 8px; }
 .feed-wrap {
@@ -726,7 +732,7 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 .post-a { margin: -8px 0 0; font-size: 13.5px; color: var(--ink-2); }
 .post-rel {
   display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; padding: 10px; border-radius: 14px;
-  border: 1px solid var(--line); background: var(--bg); color: inherit; transition: border-color .15s;
+  border: 1px solid var(--line); background: var(--surface); color: inherit; transition: border-color .15s;
 }
 @media (hover: hover) { .post-rel:hover { border-color: var(--ink); } }
 .post-rel:active { border-color: var(--ink); }
@@ -770,7 +776,7 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 .filters .seg-metro { display: none; }
 .filters.v-concerts .seg-metro { display: inline-flex; }
 .fsel { align-items: center; gap: 8px; padding: 4px 6px 4px 14px; border-radius: 999px; background: var(--soft); font-size: 13px; font-weight: 600; color: var(--ink-2); }
-.fsel select { appearance: none; -webkit-appearance: none; border: 0; background: var(--bg); color: var(--ink); font: inherit; font-weight: 600; padding: 6px 30px 6px 12px; border-radius: 999px; max-width: 62vw; cursor: pointer;
+.fsel select { appearance: none; -webkit-appearance: none; border: 0; background: var(--surface); color: var(--ink); font: inherit; font-weight: 600; padding: 6px 30px 6px 12px; border-radius: 999px; max-width: 62vw; cursor: pointer;
   background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
   background-position: calc(100% - 15px) 52%, calc(100% - 10px) 52%; background-size: 5px 5px; background-repeat: no-repeat; box-shadow: 0 0 0 1px var(--line); }
 .d-follow { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 4px; }
@@ -780,6 +786,54 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 .nw { white-space: nowrap; }
 /* dans les sections de la semaine, la date est la même pour tout le monde : on ne la répète pas */
 #sec-albums .md, #sec-ep .md, #sec-singles .md { display: none; }
+
+
+/* ---------- refonte : bande des jours, sortie à la une, liste de titres, comptes à rebours ---------- */
+.dstrip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin: 4px 0 26px; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+.dday { display: grid; gap: 6px; text-align: left; padding: 10px 12px 12px; border-radius: 12px; border: 1px solid transparent; transition: background-color .15s, border-color .15s; min-width: 0; }
+.dday:hover:not(:disabled) { background: var(--surface); }
+.dday[aria-pressed="true"] { background: var(--surface); border-color: var(--ink); }
+.dday:disabled { cursor: default; opacity: .55; }
+.dd-n { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; font-weight: 500; color: var(--muted); }
+.dd-n i { width: 6px; height: 6px; border-radius: 50%; background: var(--signal); }
+.dd-d { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+.dd-bar { height: 4px; border-radius: 2px; background: var(--soft); overflow: hidden; }
+.dd-bar b { display: block; height: 100%; border-radius: 2px; background: var(--ink); }
+.is-future .dd-bar b { background: var(--muted); }
+.dd-k { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.feature { display: grid; grid-template-columns: minmax(220px, 360px) minmax(0, 1fr); gap: 36px; align-items: center; padding: 30px 0 36px; margin-bottom: 8px; border-bottom: 1px solid var(--line); }
+.feature-cov { width: 100%; border-radius: 6px; box-shadow: 0 30px 60px -30px rgba(0, 0, 0, .45); transition: transform .2s; }
+.feature-cov:hover { transform: translateY(-2px); }
+.feature-tag { display: flex; align-items: center; gap: 7px; margin: 0; font-size: 12.5px; font-weight: 500; color: var(--ink-2); }
+.feature-tag span { width: 6px; height: 6px; border-radius: 50%; background: var(--signal); }
+.feature-h { font-family: var(--font-display); font-weight: 600; font-size: clamp(28px, 4.2vw, 50px); line-height: 1.03; letter-spacing: -0.03em; margin: 10px 0 6px; text-wrap: balance; overflow-wrap: anywhere; }
+.feature-h .ex { width: 20px; height: 20px; font-size: 12px; vertical-align: 6px; }
+.feature-by { margin: 0; font-size: 18px; color: var(--ink-2); }
+.feature-by span { color: var(--muted); font-size: 15px; }
+.feature-facts { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 18px 0 22px; font-size: 13.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.feature-facts b { color: var(--ink); font-weight: 500; }
+.feature-act { display: flex; flex-wrap: wrap; gap: 8px; }
+.feature-act .btn svg { width: 15px; height: 15px; margin-right: 2px; }
+
+#sec-singles .rows { counter-reset: trk; }
+#sec-singles .row { grid-template-columns: 26px 56px minmax(0, 1fr) auto; counter-increment: trk; }
+#sec-singles .row::before { content: counter(trk); font-size: 13px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+
+.cd { font-size: 12px; font-weight: 500; padding: 3px 9px; border-radius: 999px; background: var(--soft); color: var(--ink-2); white-space: nowrap; }
+.cd.soon { background: color-mix(in srgb, var(--signal) 14%, transparent); color: var(--signal); }
+.rv-tx { font-family: var(--font-note); font-style: italic; font-size: 16.5px; line-height: 1.5; }
+
+@media (max-width: 720px) {
+  .dstrip { grid-template-columns: repeat(7, minmax(54px, 1fr)); gap: 4px; overflow-x: auto; scrollbar-width: none; }
+  .dday { padding: 8px 8px 10px; }
+  .dd-d { font-size: 17px; }
+  .dd-w { display: none; }
+  .feature { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .feature-cov { max-width: 420px; }
+  #sec-singles .row { grid-template-columns: 20px 52px minmax(0, 1fr) auto; }
+}
+@media (prefers-reduced-motion: reduce) { .logo-sweep { animation: none; } }
 
 .set-st .live { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 7px; vertical-align: 1px; opacity: .7; }
 .month { margin: 38px 0 0; font: 600 12px var(--font-mono); color: var(--muted); }
@@ -791,7 +845,7 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 <a class="skip" href="#content">Aller au contenu</a>
 <header class="top">
   <div class="top-in">
-    <a class="brand" href="#a-venir" aria-label="À l’affût, retour à l’accueil"><svg class="logo" viewBox="0 0 446.4 100" role="img" aria-label="À l’affût"><rect class="logo-sq" width="100" height="100" rx="22"/><circle cx="50" cy="50" r="34" fill="none" class="logo-g" stroke-width="6"/><circle cx="50" cy="50" r="19" fill="none" class="logo-g" stroke-width="3" opacity=".5"/><path d="M50 50 L50.00 16.00 A34 34 0 0 1 79.44 33.00 Z" class="logo-d" opacity=".35"/><path d="M50 50 L79.44 33.00" class="logo-g" stroke-width="5" stroke-linecap="round"/><circle cx="50" cy="50" r="5" class="logo-d"/><circle cx="35" cy="63" r="5.5" class="logo-d"/><path class="logo-w" transform="translate(121.39 86.82) scale(0.04415)" d="M449.04302978515625 26.08685302734375Q346.60797119140625 26.08685302734375 257.7171325683594 -8.804779052734375Q168.8262939453125 -43.6964111328125 114.00079345703125 -116.04421997070312Q59.17529296875 -188.39202880859375 59.17529296875 -300.26055908203125Q59.17529296875 -420.91156005859375 129.04421997070312 -501.8681335449219Q198.91314697265625 -582.82470703125 328.4996032714844 -623.6294860839844Q458.0860595703125 -664.4342651367188 638.1298828125 -664.4342651367188H783.3489990234375L765.3489990234375 -634.6087646484375V-697.782470703125Q765.3489990234375 -799.2621459960938 729.6960144042969 -847.197998046875Q694.0430297851562 -895.1338500976562 611.6932373046875 -895.1338500976562Q532.1697387695312 -895.1338500976562 490.6904602050781 -853.0242919921875Q449.211181640625 -810.9147338867188 437.55938720703125 -731.087646484375L106.65338134765625 -785.9131469726562Q124.6964111328125 -876.3912353515625 186.02230834960938 -949.282470703125Q247.34820556640625 -1022.1737060546875 357.06494140625 -1065.1737060546875Q466.78167724609375 -1108.1737060546875 629.9537963867188 -1108.1737060546875Q775.561767578125 -1108.1737060546875 878.5824890136719 -1063.5430297851562Q981.6032104492188 -1018.912353515625 1036.2546081542969 -914.4346618652344Q1090.906005859375 -809.9569702148438 1090.906005859375 -629.568115234375V-293.08209228515625Q1090.906005859375 -259.386474609375 1100.406005859375 -248.386474609375Q1109.906005859375 -237.386474609375 1140.906005859375 -237.386474609375H1186.6024169921875V0.0H1035.7785034179688Q907.9553833007812 0.0 843.5215148925781 -62.67291259765625Q779.087646484375 -125.3458251953125 779.087646484375 -245.29962158203125V-289.996826171875L838.1729125976562 -265.65020751953125Q825.6510009765625 -222.25897216796875 801.5637512207031 -172.15060424804688Q777.4765014648438 -122.042236328125 733.9111633300781 -76.89044189453125Q690.3458251953125 -31.7386474609375 620.9330749511719 -2.825897216796875Q551.5203247070312 26.08685302734375 449.04302978515625 26.08685302734375ZM546.1705322265625 -192.5179443359375Q613.1713256835938 -192.5179443359375 662.9549865722656 -222.73587036132812Q712.7386474609375 -252.95379638671875 740.5872497558594 -311.5856628417969Q768.4358520507812 -370.217529296875 768.4358520507812 -455.26373291015625V-482.34979248046875H652.9984130859375Q552.6924438476562 -482.34979248046875 497.06097412109375 -456.0450134277344Q441.42950439453125 -429.740234375 419.5159606933594 -392.152587890625Q397.6024169921875 -354.56494140625 397.6024169921875 -318.8685302734375Q397.6024169921875 -293.60638427734375 409.8203430175781 -264.0840759277344Q422.03826904296875 -234.561767578125 454.12591552734375 -213.53985595703125Q486.21356201171875 -192.5179443359375 546.1705322265625 -192.5179443359375ZM582.5187377929688 -1188.6533813476562 304.08685302734375 -1530.2167358398438 563.2119750976562 -1694.6478271484375 752.86376953125 -1284.8693237304688ZM2016.9960327148438 0.0Q1882.7386474609375 0.0 1814.5657348632812 -62.325103759765625Q1746.392822265625 -124.65020751953125 1746.392822265625 -245.29962158203125V-1500.0H2075.776123046875V-293.08209228515625Q2075.776123046875 -259.6647216796875 2085.276123046875 -248.52559814453124Q2094.776123046875 -237.386474609375 2125.776123046875 -237.386474609375H2203.6470336914062V0.0ZM2378.6940307617188 -731.9633178710938 2288.782470703125 -866.6565551757812 2317.6087646484375 -886.4828491210938Q2390.3035888671875 -935.8302612304688 2415.5645446777344 -970.7653198242188Q2440.8255004882812 -1005.7003784179688 2440.8255004882812 -1053.5266723632812V-1090.0924072265625L2485.6940307617188 -1042.2669067382812Q2388.9131469726562 -1042.2669067382812 2331.848602294922 -1099.2226867675781Q2274.7840576171875 -1156.178466796875 2274.7840576171875 -1254.2637329101562Q2274.7840576171875 -1352.6533813476562 2332.348602294922 -1409.3701171875Q2389.9131469726562 -1466.0868530273438 2486.6940307617188 -1466.0868530273438Q2556.779296875 -1466.0868530273438 2607.191650390625 -1435.9135437011719Q2657.60400390625 -1405.740234375 2684.886474609375 -1348.2410278320312Q2712.1689453125 -1290.7418212890625 2712.1689453125 -1207.220703125Q2712.1689453125 -1065.2230834960938 2639.148223876953 -956.4410095214844Q2566.1275024414062 -847.658935546875 2444.9107666015625 -772.7457885742188ZM3093.0430297851562 26.08685302734375Q2990.6079711914062 26.08685302734375 2901.7171325683594 -8.804779052734375Q2812.8262939453125 -43.6964111328125 2758.0007934570312 -116.04421997070312Q2703.17529296875 -188.39202880859375 2703.17529296875 -300.26055908203125Q2703.17529296875 -420.91156005859375 2773.044219970703 -501.8681335449219Q2842.9131469726562 -582.82470703125 2972.4996032714844 -623.6294860839844Q3102.0860595703125 -664.4342651367188 3282.1298828125 -664.4342651367188H3427.3489990234375L3409.3489990234375 -634.6087646484375V-697.782470703125Q3409.3489990234375 -799.2621459960938 3373.696014404297 -847.197998046875Q3338.0430297851562 -895.1338500976562 3255.6932373046875 -895.1338500976562Q3176.1697387695312 -895.1338500976562 3134.690460205078 -853.0242919921875Q3093.211181640625 -810.9147338867188 3081.5593872070312 -731.087646484375L2750.6533813476562 -785.9131469726562Q2768.6964111328125 -876.3912353515625 2830.0223083496094 -949.282470703125Q2891.3482055664062 -1022.1737060546875 3001.06494140625 -1065.1737060546875Q3110.7816772460938 -1108.1737060546875 3273.9537963867188 -1108.1737060546875Q3419.561767578125 -1108.1737060546875 3522.582489013672 -1063.5430297851562Q3625.6032104492188 -1018.912353515625 3680.254608154297 -914.4346618652344Q3734.906005859375 -809.9569702148438 3734.906005859375 -629.568115234375V-293.08209228515625Q3734.906005859375 -259.386474609375 3744.406005859375 -248.386474609375Q3753.906005859375 -237.386474609375 3784.906005859375 -237.386474609375H3830.6024169921875V0.0H3679.7785034179688Q3551.9553833007812 0.0 3487.521514892578 -62.67291259765625Q3423.087646484375 -125.3458251953125 3423.087646484375 -245.29962158203125V-289.996826171875L3482.1729125976562 -265.65020751953125Q3469.6510009765625 -222.25897216796875 3445.563751220703 -172.15060424804688Q3421.4765014648438 -122.042236328125 3377.911163330078 -76.89044189453125Q3334.3458251953125 -31.7386474609375 3264.933074951172 -2.825897216796875Q3195.5203247070312 26.08685302734375 3093.0430297851562 26.08685302734375ZM3190.1705322265625 -192.5179443359375Q3257.1713256835938 -192.5179443359375 3306.9549865722656 -222.73587036132812Q3356.7386474609375 -252.95379638671875 3384.5872497558594 -311.5856628417969Q3412.4358520507812 -370.217529296875 3412.4358520507812 -455.26373291015625V-482.34979248046875H3296.9984130859375Q3196.6924438476562 -482.34979248046875 3141.0609741210938 -456.0450134277344Q3085.4295043945312 -429.740234375 3063.5159606933594 -392.152587890625Q3041.6024169921875 -354.56494140625 3041.6024169921875 -318.8685302734375Q3041.6024169921875 -293.60638427734375 3053.820343017578 -264.0840759277344Q3066.0382690429688 -234.561767578125 3098.1259155273438 -213.53985595703125Q3130.2135620117188 -192.5179443359375 3190.1705322265625 -192.5179443359375ZM4033.9585571289062 0.0V-1232.1760864257812Q4033.9585571289062 -1369.8709106445312 4104.870910644531 -1434.9354553222656Q4175.783264160156 -1500.0 4331.347412109375 -1500.0H4564.429504394531V-1262.613525390625H4415.168151855469Q4384.4725341796875 -1262.613525390625 4373.907196044922 -1251.0047607421875Q4363.341857910156 -1239.39599609375 4363.341857910156 -1206.613525390625V0.0ZM3895.2183227539062 -842.613525390625V-1080.0H4556.648620605469V-842.613525390625ZM4805.694030761719 0.0V-1232.1760864257812Q4805.694030761719 -1369.8709106445312 4876.606384277344 -1434.9354553222656Q4947.518737792969 -1500.0 5103.0828857421875 -1500.0H5336.164978027344V-1262.613525390625H5186.903625488281Q5156.2080078125 -1262.613525390625 5145.642669677734 -1251.0047607421875Q5135.077331542969 -1239.39599609375 5135.077331542969 -1206.613525390625V0.0ZM4666.953796386719 -842.613525390625V-1080.0H5328.384094238281V-842.613525390625ZM5837.914733886719 26.782470703125Q5711.002380371094 26.782470703125 5630.784851074219 -31.86932373046875Q5550.567321777344 -90.5211181640625 5513.2191162109375 -193.17291259765625Q5475.870910644531 -295.82470703125 5475.870910644531 -427.12908935546875V-1080.0H5805.254211425781V-467.2581787109375Q5805.254211425781 -337.34503173828125 5848.99365234375 -278.1482238769531Q5892.733093261719 -218.951416015625 5978.9091796875 -218.951416015625Q6025.82470703125 -218.951416015625 6071.086853027344 -243.56137084960938Q6116.3489990234375 -268.17132568359375 6146.458160400391 -329.912353515625Q6176.567321777344 -391.65338134765625 6176.567321777344 -502.69879150390625V-1080.0H6505.950622558594V0.0H6186.567321777344V-253.30438232421875L6194.262939453125 -208.6087646484375Q6143.91552734375 -96.087646484375 6054.5892333984375 -34.652587890625Q5965.262939453125 26.782470703125 5837.914733886719 26.782470703125ZM5825.302001953125 -1194.7410278320312 5587.437438964844 -1300.0 5844.304382324219 -1625.2589721679688H6144.0390625L6400.906005859375 -1300.0L6163.041442871094 -1194.7410278320312L5993.823913574219 -1483.9131469726562ZM7088.474914550781 0.0Q6954.217529296875 0.0 6886.044616699219 -62.325103759765625Q6817.8717041015625 -124.65020751953125 6817.8717041015625 -245.29962158203125V-842.613525390625H6668.218322753906V-1080.0H6817.8717041015625V-1288.6095581054688L7147.2550048828125 -1369.1290893554688V-1080.0H7343.1689453125V-842.613525390625H7147.2550048828125V-293.08209228515625Q7147.2550048828125 -259.6647216796875 7156.7550048828125 -248.52559814453124Q7166.2550048828125 -237.386474609375 7197.2550048828125 -237.386474609375H7362.2550048828125V0.0Z"/></svg></a>
+    <a class="brand" href="#a-venir" aria-label="À l’affût, retour à l’accueil"><svg class="logo" viewBox="0 0 446.4 100" role="img" aria-label="À l’affût"><rect class="logo-sq" width="100" height="100" rx="22"/><circle cx="50" cy="50" r="34" fill="none" class="logo-g" stroke-width="6"/><circle cx="50" cy="50" r="19" fill="none" class="logo-g" stroke-width="3" opacity=".5"/><g class="logo-sweep"><path d="M50 50 L50.00 16.00 A34 34 0 0 1 79.44 33.00 Z" class="logo-d" opacity=".35"/><path d="M50 50 L79.44 33.00" class="logo-g" stroke-width="5" stroke-linecap="round"/></g><circle cx="50" cy="50" r="5" class="logo-d"/><circle cx="35" cy="63" r="5.5" class="logo-s"/><path class="logo-w" transform="translate(121.39 86.82) scale(0.04415)" d="M449.04302978515625 26.08685302734375Q346.60797119140625 26.08685302734375 257.7171325683594 -8.804779052734375Q168.8262939453125 -43.6964111328125 114.00079345703125 -116.04421997070312Q59.17529296875 -188.39202880859375 59.17529296875 -300.26055908203125Q59.17529296875 -420.91156005859375 129.04421997070312 -501.8681335449219Q198.91314697265625 -582.82470703125 328.4996032714844 -623.6294860839844Q458.0860595703125 -664.4342651367188 638.1298828125 -664.4342651367188H783.3489990234375L765.3489990234375 -634.6087646484375V-697.782470703125Q765.3489990234375 -799.2621459960938 729.6960144042969 -847.197998046875Q694.0430297851562 -895.1338500976562 611.6932373046875 -895.1338500976562Q532.1697387695312 -895.1338500976562 490.6904602050781 -853.0242919921875Q449.211181640625 -810.9147338867188 437.55938720703125 -731.087646484375L106.65338134765625 -785.9131469726562Q124.6964111328125 -876.3912353515625 186.02230834960938 -949.282470703125Q247.34820556640625 -1022.1737060546875 357.06494140625 -1065.1737060546875Q466.78167724609375 -1108.1737060546875 629.9537963867188 -1108.1737060546875Q775.561767578125 -1108.1737060546875 878.5824890136719 -1063.5430297851562Q981.6032104492188 -1018.912353515625 1036.2546081542969 -914.4346618652344Q1090.906005859375 -809.9569702148438 1090.906005859375 -629.568115234375V-293.08209228515625Q1090.906005859375 -259.386474609375 1100.406005859375 -248.386474609375Q1109.906005859375 -237.386474609375 1140.906005859375 -237.386474609375H1186.6024169921875V0.0H1035.7785034179688Q907.9553833007812 0.0 843.5215148925781 -62.67291259765625Q779.087646484375 -125.3458251953125 779.087646484375 -245.29962158203125V-289.996826171875L838.1729125976562 -265.65020751953125Q825.6510009765625 -222.25897216796875 801.5637512207031 -172.15060424804688Q777.4765014648438 -122.042236328125 733.9111633300781 -76.89044189453125Q690.3458251953125 -31.7386474609375 620.9330749511719 -2.825897216796875Q551.5203247070312 26.08685302734375 449.04302978515625 26.08685302734375ZM546.1705322265625 -192.5179443359375Q613.1713256835938 -192.5179443359375 662.9549865722656 -222.73587036132812Q712.7386474609375 -252.95379638671875 740.5872497558594 -311.5856628417969Q768.4358520507812 -370.217529296875 768.4358520507812 -455.26373291015625V-482.34979248046875H652.9984130859375Q552.6924438476562 -482.34979248046875 497.06097412109375 -456.0450134277344Q441.42950439453125 -429.740234375 419.5159606933594 -392.152587890625Q397.6024169921875 -354.56494140625 397.6024169921875 -318.8685302734375Q397.6024169921875 -293.60638427734375 409.8203430175781 -264.0840759277344Q422.03826904296875 -234.561767578125 454.12591552734375 -213.53985595703125Q486.21356201171875 -192.5179443359375 546.1705322265625 -192.5179443359375ZM582.5187377929688 -1188.6533813476562 304.08685302734375 -1530.2167358398438 563.2119750976562 -1694.6478271484375 752.86376953125 -1284.8693237304688ZM2016.9960327148438 0.0Q1882.7386474609375 0.0 1814.5657348632812 -62.325103759765625Q1746.392822265625 -124.65020751953125 1746.392822265625 -245.29962158203125V-1500.0H2075.776123046875V-293.08209228515625Q2075.776123046875 -259.6647216796875 2085.276123046875 -248.52559814453124Q2094.776123046875 -237.386474609375 2125.776123046875 -237.386474609375H2203.6470336914062V0.0ZM2378.6940307617188 -731.9633178710938 2288.782470703125 -866.6565551757812 2317.6087646484375 -886.4828491210938Q2390.3035888671875 -935.8302612304688 2415.5645446777344 -970.7653198242188Q2440.8255004882812 -1005.7003784179688 2440.8255004882812 -1053.5266723632812V-1090.0924072265625L2485.6940307617188 -1042.2669067382812Q2388.9131469726562 -1042.2669067382812 2331.848602294922 -1099.2226867675781Q2274.7840576171875 -1156.178466796875 2274.7840576171875 -1254.2637329101562Q2274.7840576171875 -1352.6533813476562 2332.348602294922 -1409.3701171875Q2389.9131469726562 -1466.0868530273438 2486.6940307617188 -1466.0868530273438Q2556.779296875 -1466.0868530273438 2607.191650390625 -1435.9135437011719Q2657.60400390625 -1405.740234375 2684.886474609375 -1348.2410278320312Q2712.1689453125 -1290.7418212890625 2712.1689453125 -1207.220703125Q2712.1689453125 -1065.2230834960938 2639.148223876953 -956.4410095214844Q2566.1275024414062 -847.658935546875 2444.9107666015625 -772.7457885742188ZM3093.0430297851562 26.08685302734375Q2990.6079711914062 26.08685302734375 2901.7171325683594 -8.804779052734375Q2812.8262939453125 -43.6964111328125 2758.0007934570312 -116.04421997070312Q2703.17529296875 -188.39202880859375 2703.17529296875 -300.26055908203125Q2703.17529296875 -420.91156005859375 2773.044219970703 -501.8681335449219Q2842.9131469726562 -582.82470703125 2972.4996032714844 -623.6294860839844Q3102.0860595703125 -664.4342651367188 3282.1298828125 -664.4342651367188H3427.3489990234375L3409.3489990234375 -634.6087646484375V-697.782470703125Q3409.3489990234375 -799.2621459960938 3373.696014404297 -847.197998046875Q3338.0430297851562 -895.1338500976562 3255.6932373046875 -895.1338500976562Q3176.1697387695312 -895.1338500976562 3134.690460205078 -853.0242919921875Q3093.211181640625 -810.9147338867188 3081.5593872070312 -731.087646484375L2750.6533813476562 -785.9131469726562Q2768.6964111328125 -876.3912353515625 2830.0223083496094 -949.282470703125Q2891.3482055664062 -1022.1737060546875 3001.06494140625 -1065.1737060546875Q3110.7816772460938 -1108.1737060546875 3273.9537963867188 -1108.1737060546875Q3419.561767578125 -1108.1737060546875 3522.582489013672 -1063.5430297851562Q3625.6032104492188 -1018.912353515625 3680.254608154297 -914.4346618652344Q3734.906005859375 -809.9569702148438 3734.906005859375 -629.568115234375V-293.08209228515625Q3734.906005859375 -259.386474609375 3744.406005859375 -248.386474609375Q3753.906005859375 -237.386474609375 3784.906005859375 -237.386474609375H3830.6024169921875V0.0H3679.7785034179688Q3551.9553833007812 0.0 3487.521514892578 -62.67291259765625Q3423.087646484375 -125.3458251953125 3423.087646484375 -245.29962158203125V-289.996826171875L3482.1729125976562 -265.65020751953125Q3469.6510009765625 -222.25897216796875 3445.563751220703 -172.15060424804688Q3421.4765014648438 -122.042236328125 3377.911163330078 -76.89044189453125Q3334.3458251953125 -31.7386474609375 3264.933074951172 -2.825897216796875Q3195.5203247070312 26.08685302734375 3093.0430297851562 26.08685302734375ZM3190.1705322265625 -192.5179443359375Q3257.1713256835938 -192.5179443359375 3306.9549865722656 -222.73587036132812Q3356.7386474609375 -252.95379638671875 3384.5872497558594 -311.5856628417969Q3412.4358520507812 -370.217529296875 3412.4358520507812 -455.26373291015625V-482.34979248046875H3296.9984130859375Q3196.6924438476562 -482.34979248046875 3141.0609741210938 -456.0450134277344Q3085.4295043945312 -429.740234375 3063.5159606933594 -392.152587890625Q3041.6024169921875 -354.56494140625 3041.6024169921875 -318.8685302734375Q3041.6024169921875 -293.60638427734375 3053.820343017578 -264.0840759277344Q3066.0382690429688 -234.561767578125 3098.1259155273438 -213.53985595703125Q3130.2135620117188 -192.5179443359375 3190.1705322265625 -192.5179443359375ZM4033.9585571289062 0.0V-1232.1760864257812Q4033.9585571289062 -1369.8709106445312 4104.870910644531 -1434.9354553222656Q4175.783264160156 -1500.0 4331.347412109375 -1500.0H4564.429504394531V-1262.613525390625H4415.168151855469Q4384.4725341796875 -1262.613525390625 4373.907196044922 -1251.0047607421875Q4363.341857910156 -1239.39599609375 4363.341857910156 -1206.613525390625V0.0ZM3895.2183227539062 -842.613525390625V-1080.0H4556.648620605469V-842.613525390625ZM4805.694030761719 0.0V-1232.1760864257812Q4805.694030761719 -1369.8709106445312 4876.606384277344 -1434.9354553222656Q4947.518737792969 -1500.0 5103.0828857421875 -1500.0H5336.164978027344V-1262.613525390625H5186.903625488281Q5156.2080078125 -1262.613525390625 5145.642669677734 -1251.0047607421875Q5135.077331542969 -1239.39599609375 5135.077331542969 -1206.613525390625V0.0ZM4666.953796386719 -842.613525390625V-1080.0H5328.384094238281V-842.613525390625ZM5837.914733886719 26.782470703125Q5711.002380371094 26.782470703125 5630.784851074219 -31.86932373046875Q5550.567321777344 -90.5211181640625 5513.2191162109375 -193.17291259765625Q5475.870910644531 -295.82470703125 5475.870910644531 -427.12908935546875V-1080.0H5805.254211425781V-467.2581787109375Q5805.254211425781 -337.34503173828125 5848.99365234375 -278.1482238769531Q5892.733093261719 -218.951416015625 5978.9091796875 -218.951416015625Q6025.82470703125 -218.951416015625 6071.086853027344 -243.56137084960938Q6116.3489990234375 -268.17132568359375 6146.458160400391 -329.912353515625Q6176.567321777344 -391.65338134765625 6176.567321777344 -502.69879150390625V-1080.0H6505.950622558594V0.0H6186.567321777344V-253.30438232421875L6194.262939453125 -208.6087646484375Q6143.91552734375 -96.087646484375 6054.5892333984375 -34.652587890625Q5965.262939453125 26.782470703125 5837.914733886719 26.782470703125ZM5825.302001953125 -1194.7410278320312 5587.437438964844 -1300.0 5844.304382324219 -1625.2589721679688H6144.0390625L6400.906005859375 -1300.0L6163.041442871094 -1194.7410278320312L5993.823913574219 -1483.9131469726562ZM7088.474914550781 0.0Q6954.217529296875 0.0 6886.044616699219 -62.325103759765625Q6817.8717041015625 -124.65020751953125 6817.8717041015625 -245.29962158203125V-842.613525390625H6668.218322753906V-1080.0H6817.8717041015625V-1288.6095581054688L7147.2550048828125 -1369.1290893554688V-1080.0H7343.1689453125V-842.613525390625H7147.2550048828125V-293.08209228515625Q7147.2550048828125 -259.6647216796875 7156.7550048828125 -248.52559814453124Q7166.2550048828125 -237.386474609375 7197.2550048828125 -237.386474609375H7362.2550048828125V0.0Z"/></svg></a>
     <nav class="tabs" aria-label="Sections">
       <a class="tab" href="#semaine" data-view="semaine">Cette semaine</a>
       <a class="tab" href="#a-venir" data-view="a-venir">À venir <span class="n" id="up-n"></span></a>
@@ -992,7 +1046,7 @@ const SET = Object.assign({ zoom: false, text: 'normal', motion: 'auto', start: 
 // « Cette semaine » devient l’onglet d’ouverture par défaut (l’ancien défaut était « À venir »)
 if (!SET.sv && store.get('settings', null)) { if (SET.start === 'a-venir') SET.start = 'semaine'; SET.sv = 1; store.set('settings', SET); }
 const S = {
-  view: 'semaine', week: 0,
+  view: 'semaine', week: 0, day: null,
   cat: CATS[prefs.cat] ? prefs.cat : 'all',
   type: TYPE_LABEL[prefs.type] ? prefs.type : 'all',
   cc: COUNTRY[prefs.cc] ? prefs.cc : 'all',
@@ -1206,11 +1260,16 @@ function cardHtml(r) {
     </span>
   </button>`;
 }
+// compte à rebours d’une sortie à venir (rouge la dernière semaine)
+function countdown(d) {
+  const n = Math.round((parseYmd(d) - parseYmd(today())) / 864e5);
+  return n > 0 ? `<span class="cd${n <= 7 ? ' soon' : ''}">${n === 1 ? 'demain' : `dans ${n} j`}</span>` : '';
+}
 function rowHtml(r, upcoming) {
   INDEX.set(r.key, r);
   const len = r.n > 1 ? `${r.n} titres` : r.dur ? fmtDur(r.dur) : '';
   const side = upcoming
-    ? `<span class="pill ${esc(r.rt)}">${esc(TYPE_LABEL[r.rt])}</span>`
+    ? `<span class="pill ${esc(r.rt)}">${esc(TYPE_LABEL[r.rt])}</span>${countdown(r.date)}`
     : `${FB_CONFIG ? rtChip(r) : ''}<span class="rs md">${esc(fmtShort(r.date))}</span><span class="rs">${esc(catName(r.cat))}${len ? ` · ${esc(len)}` : ''}</span>`;
   return `<button class="row" type="button" data-key="${esc(r.key)}">
     <span class="cover">${coverHtml(r, 120)}</span>
@@ -1250,12 +1309,46 @@ function render() {
   paintStatus();
 }
 
+// bande des jours, du vendredi au jeudi : combien de sorties chaque jour ; un jour touché ne montre que lui
+function dayStripHtml(ws, list, t) {
+  const days = Array.from({ length: 7 }, (_, i) => addDays(ws, i));
+  const n = days.map(d => list.filter(r => r.date === d).length);
+  const max = Math.max(1, ...n);
+  return `<div class="dstrip" role="group" aria-label="Jours de la semaine">${days.map((d, i) => {
+    const dt = parseYmd(d), on = S.day === d;
+    return `<button class="dday${d === t ? ' is-today' : ''}${d > t ? ' is-future' : ''}" type="button" data-wday="${d}" aria-pressed="${on}" ${n[i] || on ? '' : 'disabled'} aria-label="${esc(`${cap(DOW[dt.getDay()])} ${dt.getDate()} : ${n[i]} ${plural(n[i], 'sortie', 'sorties')}`)}">
+      <span class="dd-n">${esc(cap(DOW_S[dt.getDay()].replace('.', '')))}${d === t ? '<i title="Aujourd’hui"></i>' : ''}</span>
+      <span class="dd-d">${dt.getDate()}</span>
+      <span class="dd-bar"><b style="width:${Math.round((100 * n[i]) / max)}%"></b></span>
+      <span class="dd-k">${n[i] || '–'}<span class="dd-w"> ${n[i] ? plural(n[i], 'sortie', 'sorties') : ''}</span></span>
+    </button>`;
+  }).join('')}</div>`;
+}
+// la sortie à la une : grande pochette, chiffres clés, écoute
+function featureHtml(r) {
+  INDEX.set(r.key, r);
+  const facts = [r.n > 1 ? `<b>${r.n}</b> titres` : '', r.dur ? `<b>${esc(fmtTotal(r.dur))}</b>` : '', r.label ? esc(r.label) : '', esc(catName(r.cat))].filter(Boolean);
+  const q = encodeURIComponent(`${r.artist} ${baseTitle(r.title)}`);
+  const play = r.dz ? `https://www.deezer.com/fr/album/${r.dz}` : r.su || `https://open.spotify.com/search/${q}`;
+  return `<article class="feature">
+    <button class="feature-cov cover" type="button" data-key="${esc(r.key)}" aria-label="${esc(`Ouvrir ${r.title}, ${r.artist}`)}">${coverHtml(r, 1000)}</button>
+    <div class="feature-t">
+      <p class="feature-tag"><span></span>${S.week === 0 ? 'La sortie la plus attendue' : 'La sortie la plus écoutée'} · ${esc(fmtShort(r.date))}</p>
+      <h2 class="feature-h">${titleHtml(r)}</h2>
+      <p class="feature-by">${esc(r.artist)}${r.feats.length ? ` <span>feat. ${esc(r.feats.join(', '))}</span>` : ''}</p>
+      <p class="feature-facts">${facts.map(f => `<span>${f}</span>`).join('')}</p>
+      <div class="feature-act"><a class="btn primary" href="${esc(play)}" target="_blank" rel="noopener">${I.play || ''}Écouter</a><button class="btn" type="button" data-key="${esc(r.key)}">${FB_CONFIG ? 'Voir et noter' : 'Voir la fiche'}</button></div>
+    </div>
+  </article>`;
+}
 function viewWeek() {
   const t = today();
   const ws = addDays(weekStartOf(t), S.week * 7), we = addDays(ws, 6);
   const base = DATA.items.filter(r => r.date >= ws && r.date <= we);
   paintFilters(base);
-  const list = applyFilters(base).sort((a, b) => b.pop - a.pop || b.date.localeCompare(a.date));
+  const all = applyFilters(base).sort((a, b) => b.pop - a.pop || b.date.localeCompare(a.date));
+  if (S.day && (S.day < ws || S.day > we)) S.day = null;
+  const list = S.day ? all.filter(r => r.date === S.day) : all;
   const c = countTypes(list);
   const kicker = S.week === 0 ? 'Cette semaine' : S.week === -1 ? 'Semaine dernière' : `Il y a ${-S.week} semaines`;
   $head.innerHTML = `
@@ -1271,15 +1364,19 @@ function viewWeek() {
   const singles = list.filter(r => r.rt === 'single');
   const wr = FB_CONFIG ? WEEKREV.get(ws) : null;
   const usedAt = wr ? wr.at : -1;
-  let html = S.week === 0 ? rateCtaHtml() : '';
+  let html = dayStripHtml(ws, all, t);
+  html += S.week === 0 ? rateCtaHtml() : '';
   if (FB_CONFIG) html += topRatedHtml(list);
+  // à la une : l’album le plus attendu de la semaine (hors recherche)
+  const top = !S.q.trim() && albums.length ? albums[0] : null;
+  if (top) { html += featureHtml(top); albums.shift(); }
   // beaucoup de sorties chaque semaine : les plus attendues d’abord, le reste en un clic (tout s’affiche pendant une recherche)
   const CAP = { 'sec-albums': 24, 'sec-ep': 12, 'sec-singles': 40 };
   const full = id => !!S.q.trim() || S.open.has(`${S.week}:${id}`);
   const cap = (id, arr) => (full(id) ? arr : arr.slice(0, CAP[id]));
   const moreBtn = (id, arr, one, many) => (full(id) || arr.length <= CAP[id] ? ''
     : `<p class="more-row sec-more"><button class="btn" type="button" data-open="${id}">${arr.length - CAP[id] === 1 ? `Afficher l’autre ${one}` : `Afficher les ${arr.length - CAP[id]} autres ${many}`}</button></p>`);
-  if (albums.length) html += section('Albums', albums.length, `<div class="grid">${cap('sec-albums', albums).map(cardHtml).join('')}</div>${moreBtn('sec-albums', albums, 'album', 'albums')}`, 'sec-albums');
+  if (albums.length) html += section('Albums', albums.length + (top ? 1 : 0), `<div class="grid">${cap('sec-albums', albums).map(cardHtml).join('')}</div>${moreBtn('sec-albums', albums, 'album', 'albums')}`, 'sec-albums');
   if (eps.length) html += section('EP', eps.length, `<div class="grid">${cap('sec-ep', eps).map(cardHtml).join('')}</div>${moreBtn('sec-ep', eps, 'EP', 'EP')}`, 'sec-ep');
   if (singles.length) html += section('Singles', singles.length, `<div class="rows">${cap('sec-singles', singles).map(r => rowHtml(r, false)).join('')}</div>${moreBtn('sec-singles', singles, 'single', 'singles')}`, 'sec-singles');
   const more = elsewhereHtml(base);
@@ -3273,7 +3370,7 @@ document.addEventListener('touchmove', e => { if (!SET.zoom && e.touches && e.to
 const savePrefs = () => store.set('prefs', { cat: S.cat, type: S.type, cc: S.cc, mine: S.mine, metro: S.metro });
 
 document.addEventListener('click', e => {
-  const el = e.target.closest('[data-key],[data-week],[data-cat],[data-type],[data-cc],[data-mine],[data-unset],[data-follow],[data-ics],[data-play],[data-copy],[data-share],[data-jump],[data-reset],[data-set],[data-open],.tab,.bn,#ftoggle,#scrim,#d-close,#d-share');
+  const el = e.target.closest('[data-key],[data-week],[data-wday],[data-cat],[data-type],[data-cc],[data-mine],[data-unset],[data-follow],[data-ics],[data-play],[data-copy],[data-share],[data-jump],[data-reset],[data-set],[data-open],.tab,.bn,#ftoggle,#scrim,#d-close,#d-share');
   if (!el) return;
   const ds = el.dataset;
   if (el.id === 'd-share') { if (S.detail) shareRelease(S.detail); return; }
@@ -3304,7 +3401,8 @@ document.addEventListener('click', e => {
     return;
   }
   if (ds.key) { openDetail(ds.key); return; }
-  if (ds.week !== undefined) { S.week = Math.min(0, Math.max(-MAX_BACK, Number(ds.week))); render(); return; }
+  if (ds.week !== undefined) { S.week = Math.min(0, Math.max(-MAX_BACK, Number(ds.week))); S.day = null; render(); return; }
+  if (ds.wday !== undefined) { S.day = S.day === ds.wday ? null : ds.wday; render(); return; }
   if (ds.cat) { S.cat = ds.cat; savePrefs(); render(); return; }
   if (ds.type) { S.type = ds.type; savePrefs(); render(); return; }
   if (ds.cc) { S.cc = ds.cc; savePrefs(); render(); return; }
