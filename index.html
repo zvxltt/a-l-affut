@@ -3209,9 +3209,13 @@ function viewProfile() {
     ${statsHtml([[notes.length, plural(notes.length, 'note', 'notes')], [songs.length, plural(songs.length, 'son noté', 'sons notés')], [texts.length, plural(texts.length, 'critique', 'critiques')], [notes.length ? fmtAvg(avg) : '–', 'de moyenne'], [thisWeek, 'cette semaine']])}`;
   let html = section(own ? 'Ma vitrine' : 'Vitrine', '', showcaseHtml(u, own));
   if (notes.length) {
-    html += section(own ? 'Mes notes' : 'Ses notes', notes.length, `${distHtml(notes)}<div class="grid sm">${notes.map(x => `<button class="card" type="button" data-rkey="${esc(x.k)}" data-from="rv">
+    // deux onglets : les 5 mieux notées, ou toutes les notes
+    const all = NOTES_TAB === 'all';
+    const shownNotes = all ? notes : [...notes].sort((a, b) => b.r - a.r || tsMs(b.up) - tsMs(a.up)).slice(0, 5);
+    const tabs = `<div class="seg toptabs" role="group" aria-label="Notes"><button type="button" data-act="notes-tab" data-t="top" aria-pressed="${!all}">Les mieux notés</button><button type="button" data-act="notes-tab" data-t="all" aria-pressed="${all}">Toutes les notes <span class="n">${notes.length}</span></button></div>`;
+    html += `<section class="sec" id="sec-notes"><div class="sec-h"><h2>${own ? 'Mes notes' : 'Ses notes'}</h2>${tabs}</div>${all ? distHtml(notes) : ''}<div class="grid sm">${shownNotes.map(x => `<button class="card" type="button" data-rkey="${esc(x.k)}" data-from="rv">
       <span class="cover">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : `<span class="ph" aria-hidden="true">${esc(initial(x.t))}</span>`}</span>
-      <span class="card-t"><span class="card-title">${esc(x.t)}</span><span class="card-artist">${esc(x.a)}</span>${noteStars(x.r, 'sm')}</span></button>`).join('')}</div>`);
+      <span class="card-t"><span class="card-title">${esc(x.t)}</span><span class="card-artist">${esc(x.a)}</span>${noteStars(x.r, 'sm')}</span></button>`).join('')}</div></section>`;
   }
   if (songs.length) {
     const all = SONGS_ALL === u.h, shown = all ? songs : songs.slice(0, 10);
@@ -3223,7 +3227,8 @@ function viewProfile() {
   $content.innerHTML = html;
 }
 let PROFILE_VIEW = [], PROFILE_SC = [];
-let SONGS_ALL = '';   // pseudo dont on affiche tous les sons notés
+let SONGS_ALL = '';
+let NOTES_TAB = 'top';   // profil : « Les mieux notés » (5) ou « Toutes les notes »   // pseudo dont on affiche tous les sons notés
 // les sons notés d’un profil : titres notés un par un, et singles notés sans détail des titres
 function songsOf(reviews) {
   const out = [];
@@ -3341,6 +3346,7 @@ document.addEventListener('click', e => {
   else if (act === 'rv-del') deleteReview(k);
   else if (act === 'rv-more') { const p = el.previousElementSibling; if (p) p.classList.remove('clamp'); el.remove(); }
   else if (act === 'songs-all') { SONGS_ALL = el.dataset.h; render(); }
+  else if (act === 'notes-tab') { NOTES_TAB = el.dataset.t === 'all' ? 'all' : 'top'; render(); }
   else if (act === 'mail-up') openSignIn('', 'up');
   else if (act === 'mail-in') openSignIn('', 'in');
   else if (act === 'mail-reset') resetPassword(($('#f-mail [name=email]') || {}).value);
