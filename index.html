@@ -838,6 +838,16 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 }
 @media (prefers-reduced-motion: reduce) { .logo-sweep { animation: none; } }
 
+/* ---------- bouton Installer (téléphone) ---------- */
+.inst { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px 0 10px; border-radius: 999px; background: var(--ink); color: var(--bg); font-weight: 600; font-size: 13.5px; }
+.inst svg { width: 16px; height: 16px; }
+.inst[hidden] { display: none; }
+.is-steps { list-style: none; margin: 18px 0 22px; padding: 0; display: grid; gap: 14px; }
+.is-steps li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px; align-items: start; font-size: 15px; line-height: 1.45; }
+.is-n { width: 28px; height: 28px; border-radius: 50%; background: var(--soft); display: grid; place-items: center; font-weight: 600; font-size: 13px; }
+.is-i { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 7px; background: var(--soft); vertical-align: -7px; margin: 0 2px; }
+.is-i svg { width: 16px; height: 16px; }
+
 .set-st .live { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 7px; vertical-align: 1px; opacity: .7; }
 .month { margin: 38px 0 0; font: 600 12px var(--font-mono); color: var(--muted); }
 .month + .days { margin-top: 10px; }
@@ -856,6 +866,7 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
       <a class="tab tab-sub" href="#abonnements" data-view="abonnements">Abonnements <span class="nb" data-badge="abonnements"></span></a>
     </nav>
     <div class="tools">
+      <button class="inst" id="inst" type="button" hidden aria-label="Installer l’application sur l’écran d’accueil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2"/></svg>Installer</button>
       <button class="acct" id="acct" type="button" hidden></button>
       <a class="icon-btn" id="gear" href="#parametres" aria-label="Paramètres" title="Paramètres"></a>
     </div>
@@ -949,6 +960,9 @@ const TYPE_LABEL = { album: 'Album', ep: 'EP', single: 'Single', compile: 'Compi
 const SRC_LABEL = { dz: 'Deezer', it: 'Apple Music', mb: 'MusicBrainz', wk: 'Wikipédia', pr: 'Presse', an: 'Presse' };
 
 const I = {
+  share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m8 7 4-4 4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>',
+  plusSq: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/></svg>',
+  dots: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>',
   left: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>',
   right: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>',
   gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
@@ -3530,6 +3544,38 @@ setInterval(() => { lastCheck = Date.now(); loadData(false); }, POLL_MS);
 setInterval(paintStatus, 30e3);
 setInterval(() => { if (!S.detail) render(); }, 15 * 60e3); // changement de jour, libellés relatifs
 setInterval(() => { if (loadError) loadData(false); }, 30e3);
+
+/* ---------- installer sur l’écran d’accueil (téléphone) ---------- */
+let installEvt = null;
+const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const isPhone = () => matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 820;
+const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function paintInstall() { const b = document.getElementById('inst'); if (b) b.hidden = isStandalone() || !isPhone(); }
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; paintInstall(); });
+addEventListener('appinstalled', () => { installEvt = null; paintInstall(); toast('À l’affût est sur ton écran d’accueil'); });
+function installSteps() {
+  const step = (n, html) => `<li><span class="is-n">${n}</span><span>${html}</span></li>`;
+  const steps = isIOS()
+    ? [step(1, `Touche le bouton <b>Partager</b> <span class="is-i">${I.share}</span> en bas de Safari (en haut sur iPad).`),
+       step(2, `Fais défiler et choisis <b>Sur l’écran d’accueil</b> <span class="is-i">${I.plusSq}</span>.`),
+       step(3, 'Touche <b>Ajouter</b> en haut à droite.')]
+    : [step(1, `Ouvre le menu du navigateur <span class="is-i">${I.dots}</span> en haut à droite.`),
+       step(2, 'Choisis <b>Installer l’application</b> ou <b>Ajouter à l’écran d’accueil</b>.'),
+       step(3, 'Confirme avec <b>Installer</b>.')];
+  openModal('install', `<h2 class="m-title" id="m-title">Mettre À l’affût sur ton écran d’accueil</h2>
+    <p class="m-sub">L’app s’ouvre alors en plein écran, comme une vraie application, avec son icône.</p>
+    <ol class="is-steps">${steps.join('')}</ol>
+    ${isIOS() && /CriOS|FxiOS|EdgiOS/.test(navigator.userAgent) ? '<p class="m-sub">Sur un iPhone récent, ça marche aussi depuis Chrome ; sinon, ouvre la page dans Safari.</p>' : ''}
+    <button class="btn primary" type="button" data-act="close-modal">J’ai compris</button>`);
+}
+document.getElementById('inst').addEventListener('click', async () => {
+  if (installEvt) {
+    installEvt.prompt();
+    try { await installEvt.userChoice; } catch (e) { /* refusé */ }
+    installEvt = null; paintInstall();
+  } else installSteps();
+});
+paintInstall();
 })();
 </script>
 </body>
