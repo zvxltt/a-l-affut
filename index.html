@@ -820,9 +820,6 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 .feature-act { display: flex; flex-wrap: wrap; gap: 8px; }
 .feature-act .btn svg { width: 15px; height: 15px; margin-right: 2px; }
 
-#sec-singles .rows { counter-reset: trk; }
-#sec-singles .row { grid-template-columns: 26px 56px minmax(0, 1fr) auto; counter-increment: trk; }
-#sec-singles .row::before { content: counter(trk); font-size: 13px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
 
 .cd { font-size: 12px; font-weight: 500; padding: 3px 9px; border-radius: 999px; background: var(--soft); color: var(--ink-2); white-space: nowrap; }
 .cd.soon { background: color-mix(in srgb, var(--signal) 14%, transparent); color: var(--signal); }
@@ -835,7 +832,6 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
   .dd-w { display: none; }
   .feature { grid-template-columns: minmax(0, 1fr); gap: 20px; }
   .feature-cov { max-width: 420px; }
-  #sec-singles .row { grid-template-columns: 20px 52px minmax(0, 1fr) auto; }
 }
 @media (prefers-reduced-motion: reduce) { .logo-sweep { animation: none; } }
 
@@ -856,7 +852,6 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 .wk-side .sec:first-child { margin-top: 0; }
 .wk-side .rows { grid-template-columns: minmax(0, 1fr); }
 .wk-side .sec-h h2 { font-size: 18px; }
-#sec-singles .row { grid-template-columns: 22px 48px minmax(0, 1fr) auto; }
 .wk-side .row .cover { width: 48px; }
 .wk-side .row-side .rs:not(.md) { display: none; }
 .jump { position: sticky; top: 61px; z-index: 5; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 0; margin: 4px 0 6px; background: color-mix(in srgb, var(--bg) 92%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
@@ -1053,6 +1048,13 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 .ia-tx { font-family: var(--font-note); font-style: italic; font-size: 16.5px; color: rgba(241, 240, 236, .88); }
 .ia-post b { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; } .ia-post b small { font-size: 12px; color: rgba(241, 240, 236, .5); font-weight: 500; }
 @media (prefers-reduced-motion: reduce) { .intro *, .intro { animation: none !important; } .ia-stars span { color: #F1F0EC; } .ia-week span { background: #F1F0EC; color: #121211; } }
+
+.is-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 18px 0 6px; }
+.is-os { display: grid; gap: 4px; text-align: left; padding: 16px; border-radius: 16px; background: var(--soft); border: 1px solid var(--line); transition: border-color .15s; }
+.is-os:hover, .is-os:active { border-color: var(--ink); }
+.is-os b { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+.is-os span { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+.is-end { display: flex; gap: 8px; justify-content: space-between; flex-wrap: wrap; }
 
 .set-st .live { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 7px; vertical-align: 1px; opacity: .7; }
 .month { margin: 38px 0 0; font: 600 12px var(--font-mono); color: var(--muted); }
@@ -3869,27 +3871,41 @@ const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.p
 function paintInstall() { const b = document.getElementById('inst'); if (b) b.hidden = isStandalone() || !isPhone(); }
 addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; paintInstall(); });
 addEventListener('appinstalled', () => { installEvt = null; paintInstall(); toast('À l’affût est sur ton écran d’accueil'); });
-function installSteps() {
-  const step = (n, html) => `<li><span class="is-n">${n}</span><span>${html}</span></li>`;
-  const steps = isIOS()
-    ? [step(1, `Touche le bouton <b>Partager</b> <span class="is-i">${I.share}</span> en bas de Safari (en haut sur iPad).`),
-       step(2, `Fais défiler et choisis <b>Sur l’écran d’accueil</b> <span class="is-i">${I.plusSq}</span>.`),
-       step(3, 'Touche <b>Ajouter</b> en haut à droite.')]
-    : [step(1, `Ouvre le menu du navigateur <span class="is-i">${I.dots}</span> en haut à droite.`),
-       step(2, 'Choisis <b>Installer l’application</b> ou <b>Ajouter à l’écran d’accueil</b>.'),
-       step(3, 'Confirme avec <b>Installer</b>.')];
+// d’abord le choix du téléphone (Apple ou Android), puis les étapes qui lui correspondent
+function installChoice() {
   openModal('install', `<h2 class="m-title" id="m-title">Mettre À l’affût sur ton écran d’accueil</h2>
-    <p class="m-sub">L’app s’ouvre alors en plein écran, comme une vraie application, avec son icône.</p>
-    <ol class="is-steps">${steps.join('')}</ol>
-    ${isIOS() && /CriOS|FxiOS|EdgiOS/.test(navigator.userAgent) ? '<p class="m-sub">Sur un iPhone récent, ça marche aussi depuis Chrome ; sinon, ouvre la page dans Safari.</p>' : ''}
-    <button class="btn primary" type="button" data-act="close-modal">J’ai compris</button>`);
+    <p class="m-sub">L’app s’ouvre alors en plein écran, comme une vraie application, avec son icône. Quel téléphone as-tu ?</p>
+    <div class="is-pick">
+      <button class="is-os" type="button" data-install-os="ios"><b>iPhone</b><span>Apple (iPhone, iPad)</span></button>
+      <button class="is-os" type="button" data-install-os="android"><b>Android</b><span>Samsung, Xiaomi, Google Pixel, Oppo…</span></button>
+    </div>`);
 }
-document.getElementById('inst').addEventListener('click', async () => {
-  if (installEvt) {
-    installEvt.prompt();
-    try { await installEvt.userChoice; } catch (e) { /* refusé */ }
-    installEvt = null; paintInstall();
-  } else installSteps();
+function installSteps(os) {
+  const step = (n, html) => `<li><span class="is-n">${n}</span><span>${html}</span></li>`;
+  const steps = os === 'ios'
+    ? [step(1, 'Ouvre cette page dans <b>Safari</b>.'),
+       step(2, `Touche le bouton <b>Partager</b> <span class="is-i">${I.share}</span> en bas de l’écran (en haut sur iPad).`),
+       step(3, `Fais défiler et choisis <b>Sur l’écran d’accueil</b> <span class="is-i">${I.plusSq}</span>.`),
+       step(4, 'Touche <b>Ajouter</b> en haut à droite.')]
+    : [step(1, `Dans <b>Chrome</b>, ouvre le menu <span class="is-i">${I.dots}</span> en haut à droite. Dans <b>Samsung Internet</b>, c’est le menu <b>≡</b> en bas à droite.`),
+       step(2, 'Choisis <b>Installer l’application</b> ou <b>Ajouter à l’écran d’accueil</b> (dans Samsung Internet : <b>Ajouter à</b>, puis <b>Écran d’accueil</b>).'),
+       step(3, 'Confirme avec <b>Installer</b> ou <b>Ajouter</b>.')];
+  openModal('install', `<h2 class="m-title" id="m-title">${os === 'ios' ? 'Sur iPhone' : 'Sur Android'}</h2>
+    <ol class="is-steps">${steps.join('')}</ol>
+    <div class="is-end"><button class="btn" type="button" data-install-os="back">Autre téléphone</button><button class="btn primary" type="button" data-act="close-modal">J’ai compris</button></div>`);
+}
+document.getElementById('inst').addEventListener('click', installChoice);
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-install-os]'); if (!b) return;
+  const os = b.dataset.installOs;
+  if (os === 'back') return installChoice();
+  // Android : si le navigateur propose l’installation directe, on l’ouvre ; sinon, les étapes
+  if (os === 'android' && installEvt) {
+    closeModal(); installEvt.prompt();
+    try { await installEvt.userChoice; } catch (err) { /* refusé */ }
+    installEvt = null; paintInstall(); return;
+  }
+  installSteps(os);
 });
 paintInstall();
 })();
