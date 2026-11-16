@@ -905,6 +905,96 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 .avis-tabs { margin-top: 16px; }
 .avis-tabs button { padding: 8px 16px; font-size: 14.5px; }
 
+/* ---------- refonte téléphone ---------- */
+@media (max-width: 720px) {
+  main { padding-left: 16px; padding-right: 16px; }
+  .head { gap: 8px 12px; padding-top: 4px; }
+  .kicker { font-size: 32px; letter-spacing: -0.03em; }
+  .h1 { font-size: 15px; margin-top: 2px; }
+  .stats { gap: 6px 8px; }
+  .stats li { padding: 6px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); font-size: 13px; gap: 6px; }
+  .stats b { font-size: 14px; }
+  .ftool { margin-top: 14px; padding: 0; border: 0; }
+
+  /* à la une : carte immersive, le texte sur la pochette */
+  .feature { position: relative; display: block; padding: 0; margin: 16px 0 4px; border: 0; border-radius: 24px; overflow: hidden; background: #131312; box-shadow: 0 24px 40px -28px rgba(0, 0, 0, .7); }
+  .feature-tag { position: absolute; z-index: 2; top: 14px; left: 14px; margin: 0; padding: 6px 12px 6px 10px; border-radius: 999px; background: rgba(15, 15, 14, .6); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: #fff; font-size: 12.5px; font-weight: 600; }
+  .feature-tag span { width: 7px; height: 7px; }
+  .feature-cov { display: block; max-width: none; width: 100%; border-radius: 0; box-shadow: none; }
+  .feature-cov:hover { transform: none; }
+  .feature-t { position: relative; margin-top: -120px; padding: 110px 18px 18px; background: linear-gradient(to bottom, rgba(19, 19, 18, 0), rgba(19, 19, 18, .86) 96px, #131312 150px); color: #fff; }
+  .feature-h { color: #fff; font-size: 30px; margin: 0 0 4px; }
+  .feature-by { color: rgba(255, 255, 255, .88); font-size: 16px; }
+  .feature-by span, .feature-facts { color: rgba(255, 255, 255, .62); }
+  .feature-facts { margin: 10px 0 16px; font-size: 13px; gap: 4px 16px; }
+  .feature-facts b { color: #fff; }
+  .feature-act { display: grid; grid-template-columns: 1fr; gap: 8px; }
+  .feature-act .btn { justify-content: center; height: 46px; border-radius: 14px; background: rgba(255, 255, 255, .14); border-color: transparent; color: #fff; font-size: 15px; }
+  .feature-act .btn.primary { background: #fff; color: #131312; }
+
+  .jump { display: none; }   /* pas de barre Albums / EP / Singles sur téléphone */
+
+  .sec { margin-top: 30px; }
+  .sec-h { margin-bottom: 12px; }
+  .sec-h h2 { font-size: 22px; }
+
+  /* albums : une seule liste en panneau, lignes fines */
+  .hcards { gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
+  .hcard { grid-template-columns: 64px minmax(0, 1fr) 14px; gap: 12px; padding: 10px 12px; border: 0; border-radius: 0; background: none; position: relative; }
+  .hcard + .hcard::before { content: ""; position: absolute; top: 0; left: 88px; right: 0; border-top: 1px solid var(--line); }
+  .hcard::after { content: ""; width: 8px; height: 8px; border-right: 2px solid var(--muted); border-top: 2px solid var(--muted); transform: rotate(45deg); opacity: .6; }
+  .hcard:hover { transform: none; box-shadow: none; }
+  .hcard:active { background: var(--soft); }
+  .hcard .cover { width: 64px; border-radius: 8px; }
+  .hc-title { font-size: 15.5px; }
+  .hc-artist { font-size: 13.5px; }
+  .hc-meta { margin-top: 4px; font-size: 12px; gap: 3px 8px; }
+  .hc-meta .chip-s { padding: 1px 7px; }
+  #sec-albums .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 12px; }
+
+  /* EP : rangée bord à bord */
+  .rail { margin: 0 -16px; padding: 0 16px 4px; grid-auto-columns: 40%; gap: 12px; scroll-padding-left: 16px; }
+
+  /* singles et sorties à venir : panneaux */
+  .wk-side .rows, .day-list { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 2px 12px; overflow: hidden; }
+  .wk-side .row { padding-top: 9px; padding-bottom: 9px; }
+  .wk-side .row:last-child { border-bottom: 0; }
+  .more-row .btn { width: 100%; justify-content: center; height: 46px; border-radius: 14px; }
+
+  /* frise des dates : cartes */
+  .dstrip { margin: 4px -16px 14px; padding: 0 16px 14px; gap: 8px; grid-auto-columns: 84px; }
+  .dday { background: var(--surface); border-color: var(--line); border-radius: 16px; padding: 10px 10px 12px; }
+  .dday[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+  .dday[aria-pressed="true"] .dd-n, .dday[aria-pressed="true"] .dd-k, .dday[aria-pressed="true"] .dd-d small { color: color-mix(in srgb, var(--bg) 70%, transparent); }
+  .dday[aria-pressed="true"] .dd-bar { background: color-mix(in srgb, var(--bg) 25%, transparent); }
+  .dday[aria-pressed="true"] .dd-bar b { background: var(--bg); }
+
+  /* avis : posts en cartes */
+  .post { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 14px; margin-bottom: 10px; }
+  .avis-tabs { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .avis-tabs button { justify-content: center; text-align: center; }
+}
+@media (max-width: 860px) {
+  /* barre du bas flottante */
+  body { padding-bottom: calc(86px + env(safe-area-inset-bottom)); }
+  .bnav { left: 12px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom)); padding: 6px; border: 1px solid var(--line); border-radius: 26px; background: color-mix(in srgb, var(--surface) 86%, transparent); -webkit-backdrop-filter: saturate(1.6) blur(20px); backdrop-filter: saturate(1.6) blur(20px); box-shadow: 0 14px 34px -14px rgba(0, 0, 0, .4); }
+  .bn { padding: 5px 0 4px; font-size: 10.5px; font-weight: 600; }
+  .bn[aria-current="page"] > svg, .bn[aria-current="page"] .bn-i { background: var(--ink); color: var(--bg); }
+  .toast { bottom: calc(96px + env(safe-area-inset-bottom)); }
+  .foot { padding-bottom: 20px; }
+}
+.wstrip { grid-auto-columns: minmax(150px, 1fr); }
+@media (max-width: 720px) { .wstrip { grid-auto-columns: 138px; } .wstrip .dd-w { display: inline; } }
+
+/* ---------- fluidité : le navigateur ne dessine les longues listes qu'à l'approche de l'écran ---------- */
+.day, .post { content-visibility: auto; contain-intrinsic-size: auto 420px; }
+.card, .hcard, .row { contain: layout style; }
+.logo-sweep { will-change: transform; }
+@media (max-width: 860px) {
+  /* flou d'arrière-plan plus léger sur téléphone : le défilement reste fluide */
+  .top, .bnav { -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+}
+
 .set-st .live { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 7px; vertical-align: 1px; opacity: .7; }
 .month { margin: 38px 0 0; font: 600 12px var(--font-mono); color: var(--muted); }
 .month + .days { margin-top: 10px; }
@@ -1352,7 +1442,7 @@ function rowHtml(r, upcoming) {
     <span class="row-t">
       <span class="row-title">${isNew(r) ? '<span class="dot" title="Nouveau depuis ta dernière visite"></span>' : ''}${titleHtml(r)}</span>
       <span class="row-artist">${esc(r.artist)}${r.feats.length ? ` <span class="feat">· feat. ${esc(r.feats.join(', '))}</span>` : ''}</span>
-      ${upcoming ? `<span class="row-cat">${esc(catName(r.cat))}</span>` : `<span class="row-cat row-m">${esc(catName(r.cat))}${len ? ` · ${esc(len)}` : ''} · ${esc(fmtShort(r.date))}</span>`}
+      ${upcoming ? `<span class="row-cat">${esc(catName(r.cat))} · ${esc(fmtShort(r.date))}</span>` : `<span class="row-cat row-m">${esc(catName(r.cat))}${len ? ` · ${esc(len)}` : ''} · ${esc(fmtShort(r.date))}</span>`}
     </span>
     <span class="row-side">${side}</span>
   </button>`;
@@ -1385,17 +1475,18 @@ function render() {
   paintStatus();
 }
 
-// frise des prochaines dates de sortie : combien de sorties chaque jour ; une date touchée ne montre qu’elle
+// frise des prochaines semaines de sortie (vendredi → jeudi) : combien de sorties chacune ; une semaine touchée ne montre qu’elle
 function dateStripHtml(list) {
-  const days = [...new Set(list.map(r => r.date))].sort().slice(0, 14);
-  if (S.day && !days.includes(S.day)) days.push(S.day);
-  const n = days.map(d => list.filter(r => r.date === d).length);
+  const weeks = [...new Set(list.map(r => weekStartOf(r.date)))].sort().slice(0, 12);
+  if (S.day && !weeks.includes(S.day)) weeks.push(S.day);
+  const n = weeks.map(w => list.filter(r => weekStartOf(r.date) === w).length);
   const max = Math.max(1, ...n);
-  return `<div class="dstrip" role="group" aria-label="Prochaines dates de sortie">${days.map((d, i) => {
-    const dt = parseYmd(d), on = S.day === d;
-    return `<button class="dday" type="button" data-wday="${d}" aria-pressed="${on}" aria-label="${esc(`${cap(DOW[dt.getDay()])} ${dt.getDate()} ${MON[dt.getMonth()]} : ${n[i]} ${plural(n[i], 'sortie', 'sorties')}`)}">
-      <span class="dd-n">${esc(cap(DOW_S[dt.getDay()].replace('.', '')))}</span>
-      <span class="dd-d">${dt.getDate()}<small> ${esc(MON_S[dt.getMonth()])}</small></span>
+  return `<div class="dstrip wstrip" role="group" aria-label="Prochaines semaines de sortie">${weeks.map((w, i) => {
+    const a = parseYmd(w), b = parseYmd(addDays(w, 6)), on = S.day === w;
+    const range = a.getMonth() === b.getMonth() ? `${a.getDate()} – ${b.getDate()}` : `${a.getDate()} ${MON_S[a.getMonth()]} – ${b.getDate()}`;
+    return `<button class="dday" type="button" data-wday="${w}" aria-pressed="${on}" aria-label="${esc(`Semaine du ${fmtRange(w, addDays(w, 6))} : ${n[i]} ${plural(n[i], 'sortie', 'sorties')}`)}">
+      <span class="dd-n">Semaine du</span>
+      <span class="dd-d">${range}<small> ${esc(MON_S[b.getMonth()])}</small></span>
       <span class="dd-bar"><b style="width:${Math.round((100 * n[i]) / max)}%"></b></span>
       <span class="dd-k">${n[i]}<span class="dd-w"> ${plural(n[i], 'sortie', 'sorties')}</span></span>
     </button>`;
@@ -1409,12 +1500,12 @@ function featureHtml(r) {
   const play = r.dz ? `https://www.deezer.com/fr/album/${r.dz}` : r.su || `https://open.spotify.com/search/${q}`;
   return `<article class="feature">
     <p class="feature-tag"><span></span>${S.week === 0 ? 'La sortie la plus attendue' : 'La sortie la plus écoutée'} · ${esc(fmtShort(r.date))}</p>
-    <button class="feature-cov cover" type="button" data-key="${esc(r.key)}" aria-label="${esc(`Ouvrir ${r.title}, ${r.artist}`)}">${coverHtml(r, 1000)}</button>
+    <button class="feature-cov cover" type="button" data-key="${esc(r.key)}" aria-label="${esc(`Ouvrir ${r.title}, ${r.artist}`)}">${coverHtml(r, innerWidth * (devicePixelRatio || 1) < 700 ? 500 : 1000).replace('loading="lazy"', 'fetchpriority="high"')}</button>
     <div class="feature-t">
       <h2 class="feature-h">${titleHtml(r)}</h2>
       <p class="feature-by">${esc(r.artist)}${r.feats.length ? ` <span>feat. ${esc(r.feats.join(', '))}</span>` : ''}</p>
       <p class="feature-facts">${facts.map(f => `<span>${f}</span>`).join('')}</p>
-      <div class="feature-act"><a class="btn primary" href="${esc(play)}" target="_blank" rel="noopener">${I.play || ''}Écouter</a><button class="btn" type="button" data-key="${esc(r.key)}">${FB_CONFIG ? 'Voir et noter' : 'Voir la fiche'}</button></div>
+      <div class="feature-act"><button class="btn primary" type="button" data-key="${esc(r.key)}">Voir la fiche</button></div>
     </div>
   </article>`;
 }
@@ -1482,8 +1573,9 @@ function viewUpcoming() {
   const base = DATA.items.filter(r => r.date > t);
   paintFilters(base);
   const all = applyFilters(base).sort((a, b) => a.date.localeCompare(b.date) || b.pop - a.pop);
-  if (S.day && !all.some(r => r.date === S.day)) S.day = null;
-  const list = S.day ? all.filter(r => r.date === S.day) : all;
+  // classé par semaine de sortie (du vendredi au jeudi) ; S.day garde la semaine choisie dans la frise
+  if (S.day && !all.some(r => weekStartOf(r.date) === S.day)) S.day = null;
+  const list = S.day ? all.filter(r => weekStartOf(r.date) === S.day) : all;
   const c = countTypes(list);
   const next7 = list.filter(r => r.date <= addDays(t, 7)).length;
   $head.innerHTML = `
@@ -1495,7 +1587,11 @@ function viewUpcoming() {
     $content.innerHTML = more ? `<div class="empty"><strong>Rien d’annoncé pour « ${esc(S.q.trim())} ».</strong>Voici ce qui correspond ailleurs.</div>${more}` : emptyHtml(base.length ? 'filters' : 'upcoming');
     return;
   }
-  paintDays(groupByDate(list), r => rowHtml(r, true), d => relLabel(d));
+  const thisW = weekStartOf(t);
+  const weekRel = ws => { const n = Math.round((parseYmd(ws) - parseYmd(thisW)) / 6048e5); return n <= 0 ? 'cette semaine' : n === 1 ? 'la semaine prochaine' : `dans ${n} semaines`; };
+  const groups = [];
+  for (const r of list) { const ws = weekStartOf(r.date); let g = groups[groups.length - 1]; if (!g || g.date !== ws) groups.push(g = { date: ws, items: [] }); g.items.push(r); }
+  paintDays(groups, r => rowHtml(r, true), weekRel, ws => `Semaine du ${fmtRange(ws, addDays(ws, 6))}`);
   $content.insertAdjacentHTML('afterbegin', dateStripHtml(all));
   if (more) $content.insertAdjacentHTML('beforeend', more);
 }
@@ -1512,7 +1608,7 @@ const groupByDate = list => {
 };
 let daysIO = null;
 const DAYS_KEEP = {};   // lignes déjà affichées par vue : une mise à jour ou un retour sur l’onglet garde la position
-function paintDays(groups, rowFn, relFn) {
+function paintDays(groups, rowFn, relFn, titleFn) {
   if (daysIO) { daysIO.disconnect(); daysIO = null; }
   $content.innerHTML = '<div class="days-end" aria-hidden="true"></div>';
   const end = $('.days-end', $content);
@@ -1530,7 +1626,7 @@ function paintDays(groups, rowFn, relFn) {
         box = end.previousElementSibling;
       }
       box.insertAdjacentHTML('beforeend', `<section class="day">
-        <div class="day-h"><div class="day-d">${esc(cap(fmtShort(grp.date)))}</div><div class="day-r">${esc(relFn(grp.date))}</div></div>
+        <div class="day-h"><div class="day-d">${esc(titleFn ? titleFn(grp.date) : cap(fmtShort(grp.date)))}</div><div class="day-r">${esc(relFn(grp.date))}</div></div>
         <div class="day-list">${grp.items.map(rowFn).join('')}</div>
       </section>`);
       n += grp.items.length;
@@ -3119,8 +3215,7 @@ function viewFeed() {
     <p class="h1">${pub ? 'Les notes et les critiques de tous les membres, des plus récentes aux plus anciennes.' : 'Les notes et les critiques des membres que tu suis.'}</p>
     <div class="seg avis-tabs" role="tablist" aria-label="Avis">
       <button type="button" role="tab" data-act="avis-tab" data-v="public" aria-selected="${pub}" aria-pressed="${pub}">Public</button>
-      <button type="button" role="tab" data-act="avis-tab" data-v="abonnements" aria-selected="${!pub}" aria-pressed="${!pub}">Abonnements${ids.length ? ` <span class="n">${ids.length}</span>` : ''}</button></div>
-    ${signed && !pub ? folStatsHtml(ME.profile.h, fol ? fol.length : null, ids.length, 'feed-stats') : ''}</div>`;
+      <button type="button" role="tab" data-act="avis-tab" data-v="abonnements" aria-selected="${!pub}" aria-pressed="${!pub}">Abonnements</button></div></div>`;
   if (!FB_CONFIG) { $content.innerHTML = '<div class="empty"><strong>Les avis arrivent bientôt.</strong></div>'; return; }
   if (!ME.ready && !pub) { $content.innerHTML = '<div class="empty"><strong>Connexion…</strong></div>'; return; }
   let main;
