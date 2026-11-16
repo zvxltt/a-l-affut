@@ -789,7 +789,9 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 
 
 /* ---------- refonte : bande des jours, sortie à la une, liste de titres, comptes à rebours ---------- */
-.dstrip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin: 4px 0 26px; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+.dstrip { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(96px, 1fr); gap: 6px; margin: 4px 0 18px; padding-bottom: 18px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+.dstrip::-webkit-scrollbar { display: none; }
+.dd-n em { font-style: normal; color: var(--muted); font-weight: 400; }
 .dday { display: grid; gap: 6px; text-align: left; padding: 10px 12px 12px; border-radius: 12px; border: 1px solid transparent; transition: background-color .15s, border-color .15s; min-width: 0; }
 .dday:hover:not(:disabled) { background: var(--surface); }
 .dday[aria-pressed="true"] { background: var(--surface); border-color: var(--ink); }
@@ -825,7 +827,7 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 .rv-tx { font-family: var(--font-note); font-style: italic; font-size: 16.5px; line-height: 1.5; }
 
 @media (max-width: 720px) {
-  .dstrip { grid-template-columns: repeat(7, minmax(54px, 1fr)); gap: 4px; overflow-x: auto; scrollbar-width: none; }
+  .dstrip { grid-auto-columns: 64px; gap: 4px; }
   .dday { padding: 8px 8px 10px; }
   .dd-d { font-size: 17px; }
   .dd-w { display: none; }
@@ -1309,18 +1311,19 @@ function render() {
   paintStatus();
 }
 
-// bande des jours, du vendredi au jeudi : combien de sorties chaque jour ; un jour touché ne montre que lui
-function dayStripHtml(ws, list, t) {
-  const days = Array.from({ length: 7 }, (_, i) => addDays(ws, i));
+// frise des prochaines dates de sortie : combien de sorties chaque jour ; une date touchée ne montre qu’elle
+function dateStripHtml(list) {
+  const days = [...new Set(list.map(r => r.date))].sort().slice(0, 14);
+  if (S.day && !days.includes(S.day)) days.push(S.day);
   const n = days.map(d => list.filter(r => r.date === d).length);
   const max = Math.max(1, ...n);
-  return `<div class="dstrip" role="group" aria-label="Jours de la semaine">${days.map((d, i) => {
+  return `<div class="dstrip" role="group" aria-label="Prochaines dates de sortie">${days.map((d, i) => {
     const dt = parseYmd(d), on = S.day === d;
-    return `<button class="dday${d === t ? ' is-today' : ''}${d > t ? ' is-future' : ''}" type="button" data-wday="${d}" aria-pressed="${on}" ${n[i] || on ? '' : 'disabled'} aria-label="${esc(`${cap(DOW[dt.getDay()])} ${dt.getDate()} : ${n[i]} ${plural(n[i], 'sortie', 'sorties')}`)}">
-      <span class="dd-n">${esc(cap(DOW_S[dt.getDay()].replace('.', '')))}${d === t ? '<i title="Aujourd’hui"></i>' : ''}</span>
+    return `<button class="dday" type="button" data-wday="${d}" aria-pressed="${on}" aria-label="${esc(`${cap(DOW[dt.getDay()])} ${dt.getDate()} ${MON[dt.getMonth()]} : ${n[i]} ${plural(n[i], 'sortie', 'sorties')}`)}">
+      <span class="dd-n">${esc(cap(DOW_S[dt.getDay()].replace('.', '')))}<em>${esc(MON_S[dt.getMonth()])}</em></span>
       <span class="dd-d">${dt.getDate()}</span>
       <span class="dd-bar"><b style="width:${Math.round((100 * n[i]) / max)}%"></b></span>
-      <span class="dd-k">${n[i] || '–'}<span class="dd-w"> ${n[i] ? plural(n[i], 'sortie', 'sorties') : ''}</span></span>
+      <span class="dd-k">${n[i]}<span class="dd-w"> ${plural(n[i], 'sortie', 'sorties')}</span></span>
     </button>`;
   }).join('')}</div>`;
 }
@@ -1346,9 +1349,7 @@ function viewWeek() {
   const ws = addDays(weekStartOf(t), S.week * 7), we = addDays(ws, 6);
   const base = DATA.items.filter(r => r.date >= ws && r.date <= we);
   paintFilters(base);
-  const all = applyFilters(base).sort((a, b) => b.pop - a.pop || b.date.localeCompare(a.date));
-  if (S.day && (S.day < ws || S.day > we)) S.day = null;
-  const list = S.day ? all.filter(r => r.date === S.day) : all;
+  const list = applyFilters(base).sort((a, b) => b.pop - a.pop || b.date.localeCompare(a.date));
   const c = countTypes(list);
   const kicker = S.week === 0 ? 'Cette semaine' : S.week === -1 ? 'Semaine dernière' : `Il y a ${-S.week} semaines`;
   $head.innerHTML = `
@@ -1359,14 +1360,15 @@ function viewWeek() {
       <button class="btn icon" type="button" data-week="${S.week + 1}" aria-label="Semaine suivante" title="Semaine suivante" ${S.week >= 0 ? 'disabled' : ''}>${I.right}</button>
     </div>
     ${statsHtml([[list.length, plural(list.length, 'sortie', 'sorties')], [c.album, plural(c.album, 'album', 'albums'), 'sec-albums'], [c.ep, 'EP', 'sec-ep'], [c.single, plural(c.single, 'single', 'singles'), 'sec-singles']])}`;
-  const albums = list.filter(r => r.rt === 'album' || r.rt === 'compile');
-  const eps = list.filter(r => r.rt === 'ep');
-  const singles = list.filter(r => r.rt === 'single');
+  // ce qui n’est pas encore sorti cette semaine va tout en bas, dans « Arrive bientôt cette semaine »
+  const out = list.filter(r => r.date <= t), soon = list.filter(r => r.date > t).sort((a, b) => a.date.localeCompare(b.date) || b.pop - a.pop);
+  const albums = out.filter(r => r.rt === 'album' || r.rt === 'compile');
+  const eps = out.filter(r => r.rt === 'ep');
+  const singles = out.filter(r => r.rt === 'single');
   const wr = FB_CONFIG ? WEEKREV.get(ws) : null;
   const usedAt = wr ? wr.at : -1;
-  let html = dayStripHtml(ws, all, t);
-  html += S.week === 0 ? rateCtaHtml() : '';
-  if (FB_CONFIG) html += topRatedHtml(list);
+  let html = S.week === 0 ? rateCtaHtml() : '';
+  if (FB_CONFIG) html += topRatedHtml(out);
   // à la une : l’album le plus attendu de la semaine (hors recherche)
   const top = !S.q.trim() && albums.length ? albums[0] : null;
   if (top) { html += featureHtml(top); albums.shift(); }
@@ -1379,6 +1381,7 @@ function viewWeek() {
   if (albums.length) html += section('Albums', albums.length + (top ? 1 : 0), `<div class="grid">${cap('sec-albums', albums).map(cardHtml).join('')}</div>${moreBtn('sec-albums', albums, 'album', 'albums')}`, 'sec-albums');
   if (eps.length) html += section('EP', eps.length, `<div class="grid">${cap('sec-ep', eps).map(cardHtml).join('')}</div>${moreBtn('sec-ep', eps, 'EP', 'EP')}`, 'sec-ep');
   if (singles.length) html += section('Singles', singles.length, `<div class="rows">${cap('sec-singles', singles).map(r => rowHtml(r, false)).join('')}</div>${moreBtn('sec-singles', singles, 'single', 'singles')}`, 'sec-singles');
+  if (soon.length) html += section('Arrive bientôt cette semaine', soon.length, `<div class="rows">${soon.map(r => rowHtml(r, true)).join('')}</div>`, 'sec-soon');
   const more = elsewhereHtml(base);
   if (!list.length) html += more ? `<div class="empty"><strong>Rien cette semaine pour « ${esc(S.q.trim())} ».</strong>Voici ce qui correspond ailleurs.</div>` : emptyHtml(base.length ? 'filters' : 'week');
   html += more;
@@ -1394,7 +1397,9 @@ function viewUpcoming() {
   const t = today();
   const base = DATA.items.filter(r => r.date > t);
   paintFilters(base);
-  const list = applyFilters(base).sort((a, b) => a.date.localeCompare(b.date) || b.pop - a.pop);
+  const all = applyFilters(base).sort((a, b) => a.date.localeCompare(b.date) || b.pop - a.pop);
+  if (S.day && !all.some(r => r.date === S.day)) S.day = null;
+  const list = S.day ? all.filter(r => r.date === S.day) : all;
   const c = countTypes(list);
   const next7 = list.filter(r => r.date <= addDays(t, 7)).length;
   $head.innerHTML = `
@@ -1407,6 +1412,7 @@ function viewUpcoming() {
     return;
   }
   paintDays(groupByDate(list), r => rowHtml(r, true), d => relLabel(d));
+  $content.insertAdjacentHTML('afterbegin', dateStripHtml(all));
   if (more) $content.insertAdjacentHTML('beforeend', more);
 }
 
@@ -3478,6 +3484,7 @@ function route() {
   S.sub = sub;
   if (v === 'concerts') loadConcerts(false);
   const changed = v !== S.view || v === 'user';
+  if (S.view !== v) S.day = null;
   S.view = v;
   if (S.detail) closeDetail({ fromRoute: true });
   render();
