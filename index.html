@@ -1383,7 +1383,6 @@ function viewWeek() {
   const wr = FB_CONFIG ? WEEKREV.get(ws) : null;
   const usedAt = wr ? wr.at : -1;
   let html = S.week === 0 ? rateCtaHtml() : '';
-  if (FB_CONFIG) html += topRatedHtml(out);
   // à la une : l’album le plus attendu de la semaine (hors recherche)
   const top = !S.q.trim() && albums.length ? albums[0] : null;
   if (top) { html += featureHtml(top); albums.shift(); }
