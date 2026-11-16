@@ -849,6 +849,62 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 .is-i { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 7px; background: var(--soft); vertical-align: -7px; margin: 0 2px; }
 .is-i svg { width: 16px; height: 16px; }
 
+/* ---------- nouvelle disposition de la semaine ---------- */
+.wk { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 0 48px; align-items: start; }
+.wk-side { position: sticky; top: 84px; max-height: calc(100vh - 100px); overflow-y: auto; scrollbar-width: thin; padding: 22px 20px 8px; margin-top: 30px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; }
+.wk-side .sec { margin: 0 0 18px; padding: 0; }
+.wk-side .sec:first-child { margin-top: 0; }
+.wk-side .rows { grid-template-columns: minmax(0, 1fr); }
+.wk-side .sec-h h2 { font-size: 18px; }
+#sec-singles .row { grid-template-columns: 22px 48px minmax(0, 1fr) auto; }
+.wk-side .row .cover { width: 48px; }
+.wk-side .row-side .rs:not(.md) { display: none; }
+.jump { position: sticky; top: 61px; z-index: 5; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 0; margin: 4px 0 6px; background: color-mix(in srgb, var(--bg) 92%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+.jump-l { display: flex; gap: 6px; flex-wrap: wrap; }
+.jump-l a { text-decoration: none; padding: 6px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); font-size: 13.5px; font-weight: 500; color: var(--ink); transition: border-color .15s; }
+.jump-l a b { font-weight: 500; color: var(--muted); margin-left: 3px; }
+.jump-l a:hover { border-color: var(--ink); }
+.jump-r { display: flex; align-items: center; gap: 10px; }
+.sort { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.sort select { font: inherit; font-weight: 500; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; }
+.vt { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--soft); }
+.vt button { width: 34px; height: 28px; border-radius: 999px; display: grid; place-items: center; color: var(--muted); }
+.vt button svg { width: 17px; height: 17px; }
+.vt button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, .08); }
+.sec { scroll-margin-top: 130px; }
+.hcards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.hcard { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 16px; align-items: center; padding: 10px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); text-align: left; transition: border-color .15s, transform .15s, box-shadow .15s; min-width: 0; }
+.hcard:hover { border-color: color-mix(in srgb, var(--ink) 35%, var(--line)); transform: translateY(-1px); box-shadow: 0 10px 24px -18px rgba(0, 0, 0, .5); }
+.hcard .cover { width: 96px; border-radius: 8px; }
+.hc-t { display: grid; gap: 2px; min-width: 0; }
+.hc-title { font-weight: 600; font-size: 16px; line-height: 1.25; overflow-wrap: anywhere; }
+.hc-artist { font-size: 14px; color: var(--ink-2); }
+.hc-artist span { color: var(--muted); }
+.hc-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; margin-top: 6px; font-size: 12.5px; color: var(--muted); }
+.chip-s { padding: 2px 8px; border-radius: 999px; background: var(--soft); color: var(--ink-2); font-weight: 500; }
+.rail { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(150px, 180px); gap: 18px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 4px; }
+.rail::-webkit-scrollbar { display: none; }
+.rail .card { scroll-snap-align: start; }
+.rail-nav { margin-left: auto; display: flex; gap: 6px; }
+.rail-nav .btn.icon { width: 34px; height: 34px; }
+@media (max-width: 1080px) {
+  .wk { grid-template-columns: minmax(0, 1fr); }
+  .wk-side { position: static; max-height: none; overflow: visible; padding: 0; margin-top: 10px; background: none; border: 0; border-radius: 0; }
+  .wk-side .rows { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+}
+@media (max-width: 720px) {
+  .jump { top: 0; }
+  .sort span { display: none; }
+  .hcards { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .hcard { grid-template-columns: 84px minmax(0, 1fr); gap: 14px; }
+  .hcard .cover { width: 84px; }
+  .rail { grid-auto-columns: 42%; gap: 14px; }
+  .rail-nav { display: none; }
+  .wk-side .rows { grid-template-columns: minmax(0, 1fr); }
+}
+.avis-tabs { margin-top: 16px; }
+.avis-tabs button { padding: 8px 16px; font-size: 14.5px; }
+
 .set-st .live { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 7px; vertical-align: 1px; opacity: .7; }
 .month { margin: 38px 0 0; font: 600 12px var(--font-mono); color: var(--muted); }
 .month + .days { margin-top: 10px; }
@@ -864,7 +920,7 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
       <a class="tab" href="#semaine" data-view="semaine">Cette semaine</a>
       <a class="tab" href="#a-venir" data-view="a-venir">À venir <span class="n" id="up-n"></span></a>
       <a class="tab" href="#concerts" data-view="concerts">Concerts <span class="n" id="co-n"></span></a>
-      <a class="tab tab-sub" href="#abonnements" data-view="abonnements">Abonnements <span class="nb" data-badge="abonnements"></span></a>
+      <a class="tab tab-sub" href="#abonnements" data-view="abonnements">Avis <span class="nb" data-badge="abonnements"></span></a>
     </nav>
     <div class="tools">
       <button class="inst" id="inst" type="button" hidden aria-label="Installer l’application sur l’écran d’accueil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2"/></svg>Installer</button>
@@ -925,7 +981,7 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
   <a class="bn" href="#semaine" data-view="semaine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2.6"/></svg><span>Semaine</span></a>
   <a class="bn" href="#a-venir" data-view="a-venir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span>À venir</span></a>
   <a class="bn" href="#concerts" data-view="concerts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V6.8A1.8 1.8 0 0 1 5.8 5h12.4A1.8 1.8 0 0 1 20 6.8V9a3 3 0 0 0 0 6v2.2a1.8 1.8 0 0 1-1.8 1.8H5.8A1.8 1.8 0 0 1 4 17.2V15a3 3 0 0 0 0-6z"/><path d="M14.5 5.5v13" stroke-dasharray="1.6 2.2"/></svg><span>Concerts</span></a>
-  <a class="bn" href="#abonnements" data-view="abonnements"><span class="bn-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.6" r="3.5"/><path d="M2.8 19.6c.9-3.3 3.3-5.1 6.2-5.1s5.3 1.8 6.2 5.1"/><path d="M15.6 5.3a3.5 3.5 0 0 1 0 6.6"/><path d="M17.7 14.9c1.8.7 3 2.3 3.5 4.7"/></svg><span class="nb" data-badge="abonnements"></span></span><span>Abonnements</span></a>
+  <a class="bn" href="#abonnements" data-view="abonnements"><span class="bn-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.6" r="3.5"/><path d="M2.8 19.6c.9-3.3 3.3-5.1 6.2-5.1s5.3 1.8 6.2 5.1"/><path d="M15.6 5.3a3.5 3.5 0 0 1 0 6.6"/><path d="M17.7 14.9c1.8.7 3 2.3 3.5 4.7"/></svg><span class="nb" data-badge="abonnements"></span></span><span>Avis</span></a>
   <a class="bn" href="#profil" data-view="profil" id="bn-me"><span class="bn-i" id="bn-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-3.6 4.1-5.5 7.5-5.5s6.3 1.9 7.5 5.5"/></svg></span><span>Profil</span></a>
 </nav>
 <div class="scrim" id="scrim"></div>
@@ -961,6 +1017,8 @@ const TYPE_LABEL = { album: 'Album', ep: 'EP', single: 'Single', compile: 'Compi
 const SRC_LABEL = { dz: 'Deezer', it: 'Apple Music', mb: 'MusicBrainz', wk: 'Wikipédia', pr: 'Presse', an: 'Presse' };
 
 const I = {
+  listv: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="3.5" y="4.5" width="6" height="6" rx="1.2"/><rect x="3.5" y="13.5" width="6" height="6" rx="1.2"/><path d="M13 6.5h7.5M13 9h5M13 15.5h7.5M13 18h5"/></svg>',
+  gridv: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>',
   share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m8 7 4-4 4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>',
   plusSq: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/></svg>',
   dots: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>',
@@ -1064,7 +1122,7 @@ const SET = Object.assign({ zoom: false, text: 'normal', motion: 'auto', start: 
 // « Cette semaine » devient l’onglet d’ouverture par défaut (l’ancien défaut était « À venir »)
 if (!SET.sv && store.get('settings', null)) { if (SET.start === 'a-venir') SET.start = 'semaine'; SET.sv = 1; store.set('settings', SET); }
 const S = {
-  view: 'semaine', week: 0, day: null,
+  view: 'semaine', week: 0, day: null, sort: 'pop', layout: 'list',
   cat: CATS[prefs.cat] ? prefs.cat : 'all',
   type: TYPE_LABEL[prefs.type] ? prefs.type : 'all',
   cc: COUNTRY[prefs.cc] ? prefs.cc : 'all',
@@ -1387,16 +1445,27 @@ function viewWeek() {
   // à la une : l’album le plus attendu de la semaine (hors recherche)
   const top = !S.q.trim() && albums.length ? albums[0] : null;
   if (top) { html += featureHtml(top); albums.shift(); }
-  // beaucoup de sorties chaque semaine : les plus attendues d’abord, le reste en un clic (tout s’affiche pendant une recherche)
-  const CAP = { 'sec-albums': 24, 'sec-ep': 12, 'sec-singles': 40 };
-  const full = id => !!S.q.trim() || S.open.has(`${S.week}:${id}`);
-  const cap = (id, arr) => (full(id) ? arr : arr.slice(0, CAP[id]));
-  const moreBtn = (id, arr, one, many) => (full(id) || arr.length <= CAP[id] ? ''
-    : `<p class="more-row sec-more"><button class="btn" type="button" data-open="${id}">${arr.length - CAP[id] === 1 ? `Afficher l’autre ${one}` : `Afficher les ${arr.length - CAP[id]} autres ${many}`}</button></p>`);
-  if (albums.length) html += section('Albums', albums.length + (top ? 1 : 0), `<div class="grid">${cap('sec-albums', albums).map(cardHtml).join('')}</div>${moreBtn('sec-albums', albums, 'album', 'albums')}`, 'sec-albums');
-  if (eps.length) html += section('EP', eps.length, `<div class="grid">${cap('sec-ep', eps).map(cardHtml).join('')}</div>${moreBtn('sec-ep', eps, 'EP', 'EP')}`, 'sec-ep');
-  if (singles.length) html += section('Singles', singles.length, `<div class="rows">${cap('sec-singles', singles).map(r => rowHtml(r, false)).join('')}</div>${moreBtn('sec-singles', singles, 'single', 'singles')}`, 'sec-singles');
-  if (soon.length) html += section('Arrive bientôt cette semaine', soon.length, `<div class="rows">${soon.map(r => rowHtml(r, true)).join('')}</div>`, 'sec-soon');
+  // nouvelle disposition : colonne principale (une, albums, EP) + colonne des singles et de ce qui arrive
+  const sorted = arr => { const x = [...arr]; if (S.sort === 'date') x.sort((p, q) => p.date.localeCompare(q.date) || q.pop - p.pop); else if (S.sort === 'az') x.sort((p, q) => p.title.localeCompare(q.title, 'fr')); return x; };
+  const A = sorted(albums), E2 = sorted(eps), SG = sorted(singles);
+  const hcard = r => { INDEX.set(r.key, r); return `<button class="hcard" type="button" data-key="${esc(r.key)}"><span class="cover">${coverHtml(r, 250)}</span><span class="hc-t">
+      <span class="hc-title">${titleHtml(r)}</span><span class="hc-artist">${esc(r.artist)}${r.feats.length ? ` <span>feat. ${esc(r.feats.join(', '))}</span>` : ''}</span>
+      <span class="hc-meta">${rtChip(r)}<span class="chip-s">${esc(catName(r.cat))}</span>${r.n > 1 ? `<span>${r.n} titres${r.dur ? ` · ${fmtTotal(r.dur)}` : ''}</span>` : ''}<span>${esc(fmtShort(r.date))}</span></span></span></button>`; };
+  const SCAP = 15, sFull = !!S.q.trim() || S.open.has(`${S.week}:sec-singles`);
+  const nAlb = albums.length + (top ? 1 : 0);
+  const jump = list.length ? `<div class="jump"><div class="jump-l">${nAlb ? `<a href="#sec-albums" data-jump="sec-albums">Albums <b>${nAlb}</b></a>` : ''}${eps.length ? `<a href="#sec-ep" data-jump="sec-ep">EP <b>${eps.length}</b></a>` : ''}${singles.length ? `<a href="#sec-singles" data-jump="sec-singles">Singles <b>${singles.length}</b></a>` : ''}${soon.length ? `<a href="#sec-soon" data-jump="sec-soon">Bientôt <b>${soon.length}</b></a>` : ''}</div>
+      <div class="jump-r"><label class="sort"><span>Trier</span><select data-sort>${[['pop', 'Les plus attendues'], ['date', 'Par jour de sortie'], ['az', 'De A à Z']].map(([k, v]) => `<option value="${k}"${S.sort === k ? ' selected' : ''}>${v}</option>`).join('')}</select></label>
+      <span class="vt" role="group" aria-label="Affichage des albums"><button type="button" data-layout="list" aria-pressed="${S.layout === 'list'}" aria-label="Liste détaillée">${I.listv}</button><button type="button" data-layout="grid" aria-pressed="${S.layout === 'grid'}" aria-label="Pochettes">${I.gridv}</button></span></div></div>` : '';
+  let main = html + jump;
+  // beaucoup d’albums certaines semaines : les 24 plus attendus d’abord, le reste en un clic (tout s’affiche pendant une recherche)
+  const aFull = !!S.q.trim() || S.open.has(`${S.week}:sec-albums`), ACAP = 24, AS = aFull ? A : A.slice(0, ACAP);
+  const aMore = !aFull && A.length > ACAP ? `<p class="more-row sec-more"><button class="btn" type="button" data-open="sec-albums">${A.length - ACAP === 1 ? 'Afficher l’autre album' : `Afficher les ${A.length - ACAP} autres albums`}</button></p>` : '';
+  if (A.length) main += section('Albums', nAlb, (S.layout === 'grid' ? `<div class="grid">${AS.map(cardHtml).join('')}</div>` : `<div class="hcards">${AS.map(hcard).join('')}</div>`) + aMore, 'sec-albums');
+  if (E2.length) main += `<section class="sec" id="sec-ep"><div class="sec-h"><h2>EP</h2><span class="n">${E2.length}</span><span class="rail-nav"><button class="btn icon" type="button" data-rail="-1" aria-label="EP précédents">${I.left}</button><button class="btn icon" type="button" data-rail="1" aria-label="EP suivants">${I.right}</button></span></div><div class="rail">${E2.map(cardHtml).join('')}</div></section>`;
+  let side = '';
+  if (SG.length) side += section('Singles', SG.length, `<div class="rows">${(sFull ? SG : SG.slice(0, SCAP)).map(r => rowHtml(r, false)).join('')}</div>${!sFull && SG.length > SCAP ? `<p class="more-row"><button class="btn" type="button" data-open="sec-singles">Afficher les ${SG.length - SCAP} autres singles</button></p>` : ''}`, 'sec-singles');
+  if (soon.length) side += section('Arrive bientôt cette semaine', soon.length, `<div class="rows">${soon.map(r => rowHtml(r, true)).join('')}</div>`, 'sec-soon');
+  html = list.length ? `<div class="wk"><div class="wk-main">${main}</div>${side ? `<aside class="wk-side">${side}</aside>` : ''}</div>` : html;
   const more = elsewhereHtml(base);
   if (!list.length) html += more ? `<div class="empty"><strong>Rien cette semaine pour « ${esc(S.q.trim())} ».</strong>Voici ce qui correspond ailleurs.</div>` : emptyHtml(base.length ? 'filters' : 'week');
   html += more;
@@ -1550,7 +1619,7 @@ function viewSettings() {
     </section>
     <section class="set-sec"><h2 class="set-h">Affichage</h2>
       ${setRow('Autoriser le zoom', 'Permet de zoomer avec deux doigts ou un double toucher dans tout le site.', toggle('zoom', SET.zoom, 'Autoriser le zoom'))}
-      ${setRow('Onglet d’ouverture', 'Ce que le site montre quand tu l’ouvres.', choice('start', SET.start, [['semaine', 'Cette semaine'], ['a-venir', 'À venir'], ['concerts', 'Concerts'], ['abonnements', 'Abonnements']]))}
+      ${setRow('Onglet d’ouverture', 'Ce que le site montre quand tu l’ouvres.', choice('start', SET.start, [['semaine', 'Cette semaine'], ['a-venir', 'À venir'], ['concerts', 'Concerts'], ['abonnements', 'Avis']]))}
       ${setRow('Pastilles « Nouveau »', 'Signale ce qui est apparu depuis ta dernière visite.', toggle('news', SET.news, 'Pastilles Nouveau'))}
     </section>
     <section class="set-sec"><h2 class="set-h">Mes artistes</h2>
@@ -2954,7 +3023,7 @@ function paintFeedBadge() {
   const n = ME.user && ME.profile && FEED ? FEED.items.filter(x => x.uid !== ME.user.uid && postTime(x) > seen).length : 0;
   $$('[data-badge="abonnements"]').forEach(el => {
     el.textContent = n ? (n > 99 ? '99+' : String(n)) : '';
-    el.closest('a').setAttribute('aria-label', n ? `Abonnements, ${n} ${plural(n, 'nouveauté', 'nouveautés')}` : 'Abonnements');
+    el.closest('a').setAttribute('aria-label', n ? `Avis, ${n} ${plural(n, 'nouveauté', 'nouveautés')} de tes abonnements` : 'Avis');
   });
 }
 setInterval(() => {
@@ -3021,17 +3090,42 @@ async function paintPeopleSearch(q) {
 }
 let peopleTimer = null;
 document.addEventListener('input', e => { if (e.target.id === 'people-q') { clearTimeout(peopleTimer); peopleTimer = setTimeout(() => paintPeopleSearch(e.target.value), 250); } });
+// onglet Avis : « Public » (les avis de tout le monde, semaine par semaine) ou « Abonnements » (les membres suivis)
+let AVIS_TAB = 'public';
+let PUB_WEEKS = 2;
+function publicMain() {
+  const weeks = weekList(0, PUB_WEEKS);
+  const entries = weeks.map(w => WEEKREV.get(w));
+  const missing = weeks.filter((w, i) => !entries[i] || (!entries[i].loading && Date.now() - entries[i].at > 90e3));
+  if (missing.length) Promise.all(missing.map(ensureWeekRatings)).then(() => { if (S.view === 'abonnements' && AVIS_TAB === 'public' && !S.detail) render(); });
+  if (entries.some(e => !e || (e.loading && !e.list.length))) return `<div class="feed-sk" aria-label="Chargement">${'<div class="sk"></div>'.repeat(3)}</div>`;
+  const all = entries.flatMap(e => e.list || []).filter(x => x.h && (x.r >= 1 || x.tx || trDecode(x.tr).some(Boolean)));
+  const seen = new Set();
+  const list = all.filter(x => { const id = x.id || `${x.k}__${x.uid}`; if (seen.has(id)) return false; seen.add(id); return true; }).sort((a, b) => postTime(b) - postTime(a));
+  const crit = list.filter(x => x.tx);
+  const items = FEED_TAB === 'critiques' ? crit : list;
+  return `<div class="seg feed-tabs" role="group" aria-label="Afficher">
+      <button type="button" data-act="feed-tab" data-v="tout" aria-pressed="${FEED_TAB === 'tout'}">Tout <span class="n">${list.length}</span></button>
+      <button type="button" data-act="feed-tab" data-v="critiques" aria-pressed="${FEED_TAB === 'critiques'}">Critiques <span class="n">${crit.length}</span></button></div>
+    ${items.length ? `<div class="posts">${items.map(postHtml).join('')}</div>` : `<div class="empty"><strong>${FEED_TAB === 'critiques' ? 'Aucune critique écrite' : 'Aucun avis'} depuis ${PUB_WEEKS} semaines.</strong>Les notes et les critiques des membres apparaissent ici dès leur publication.</div>`}
+    ${PUB_WEEKS < 12 ? '<p class="more-row feed-more"><button class="btn" type="button" data-act="pub-more">Voir plus ancien</button></p>' : ''}`;
+}
 function viewFeed() {
   const signed = !!(FB_CONFIG && ME.ready && ME.user && ME.profile);
   const ids = signed ? following() : [];
   const fol = signed ? followersFor(ME.user.uid) : null;
-  $head.innerHTML = `<div class="head-main"><p class="kicker">Fil d’actualité</p><h1 class="h1">Abonnements</h1>
-    <p class="sub">Les notes et les critiques des membres que tu suis, des plus récentes aux plus anciennes.</p>
-    ${signed ? folStatsHtml(ME.profile.h, fol ? fol.length : null, ids.length, 'feed-stats') : ''}</div>`;
-  if (!FB_CONFIG) { $content.innerHTML = '<div class="empty"><strong>Les abonnements arrivent bientôt.</strong></div>'; return; }
-  if (!ME.ready) { $content.innerHTML = '<div class="empty"><strong>Connexion…</strong></div>'; return; }
+  const pub = AVIS_TAB === 'public';
+  $head.innerHTML = `<div class="head-main"><h1 class="kicker">Avis</h1>
+    <p class="h1">${pub ? 'Les notes et les critiques de tous les membres, des plus récentes aux plus anciennes.' : 'Les notes et les critiques des membres que tu suis.'}</p>
+    <div class="seg avis-tabs" role="tablist" aria-label="Avis">
+      <button type="button" role="tab" data-act="avis-tab" data-v="public" aria-selected="${pub}" aria-pressed="${pub}">Public</button>
+      <button type="button" role="tab" data-act="avis-tab" data-v="abonnements" aria-selected="${!pub}" aria-pressed="${!pub}">Abonnements${ids.length ? ` <span class="n">${ids.length}</span>` : ''}</button></div>
+    ${signed && !pub ? folStatsHtml(ME.profile.h, fol ? fol.length : null, ids.length, 'feed-stats') : ''}</div>`;
+  if (!FB_CONFIG) { $content.innerHTML = '<div class="empty"><strong>Les avis arrivent bientôt.</strong></div>'; return; }
+  if (!ME.ready && !pub) { $content.innerHTML = '<div class="empty"><strong>Connexion…</strong></div>'; return; }
   let main;
-  if (!signed) {
+  if (pub) main = publicMain();
+  else if (!signed) {
     main = `<div class="empty"><strong>Suis les notes des autres membres.</strong>Abonne-toi à des membres pour retrouver ici leurs notes et leurs critiques, comme sur Letterboxd.<br>
       <button class="btn solid" type="button" data-act="${ME.user ? 'onboard' : 'signin'}">${ME.user ? 'Créer mon profil' : 'Se connecter'}</button></div>`;
   } else {
@@ -3055,7 +3149,7 @@ function viewFeed() {
     }
     paintFeedBadge();
   }
-  const sug = suggestions();
+  const sug = signed ? suggestions() : [];
   const focus = document.activeElement && document.activeElement.id === 'people-q' ? document.activeElement.selectionStart : null;
   $content.innerHTML = `<div class="feed-wrap">
     <div class="feed-main">${main}</div>
@@ -3357,6 +3451,8 @@ document.addEventListener('click', e => {
   else if (act === 'photo-edit') openPhoto('edit');
   else if (act === 'ph-save' || act === 'ph-cancel' || act === 'ph-google' || act === 'ph-remove' || act === 'ph-done') photoAction(act, el);
   else if (act === 'feed-tab') { FEED_TAB = el.dataset.v; render(); }
+  else if (act === 'avis-tab') { AVIS_TAB = el.dataset.v === 'abonnements' ? 'abonnements' : 'public'; render(); }
+  else if (act === 'pub-more') { PUB_WEEKS = Math.min(12, PUB_WEEKS + 2); render(); }
   else if (act === 'feed-more') { el.disabled = true; el.textContent = 'Chargement…'; loadFeed(true).then(() => render(), () => { el.disabled = false; el.textContent = 'Voir plus ancien'; }); }
   else if (act === 'cta-x') { store.set('ctaOff', true); const c = el.closest('.cta'); if (c) c.remove(); toast(matchMedia('(max-width: 860px)').matches ? 'Tu pourras te connecter depuis l’onglet Profil' : 'Tu pourras te connecter avec le bouton en haut à droite'); }
   else if (act === 'vit-add') openPicker();
@@ -3397,7 +3493,7 @@ document.addEventListener('touchmove', e => { if (!SET.zoom && e.touches && e.to
 const savePrefs = () => store.set('prefs', { cat: S.cat, type: S.type, cc: S.cc, mine: S.mine, metro: S.metro });
 
 document.addEventListener('click', e => {
-  const el = e.target.closest('[data-key],[data-week],[data-wday],[data-cat],[data-type],[data-cc],[data-mine],[data-unset],[data-follow],[data-ics],[data-play],[data-copy],[data-share],[data-jump],[data-reset],[data-set],[data-open],.tab,.bn,#ftoggle,#scrim,#d-close,#d-share');
+  const el = e.target.closest('[data-key],[data-week],[data-wday],[data-layout],[data-rail],[data-cat],[data-type],[data-cc],[data-mine],[data-unset],[data-follow],[data-ics],[data-play],[data-copy],[data-share],[data-jump],[data-reset],[data-set],[data-open],.tab,.bn,#ftoggle,#scrim,#d-close,#d-share');
   if (!el) return;
   const ds = el.dataset;
   if (el.id === 'd-share') { if (S.detail) shareRelease(S.detail); return; }
@@ -3429,6 +3525,8 @@ document.addEventListener('click', e => {
   }
   if (ds.key) { openDetail(ds.key); return; }
   if (ds.week !== undefined) { S.week = Math.min(0, Math.max(-MAX_BACK, Number(ds.week))); S.day = null; render(); return; }
+  if (ds.layout) { S.layout = ds.layout === 'grid' ? 'grid' : 'list'; render(); return; }
+  if (ds.rail) { const r = $('#sec-ep .rail'); if (r) r.scrollBy({ left: Number(ds.rail) * r.clientWidth * 0.8, behavior: 'smooth' }); return; }
   if (ds.wday !== undefined) { S.day = S.day === ds.wday ? null : ds.wday; render(); return; }
   if (ds.cat) { S.cat = ds.cat; savePrefs(); render(); return; }
   if (ds.type) { S.type = ds.type; savePrefs(); render(); return; }
@@ -3551,6 +3649,7 @@ setInterval(paintStatus, 30e3);
 setInterval(() => { if (!S.detail) render(); }, 15 * 60e3); // changement de jour, libellés relatifs
 setInterval(() => { if (loadError) loadData(false); }, 30e3);
 
+document.addEventListener('change', e => { if (e.target.matches('[data-sort]')) { S.sort = e.target.value; render(); } });
 /* ---------- installer sur l’écran d’accueil (téléphone) ---------- */
 let installEvt = null;
 const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
