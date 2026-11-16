@@ -1521,7 +1521,7 @@ function viewConcerts() {
   const soon = list.filter(c => c.date <= addDays(t, 30)).length;
   const cities = new Set(list.map(c => norm(c.city)).filter(Boolean)).size;
   $head.innerHTML = `
-    <div class="head-main"><p class="kicker">Concerts et festivals</p><h1 class="h1">Concerts</h1>
+    <div class="head-main"><h1 class="kicker">Concerts et festivals</h1>
       <p class="sub">${S.metro ? `Les dates près de ${esc(S.metro)}` : 'Les dates en France, en Belgique et en Suisse'} des artistes suivis. Touche une date pour voir les billets.${S.metro ? '' : ' Choisis ta ville dans « Filtrer et rechercher ».'}</p></div>
     ${statsHtml([[list.length, plural(list.length, 'date', 'dates')], [soon, 'dans les 30 jours'], [fests, plural(fests, 'festival', 'festivals')], [cities, plural(cities, 'ville', 'villes')]])}`;
   if (!CONCERTS.loaded) { $content.innerHTML = '<div class="empty"><strong>Chargement des concerts…</strong></div>'; return; }
