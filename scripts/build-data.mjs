@@ -1262,7 +1262,7 @@ function dedupeNews(list) {
 }
 const newsGap = spaced(FAST ? 0 : 1300);
 async function pressStep(state) {
-  const due = !state.news || !state.news.raw || Date.now() - state.news.t > 1 * HOUR;
+  const due = !state.news || !state.news.raw || Date.now() - state.news.t > 10 * 60e3;
   const artists = state.artists;
   let byFirst = makeMatchers(artists);
   if (!due || Date.now() > DEADLINE) {
