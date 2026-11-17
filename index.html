@@ -1067,7 +1067,7 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 .quiz.out { opacity: 0; transition: opacity .25s; }
 .qz-in { width: min(580px, 100%); height: 100%; max-height: 900px; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 16px; padding: calc(16px + env(safe-area-inset-top)) 22px calc(20px + env(safe-area-inset-bottom)); }
 .qz-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 40px; }
-.qz-bar { flex: 1; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.qz-bar { flex: 1; display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
 .qz-bar i { height: 4px; border-radius: 2px; background: rgba(241, 240, 236, .16); transition: background-color .35s; }
 .qz-bar i.on { background: #F1F0EC; }
 .qz-skip { font-size: 14px; font-weight: 500; color: rgba(241, 240, 236, .65); padding: 8px 2px; }
@@ -1083,13 +1083,11 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 .qz-hello-art .ia-radar { width: min(230px, 56vw); }
 /* styles */
 .qz-styles { display: grid; gap: 12px; margin-top: 24px; }
-.qz-style { position: relative; display: grid; grid-template-columns: 110px minmax(0, 1fr) 26px; gap: 16px; align-items: center; padding: 16px; border-radius: 22px; background: #1C1C1A; border: 1.5px solid #2B2B29; color: inherit; text-align: left; transition: border-color .15s, background-color .15s, transform .12s; }
-.qz-style:active { transform: scale(.985); }
+.qz-style { -webkit-tap-highlight-color: transparent; position: relative; display: grid; grid-template-columns: 110px minmax(0, 1fr) 26px; gap: 16px; align-items: center; padding: 16px; border-radius: 22px; background: #1C1C1A; border: 1.5px solid #2B2B29; color: inherit; text-align: left; transition: border-color .15s, background-color .15s; }
 .qz-style[aria-pressed="true"] { border-color: #F1F0EC; background: #252523; }
 .qz-fan { position: relative; height: 84px; }
-.qz-fan > span { position: absolute; top: 4px; left: calc(var(--i) * 24px); width: 66px; height: 66px; border-radius: 10px; overflow: hidden; background: #2B2B29; box-shadow: 0 8px 18px -8px rgba(0, 0, 0, .8); transform: rotate(calc((var(--i) - 1) * 7deg)); transition: transform .3s cubic-bezier(.2, 1.4, .3, 1); }
+.qz-fan > span { position: absolute; top: 4px; left: calc(var(--i) * 24px); width: 66px; height: 66px; border-radius: 10px; overflow: hidden; background: #2B2B29; box-shadow: 0 8px 18px -8px rgba(0, 0, 0, .8); transform: rotate(calc((var(--i) - 1) * 7deg));  }
 .qz-fan > span:nth-child(2) { z-index: 1; top: 0; }
-.qz-style[aria-pressed="true"] .qz-fan > span { transform: rotate(calc((var(--i) - 1) * 12deg)) translateY(-3px); }
 .qz-fan img, .qz-fan .ph, .qz-av > img, .qz-av > .ph, .pf-av img, .pf-av .ph, .pf-pc img, .pf-pc .ph { width: 100%; height: 100%; object-fit: cover; display: grid; place-items: center; }
 .qz-style-t { display: grid; gap: 3px; min-width: 0; }
 .qz-style-t b { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
@@ -1110,7 +1108,8 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 .qz-count b { color: #F1F0EC; font-weight: 700; }
 .qz-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 18px 10px; margin-top: 18px; }
 .qz-art { display: grid; gap: 9px; justify-items: center; align-content: start; text-align: center; color: inherit; min-width: 0; -webkit-tap-highlight-color: transparent; }
-.qz-art.fresh { animation: pop-in .38s both cubic-bezier(.2, 1.4, .3, 1); }
+.qz-art.fresh { animation: qz-fade .3s both ease-out; }
+@keyframes qz-fade { from { opacity: 0; } }
 .qz-art.fresh:nth-child(n) { animation-delay: .04s; }
 .qz-pic { position: relative; width: 78px; height: 78px; transition: transform .15s; }
 .qz-art:active .qz-pic { transform: scale(.94); }
@@ -1119,7 +1118,7 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 .qz-badge { position: absolute; right: -3px; bottom: -3px; z-index: 1; width: 26px; height: 26px; border-radius: 50%; display: none; place-items: center; border: 3px solid #121211; background: #F0503A; }
 .qz-badge::before { content: ""; width: 9px; height: 5px; border-left: 2.5px solid #fff; border-bottom: 2.5px solid #fff; transform: translateY(-1px) rotate(-45deg); }
 .qz-art[aria-pressed="true"] .qz-pic::after { border-color: #F0503A; }
-.qz-art[aria-pressed="true"] .qz-badge { display: grid; animation: pop-in .25s cubic-bezier(.2, 1.6, .3, 1); }
+.qz-art[aria-pressed="true"] .qz-badge { display: grid; animation: qz-fade .15s both; }
 .qz-art[aria-pressed="true"] .qz-name { color: #fff; font-weight: 600; }
 @keyframes pop-in { from { transform: scale(.3); opacity: 0; } }
 .qz-name { font-size: 13px; font-weight: 500; line-height: 1.25; max-width: 100%; overflow-wrap: anywhere; color: rgba(241, 240, 236, .85); }
@@ -1349,6 +1348,26 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 /* finitions du quiz */
 .qz-art:focus-visible, .qz-style:focus-visible, .qz-opt:focus-visible, .qz-chip:focus-visible, .gate-login:focus-visible, .gate-skip:focus-visible { outline: 2px solid #F0503A; outline-offset: 4px; border-radius: 16px; }
 @media (prefers-reduced-motion: reduce) { .qz-art.fresh, .ia-chip, .gate-perks li, .pf-card, .pf-s i::after { animation: none !important; } }
+/* « pas pour moi » dans le quiz */
+.qz-art.neg[aria-pressed="true"] .qz-av { filter: grayscale(1); opacity: .35; }
+.qz-art.neg[aria-pressed="true"] .qz-pic::after { border-color: rgba(241, 240, 236, .35); }
+.qz-art.neg .qz-badge { background: #3B3B38; }
+.qz-art.neg .qz-badge::before { content: "✕"; width: auto; height: auto; border: 0; transform: none; color: #fff; font-size: 12px; font-weight: 700; }
+.qz-art.neg[aria-pressed="true"] .qz-name { color: rgba(241, 240, 236, .45); text-decoration: line-through; font-weight: 500; }
+/* raison d’une recommandation, sous l’artiste */
+.why { display: block; margin-top: 3px; font-size: 12px; font-weight: 600; color: var(--signal); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hc-t .why { margin-top: 4px; }
+
+/* artistes choisis : liste, et « proche de » sous les artistes voisins */
+.qz-countrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
+.qz-countrow .qz-count { margin: 0; }
+.qz-chosen { flex: none; display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 999px; background: #1C1C1A; border: 1.5px solid #2B2B29; color: #F1F0EC; font-size: 13.5px; font-weight: 600; }
+.qz-chosen b { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; display: inline-grid; place-items: center; background: #F0503A; color: #fff; font-size: 12px; }
+.qz-chosen[aria-pressed="true"] { background: #F1F0EC; color: #121211; border-color: #F1F0EC; }
+.qz-chosen:disabled { opacity: .4; }
+.qz-near { display: block; min-height: 15px; margin-top: -4px; font-size: 11px; font-weight: 600; line-height: 1.3; color: #F0503A; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qz-art[aria-pressed="true"] .qz-near { visibility: hidden; }
+.qz-body.still { animation: none; }
 
 .set-st .live { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 7px; vertical-align: 1px; opacity: .7; }
 .month { margin: 38px 0 0; font: 600 12px var(--font-mono); color: var(--muted); }
@@ -1563,7 +1582,7 @@ const SET = Object.assign({ zoom: false, text: 'normal', motion: 'auto', start: 
 // « Cette semaine » devient l’onglet d’ouverture par défaut (l’ancien défaut était « À venir »)
 if (!SET.sv && store.get('settings', null)) { if (SET.start === 'a-venir') SET.start = 'semaine'; SET.sv = 1; store.set('settings', SET); }
 const S = {
-  view: 'semaine', week: 0, day: null, sort: 'pop', layout: 'list',
+  view: 'semaine', week: 0, day: null, sort: 'auto', layout: 'list',
   cat: CATS[prefs.cat] ? prefs.cat : 'all',
   type: TYPE_LABEL[prefs.type] ? prefs.type : 'all',
   cc: COUNTRY[prefs.cc] ? prefs.cc : 'all',
@@ -1718,34 +1737,73 @@ document.addEventListener('error', e => {
 // grande pochette de la une : la petite (déjà en cache) d’abord, la grande en fondu une fois chargée
 document.addEventListener('load', e => { if (e.target && e.target.classList && e.target.classList.contains('fc-hi')) e.target.classList.add('ok'); }, true);
 
-/* ---------- recommandations : les voisins Deezer et les featurings des artistes que tu écoutes ---------- */
+/* ---------- recommandations : graphe des artistes similaires, featurings et ce que tu ouvres et écoutes ---------- */
+// Le moteur part de tes artistes (quiz) et de ce que tu ouvres ou écoutes sur le site, se propage dans le graphe
+// des artistes « similaires » Deezer (deux niveaux), récompense les artistes proches de plusieurs des tiens,
+// freine les têtes d’affiche citées partout, et éloigne les voisins de ceux que tu ne veux pas voir.
 let RECO = null;
+// apprentissage : sorties ouvertes et écoutées (nom normalisé -> [poids, date]), oublié au bout de 60 jours
+let SIG = store.get('sig', {});
+function sigAdd(names, w) {
+  if (!TASTE) return;
+  const now = Date.now();
+  for (const n of names) {
+    const k = norm(n); if (!k || FOLLOW[k] || hides(k)) continue;
+    const [v = 0] = SIG[k] || [];
+    SIG[k] = [Math.min(1.2, v * 0.9 + w), now];
+  }
+  for (const k of Object.keys(SIG)) if (now - SIG[k][1] > 60 * DAY_MS) delete SIG[k];
+  store.set('sig', SIG); RECO = null;
+}
+const DAY_MS = 864e5;
+const sigOf = k => { const e = SIG[k]; return e ? e[0] * Math.max(0, 1 - (Date.now() - e[1]) / (60 * DAY_MS)) : 0; };
+// combien de listes « similaires » citent chaque artiste : les très cités (gros noms) comptent moins
+let ART_DEG = null;
+function artDeg() {
+  if (ART_DEG && ART_DEG.n === ART.list.length) return ART_DEG.d;
+  const d = new Map();
+  for (const a of ART.list) for (const j of a.rel) d.set(j, (d.get(j) || 0) + 1);
+  ART_DEG = { n: ART.list.length, d };
+  return d;
+}
 function recoMap() {
-  const key = `${Object.keys(FOLLOW).sort().join()}|${ART.list.length}|${DATA.generatedAt}|${TASTE ? TASTE.at : 0}`;
+  const key = `${Object.keys(FOLLOW).sort().join()}|${ART.list.length}|${DATA.generatedAt}|${TASTE ? TASTE.at : 0}|${Object.keys(TASTE ? TASTE.hide : {}).join()}|${Object.keys(SIG).length}:${Object.values(SIG).reduce((a, e) => a + e[0], 0).toFixed(2)}`;
   if (RECO && RECO.key === key) return RECO.m;
-  const m = new Map();   // nom normalisé → { s : score, rel : score des voisins, vr : par qui, feat : avec qui }
-  const add = (k, s, via, kind) => {
-    if (!k || FOLLOW[k] || hides(k)) return;
-    const x = m.get(k) || { s: 0, rel: 0, vr: new Map(), feat: '' };
-    x.s += s;
-    if (kind === 'feat') { if (!x.feat) x.feat = via; } else { x.rel += s; x.vr.set(via, (x.vr.get(via) || 0) + s); }
-    m.set(k, x);
-  };
-  for (const k of Object.keys(FOLLOW)) {
-    const a = ART.byNorm.get(k), name = FOLLOW[k];
-    if (!a) continue;
+  const deg = artDeg(), m = new Map();
+  const node = k => { let x = m.get(k); if (!x) m.set(k, x = { s: 0, rel: 0, vr: new Map(), feat: '', neg: 0 }); return x; };
+  const damp = j => 1 / Math.sqrt(1 + (deg.get(j) || 0) / 6);
+  // points de départ : tes artistes (poids 1) et ce que tu as ouvert ou écouté (poids appris)
+  const seeds = new Map(Object.entries(FOLLOW).map(([k, name]) => [k, { w: 1, name }]));
+  for (const k of Object.keys(SIG)) { const w = sigOf(k); if (w > 0.05 && !seeds.has(k)) { const a = ART.byNorm.get(k); seeds.set(k, { w: Math.min(0.8, w), name: a ? a.n : k, learned: true }); } }
+  for (const [k, { w, name, learned }] of seeds) {
+    const a = ART.byNorm.get(k); if (!a) continue;
     a.rel.forEach((j, r) => {
-      const b = ART.list[j]; if (!b) return;
-      add(b.k, 1 - r / 16, name, 'rel');
-      // voisins des voisins, avec un poids faible : élargit sans s’éloigner
-      if (r < 5) b.rel.slice(0, 5).forEach((j2, r2) => { const c = ART.list[j2]; if (c && c.k !== k) add(c.k, 0.16 * (1 - r2 / 6), name, 'rel2'); });
+      const b = ART.list[j]; if (!b || b.k === k) return;
+      const v = w * (1 - r / 16) * damp(j), x = node(b.k);
+      x.s += v; x.rel += v; if (!learned) x.vr.set(name, (x.vr.get(name) || 0) + v);
+      if (r < 8) b.rel.slice(0, 8).forEach((j2, r2) => {
+        const c = ART.list[j2]; if (!c || c.k === k) return;
+        const v2 = 0.32 * w * (1 - r / 16) * (1 - r2 / 10) * damp(j2), y = node(c.k);
+        y.s += v2; y.rel += v2;
+      });
     });
   }
-  // featurings : ceux qui ont déjà rappé avec un artiste que tu écoutes
+  // featurings : ceux qui rappent avec tes artistes
   for (const r of DATA.items) {
     const names = [...splitArtists(r.artist), ...r.feats], lk = names.find(follows);
-    if (lk) for (const n of names) if (!follows(n)) add(norm(n), 0.7, lk, 'feat');
+    if (lk) for (const n of names) if (!follows(n)) { const x = node(norm(n)); x.s += 0.45; if (!x.feat) x.feat = lk; }
   }
+  // ceux que tu ne veux pas voir : leurs voisins proches reculent
+  for (const h of Object.keys(TASTE ? TASTE.hide : {})) {
+    const a = ART.byNorm.get(h); if (!a) continue;
+    a.rel.slice(0, 10).forEach((j, r) => { const b = ART.list[j]; if (b) { const x = node(b.k); x.neg += 0.6 * (1 - r / 12); } });
+  }
+  // accord : proche de plusieurs de tes artistes, c’est un signal bien plus sûr
+  for (const x of m.values()) {
+    if (x.vr.size > 1) { const bonus = 1 + 0.3 * Math.min(4, x.vr.size - 1); x.s *= bonus; x.rel *= bonus; }
+    x.s = Math.max(0, x.s - x.neg);
+  }
+  for (const k of Object.keys(FOLLOW)) m.delete(k);
   RECO = { key, m };
   return m;
 }
@@ -1767,17 +1825,57 @@ function popRank(list) {
     return lo / (n - 1);
   };
 }
+// niveau d’un artiste : rang de ses fans parmi les artistes de son style (1 : tête d’affiche, 0 : tout petit)
+let FANS_RANK = null;
+function fansRank(name) {
+  if (!ART.list.length) return null;
+  if (!FANS_RANK || FANS_RANK.n !== ART.list.length) {
+    const by = {};
+    for (const a of ART.list) (by[a.c] = by[a.c] || []).push(a.f);
+    for (const c in by) by[c].sort((x, y) => x - y);
+    FANS_RANK = { n: ART.list.length, by };
+  }
+  const a = ART.byNorm.get(norm(name)); if (!a) return null;
+  const l = FANS_RANK.by[a.c] || []; if (l.length < 2) return 0.5;
+  let lo = 0, hi = l.length; while (lo < hi) { const mid = (lo + hi) >> 1; if (l[mid] < a.f) lo = mid + 1; else hi = mid; }
+  return lo / (l.length - 1);
+}
 const likesRelease = r => splitArtists(r.artist).some(follows) || r.feats.some(follows);
-// dans tes goûts : tes artistes, leurs voisins et featurings, ou une sortie de tes styles à ton niveau
+// score d’une sortie pour toi : proximité avec tes artistes, ton niveau, tes styles, tes formats
+function tasteScore(r, q) {
+  if (!TASTE) return 0;
+  if (isHidden(r)) return -1;
+  const main = splitArtists(r.artist);
+  if (main.some(follows)) return 10 + q;
+  const rc = recoOf(r), aff = rc ? Math.min(2.5, rc.s) : 0;
+  const fr = fansRank(main[0]), lv = fr == null ? q : fr, target = 1 - ugOf(TASTE) / 100;
+  const level = 1 - Math.min(1, Math.abs(lv - target) * 1.4);
+  const fmt = TASTE.fmt && TASTE.fmt.length && TASTE.fmt.includes(r.rt === 'compile' ? 'album' : r.rt) ? 1 : 0;
+  return (r.feats.some(follows) ? 3 : 0) + 2.2 * aff + 1.1 * level + (TASTE.cats.includes(r.cat) ? 0.8 : 0) + 0.3 * fmt + 0.25 * q;
+}
+// pourquoi on te la propose (affiché sous les sorties les plus proches de tes goûts)
+function tasteWhy(r) {
+  const fl = r.feats.find(follows); if (fl) return `Avec ${fl}`;
+  const rc = recoOf(r); if (!rc || rc.s < 0.5) return '';
+  if (rc.x.vr.size) { const v = [...rc.x.vr].sort((a, b) => b[1] - a[1]).map(([n]) => n); return v.length > 1 ? `Proche de ${v[0]} et ${v[1]}` : `Proche de ${v[0]}`; }
+  if (rc.x.feat) return `A rappé avec ${rc.x.feat}`;
+  return 'D’après ce que tu écoutes ici';
+}
+// dans tes goûts : tes artistes, leurs proches, ou une sortie de tes styles à ton niveau ; le reste descend en bas
 function inTaste(r, q) {
   if (isHidden(r)) return false;
   if (likesRelease(r)) return true;
-  if (S.cat === 'all' && !TASTE.cats.includes(r.cat)) return false;
-  const rc = recoOf(r); if (rc && rc.s >= 0.35) return true;
-  const u = ugOf(TASTE);
-  return u >= 67 ? true : u <= 33 ? q >= 0.45 : q >= 0.2;
+  const rc = recoOf(r), aff = rc ? rc.s : 0;
+  if (S.cat === 'all' && !TASTE.cats.includes(r.cat) && aff < 0.8) return false;
+  if (aff >= 0.3) return true;
+  const fr = fansRank(splitArtists(r.artist)[0]), lv = fr == null ? q : fr, u = ugOf(TASTE);
+  return u >= 67 ? lv <= 0.85 || q >= 0.6 : u <= 33 ? lv >= 0.5 || q >= 0.55 : lv >= 0.2 || q >= 0.3;
 }
-
+// ordre « selon tes goûts » d’une liste
+function byTaste(list) {
+  const rank = popRank(list);
+  return list.map(r => [r, tasteScore(r, rank(r))]).sort((a, b) => b[1] - a[1]).map(([r]) => r);
+}
 /* ---------- profil : styles, niveau têtes d’affiche ↔ underground ---------- */
 const ugOf = t => (t && typeof t.ug === 'number' ? t.ug : t && t.level === 'top' ? 15 : t && t.level === 'ug' ? 85 : 50);
 const levelOf = u => (u <= 33 ? 'top' : u >= 67 ? 'ug' : 'mix');
@@ -1909,6 +2007,7 @@ function countdown(d) {
   const n = Math.round((parseYmd(d) - parseYmd(today())) / 864e5);
   return n > 0 ? `<span class="cd${n <= 7 ? ' soon' : ''}">${n === 1 ? 'demain' : `dans ${n} j`}</span>` : '';
 }
+const whyHtml = r => { if (!TASTE) return ''; const w = tasteWhy(r); return w ? `<span class="why">${esc(w)}</span>` : ''; };
 function rowHtml(r, upcoming) {
   INDEX.set(r.key, r);
   const len = r.n > 1 ? `${r.n} titres` : r.dur ? fmtDur(r.dur) : '';
@@ -1919,7 +2018,7 @@ function rowHtml(r, upcoming) {
     <span class="cover">${coverHtml(r, 120)}</span>
     <span class="row-t">
       <span class="row-title">${isNew(r) ? '<span class="dot" title="Nouveau depuis ta dernière visite"></span>' : ''}${titleHtml(r)}</span>
-      <span class="row-artist">${esc(r.artist)}${r.feats.length ? ` <span class="feat">· feat. ${esc(r.feats.join(', '))}</span>` : ''}</span>
+      <span class="row-artist">${esc(r.artist)}${r.feats.length ? ` <span class="feat">· feat. ${esc(r.feats.join(', '))}</span>` : ''}</span>${whyHtml(r)}
       ${upcoming ? `<span class="row-cat">${esc(catName(r.cat))} · ${esc(fmtShort(r.date))}</span>` : `<span class="row-cat row-m">${esc(catName(r.cat))}${len ? ` · ${esc(len)}` : ''} · ${esc(fmtShort(r.date))}</span>`}
     </span>
     <span class="row-side">${side}</span>
@@ -2023,20 +2122,21 @@ function viewWeek() {
     if (TASTE) {
       const fav = albums.find(r => splitArtists(r.artist).some(follows));
       if (fav) { top = fav; topTag = `Tu écoutes ${splitArtists(fav.artist).find(follows)}`; }
-      else top = albums.find(r => TASTE.cats.includes(r.cat)) || top;
+      else { top = byTaste(albums)[0] || top; const w = tasteWhy(top); if (w) topTag = w; }
     }
     html += featureHtml(top, topTag); albums.splice(albums.indexOf(top), 1);
   }
   // nouvelle disposition : colonne principale (une, albums, EP) + colonne des singles et de ce qui arrive
-  const sorted = arr => { const x = [...arr]; if (S.sort === 'date') x.sort((p, q) => p.date.localeCompare(q.date) || q.pop - p.pop); else if (S.sort === 'az') x.sort((p, q) => p.title.localeCompare(q.title, 'fr')); return x; };
+  const mode = S.sort === 'auto' ? (TASTE ? 'reco' : 'pop') : S.sort === 'reco' && !TASTE ? 'pop' : S.sort;
+  const sorted = arr => { if (mode === 'reco') return byTaste(arr); const x = [...arr]; if (mode === 'date') x.sort((p, q) => p.date.localeCompare(q.date) || q.pop - p.pop); else if (mode === 'az') x.sort((p, q) => p.title.localeCompare(q.title, 'fr')); return x; };
   const A = sorted(albums), E2 = sorted(eps), SG = sorted(singles);
   const hcard = r => { INDEX.set(r.key, r); return `<button class="hcard" type="button" data-key="${esc(r.key)}"><span class="cover">${coverHtml(r, 250)}</span><span class="hc-t">
-      <span class="hc-title">${titleHtml(r)}</span><span class="hc-artist">${esc(r.artist)}${r.feats.length ? ` <span>feat. ${esc(r.feats.join(', '))}</span>` : ''}</span>
+      <span class="hc-title">${titleHtml(r)}</span><span class="hc-artist">${esc(r.artist)}${r.feats.length ? ` <span>feat. ${esc(r.feats.join(', '))}</span>` : ''}</span>${whyHtml(r)}
       <span class="hc-meta">${rtChip(r)}<span class="chip-s">${esc(catName(r.cat))}</span>${r.n > 1 ? `<span>${r.n} titres${r.dur ? ` · ${fmtTotal(r.dur)}` : ''}</span>` : ''}<span>${esc(fmtShort(r.date))}</span></span></span></button>`; };
   const SCAP = 15, sFull = !!S.q.trim() || S.open.has(`${S.week}:sec-singles`);
   const nAlb = albums.length + (top ? 1 : 0);
   const jump = list.length ? `<div class="jump"><div class="jump-l">${nAlb ? `<a href="#sec-albums" data-jump="sec-albums">Albums <b>${nAlb}</b></a>` : ''}${eps.length ? `<a href="#sec-ep" data-jump="sec-ep">EP <b>${eps.length}</b></a>` : ''}${singles.length ? `<a href="#sec-singles" data-jump="sec-singles">Singles <b>${singles.length}</b></a>` : ''}${soon.length ? `<a href="#sec-soon" data-jump="sec-soon">Bientôt <b>${soon.length}</b></a>` : ''}</div>
-      <div class="jump-r"><label class="sort"><span>Trier</span><select data-sort>${[['pop', 'Les plus attendues'], ['date', 'Par jour de sortie'], ['az', 'De A à Z']].map(([k, v]) => `<option value="${k}"${S.sort === k ? ' selected' : ''}>${v}</option>`).join('')}</select></label>
+      <div class="jump-r"><label class="sort"><span>Trier</span><select data-sort>${[...(TASTE ? [['reco', 'Selon tes goûts']] : []), ['pop', 'Les plus attendues'], ['date', 'Par jour de sortie'], ['az', 'De A à Z']].map(([k, v]) => `<option value="${k}"${mode === k ? ' selected' : ''}>${v}</option>`).join('')}</select></label>
       <span class="vt" role="group" aria-label="Affichage des albums"><button type="button" data-layout="list" aria-pressed="${S.layout === 'list'}" aria-label="Liste détaillée">${I.listv}</button><button type="button" data-layout="grid" aria-pressed="${S.layout === 'grid'}" aria-label="Pochettes">${I.gridv}</button></span></div></div>` : '';
   let main = html + jump;
   // beaucoup d’albums certaines semaines : les 24 plus attendus d’abord, le reste en un clic (tout s’affiche pendant une recherche)
@@ -2089,6 +2189,7 @@ function viewUpcoming() {
   const weekRel = ws => { const n = Math.round((parseYmd(ws) - parseYmd(thisW)) / 6048e5); return n <= 0 ? 'cette semaine' : n === 1 ? 'la semaine prochaine' : `dans ${n} semaines`; };
   const groups = [];
   for (const r of list) { const ws = weekStartOf(r.date); let g = groups[groups.length - 1]; if (!g || g.date !== ws) groups.push(g = { date: ws, items: [] }); g.items.push(r); }
+  if (TASTE && !S.q.trim()) for (const g of groups) g.items = byTaste(g.items);
   paintDays(groups, r => rowHtml(r, true), weekRel, ws => `Semaine du ${fmtRange(ws, addDays(ws, 6))}`);
   $content.insertAdjacentHTML('afterbegin', dateStripHtml(all));
   if (hors.length) $content.insertAdjacentHTML('beforeend', horsHtml(hors, true));
@@ -2211,7 +2312,8 @@ function viewSettings() {
     <section class="set-sec"><h2 class="set-h">Mes goûts</h2>
       ${!acctActive() ? setRow('Recommandations', 'Crée un compte pour faire le quiz : chaque semaine, une sélection faite pour toi.', '<button class="btn sm solid" type="button" data-gate="up">Créer un compte</button>') : ''}
       ${acctActive() ? setRow(TASTE ? 'Refaire le quiz' : 'Faire le quiz', TASTE ? `Ton profil : ${persona(TASTE)[0]} (${qzCatsLabel(TASTE.cats)}, ${qzLevelLabel(levelOf(ugOf(TASTE))).toLowerCase()}${TASTE.metro ? `, concerts à ${TASTE.metro}` : ''}). Tes recommandations en dépendent.` : 'Quelques questions sur ce que tu écoutes : le site te propose ensuite une sélection « Pour toi ».', `<button class="btn sm solid" type="button" data-quiz>${TASTE ? 'Refaire le quiz' : 'Faire le quiz'}</button>`) : ''}
-      ${TASTE && Object.keys(TASTE.hide).length ? `<p class="set-about">Artistes masqués : leurs sorties n’apparaissent plus. Touche un nom pour le revoir.</p>
+      ${TASTE ? setRow('Apprentissage', `Les sorties que tu ouvres et écoutes affinent tes recommandations${Object.keys(SIG).length ? ` (${Object.keys(SIG).length} ${plural(Object.keys(SIG).length, 'artiste retenu', 'artistes retenus')})` : ''}.`, Object.keys(SIG).length ? '<button class="btn sm" type="button" data-sig-reset>Effacer</button>' : '') : ''}
+      ${TASTE && Object.keys(TASTE.hide).length ? `<p class="set-about">Pas pour toi : leurs sorties passent dans « Hors de tes recommandations ». Touche un nom pour le retirer.</p>
         <div class="chips">${Object.values(TASTE.hide).sort((a, b) => a.localeCompare(b, 'fr')).map(n => `<button class="chip fchip" type="button" data-unhide="${esc(n)}">${esc(n)}<span aria-hidden="true">✕</span></button>`).join('')}</div>` : ''}
     </section>
     <section class="set-sec"><h2 class="set-h">Apparence</h2>
@@ -2273,6 +2375,7 @@ const baseHash = () => location.hash.split('?')[0] || `#${S.view === 'user' ? SE
 let fichePushed = false, pendingFiche = '';
 function ficheUrl(r) { return `${location.origin}${location.pathname}#${r.date > today() ? 'a-venir' : 'semaine'}?fiche=${encodeURIComponent(r.key)}`; }
 function openDetail(key, opts = {}) {
+  { const r0 = INDEX.get(key) || DATA.byKey.get(key) || EXTRA.get(key); if (r0) sigAdd(splitArtists(r0.artist), 0.15); }
   const r = INDEX.get(key) || DATA.byKey.get(key) || EXTRA.get(key);
   if (!r) return;
   if (!opts.fromRoute) {
@@ -4280,6 +4383,12 @@ setInterval(() => { if (!S.detail) render(); }, 15 * 60e3); // changement de jou
 setInterval(() => { if (loadError) loadData(false); }, 30e3);
 
 document.addEventListener('change', e => { if (e.target.matches('[data-sort]')) { S.sort = e.target.value; render(); } });
+// écouter une sortie (Deezer, Spotify…, ou l’extrait) : un signal fort pour les recommandations
+document.addEventListener('click', e => {
+  const a = e.target.closest('.d-listen a, [data-play]'); if (!a || !S.detail) return;
+  const r = INDEX.get(S.detail) || DATA.byKey.get(S.detail) || EXTRA.get(S.detail);
+  if (r) sigAdd(splitArtists(r.artist), a.matches('[data-play]') ? 0.3 : 0.45);
+}, true);
 /* ---------- présentation de la première ouverture ---------- */
 const INTRO = [
   { art: 'radar', k: 'Bienvenue', h: 'Reste à l’affût.', p: 'Toutes les sorties rap, repérées pour toi heure après heure. Plus besoin de fouiller : rien ne t’échappe.' },
@@ -4344,7 +4453,7 @@ function openGate() {
   document.body.insertAdjacentHTML('beforeend', `<div class="intro gate" id="gate"><div class="intro-in gate-in" role="dialog" aria-modal="true" aria-labelledby="gate-h">
     <div class="intro-art" aria-hidden="true">${introArt('gate')}</div>
     <div class="intro-txt"><p class="intro-k">Ton compte</p><h2 class="intro-h" id="gate-h">Ton radar, réglé sur toi.</h2>
-      <p class="intro-p">Crée ton compte gratuit et réponds à cinq questions : le site te recommande chaque semaine ce qui te ressemble.</p>
+      <p class="intro-p">Crée ton compte gratuit et réponds à six questions : le site te recommande chaque semaine ce qui te ressemble.</p>
       <ul class="gate-perks">${GATE_PERKS.map(([t, d], i) => `<li style="--i:${i}"><span class="gate-ic" aria-hidden="true">${GATE_IC[i]}</span><span><b>${t}</b><span>${d}</span></span></li>`).join('')}</ul></div>
     <div class="gate-nav">
       <button class="btn primary intro-next" type="button" data-gate="up">Créer un compte</button>
@@ -4388,7 +4497,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#gate')
 
 /* ---------- quiz « Mes goûts » : calibrer son radar, pour des recommandations sur mesure ---------- */
 // étapes : accueil, styles, artistes écoutés, réglage têtes d’affiche ↔ underground, formats, concerts, profil
-const QZ_STEPS = ['hello', 'cats', 'artists', 'level', 'fmt', 'metro', 'done'];
+const QZ_STEPS = ['hello', 'cats', 'artists', 'avoid', 'level', 'fmt', 'metro', 'done'];
 const QZ_CATS = [['rfr', 'Rap FR', 'France, Belgique, Suisse, Québec'], ['rus', 'Rap US / UK', 'Atlanta, New York, Chicago, Londres']];
 const QZ_FMT = [['album', 'Les albums', 'Écouter un projet en entier'], ['ep', 'Les EP', 'Format court, souvent les pépites'], ['single', 'Les singles', 'Les sons qui tournent tout de suite']];
 let QZ = null;
@@ -4466,14 +4575,28 @@ function finishQuiz() {
   savePrefs();
 }
 const qzCheck = '<i class="qz-ck" aria-hidden="true"></i>';
+// « proche de … » : un artiste voisin (Deezer) d’un des artistes choisis
+function qzNearOf(k) {
+  if (QZ.like[k]) return '';
+  const a = ART.byNorm.get(k);
+  for (const [lk, name] of Object.entries(QZ.like)) {
+    const l = ART.byNorm.get(lk); if (!l) continue;
+    if ((a && l.rel.slice(0, 10).includes(a.i)) || (a && a.rel.slice(0, 10).includes(l.i))) return name;
+  }
+  return '';
+}
 function qzTile(x) {
-  const on = !!QZ.like[x.k];
+  const on = !!QZ.like[x.k], near = qzNearOf(x.k);
   return `<button class="qz-art${QZ.fresh.has(x.k) ? ' fresh' : ''}" type="button" data-qz-art="${esc(x.k)}" data-name="${esc(x.name)}" aria-pressed="${on}">
     <span class="qz-pic"><span class="qz-av">${artAvatar(x.name, x.r)}</span><span class="qz-badge" aria-hidden="true"></span></span>
-    <span class="qz-name">${esc(x.name)}</span></button>`;
+    <span class="qz-name">${esc(x.name)}</span><span class="qz-near">${near ? `Proche de ${esc(near)}` : ''}</span></button>`;
 }
 function qzGridHtml() {
   const q = norm(QZ.q);
+  if (QZ.view === 'chosen' && !q) {
+    const list = Object.keys(QZ.like).map(qzByKey).filter(Boolean);
+    return list.length ? `<div class="qz-grid">${list.map(qzTile).join('')}</div>` : '<p class="qz-empty">Aucun artiste choisi pour l’instant.</p>';
+  }
   if (q) {
     const list = qzPool([]).filter(x => x.k.includes(q)).slice(0, 24);
     return list.length ? `<div class="qz-grid">${list.map(qzTile).join('')}</div>` : `<p class="qz-empty">Aucun artiste « ${esc(QZ.q)} » pour l’instant.</p>`;
@@ -4484,15 +4607,44 @@ function qzGridHtml() {
 }
 function qzCountHtml() {
   const n = Object.keys(QZ.like).length;
-  return n ? `<b>${n}</b> ${plural(n, 'artiste choisi', 'artistes choisis')}${n < 3 ? ' · encore un ou deux pour des recos plus justes' : ''}` : 'Touche ceux que tu écoutes. Leurs artistes proches apparaissent à côté.';
+  return QZ.view === 'chosen' ? 'Touche un artiste pour le retirer.' : n < 3 ? 'Touche ceux que tu écoutes : trois ou plus pour des recos justes.' : 'Plus tu en choisis, plus tes recos sont justes.';
+}
+function qzChosenBtn() {
+  const n = Object.keys(QZ.like).length;
+  return `<button class="qz-chosen" type="button" data-qz-chosen aria-pressed="${QZ.view === 'chosen'}" ${n || QZ.view === 'chosen' ? '' : 'disabled'}>${QZ.view === 'chosen' ? 'Retour à la liste' : `Artistes choisis <b>${n}</b>`}</button>`;
 }
 function qzRefresh() {
   const c = $('#qz-count'); if (c) c.innerHTML = qzCountHtml();
+  const b = $('[data-qz-chosen]'); if (b) b.outerHTML = qzChosenBtn();
   const n = $('[data-qz-next]'); if (n) n.textContent = Object.keys(QZ.like).length ? 'Suivant' : 'Passer';
+  // « proche de … » mis à jour sur place, sans redessiner la grille
+  $$('#qz-res .qz-art').forEach(el => { const near = qzNearOf(el.dataset.qzArt), sp = el.querySelector('.qz-near'); if (sp) sp.textContent = near ? `Proche de ${near}` : ''; });
 }
 function paintArtists() {
   const g = $('#qz-res'); if (g) g.innerHTML = qzGridHtml();
   qzRefresh(); QZ.fresh.clear();
+}
+// « pas pour moi » : des artistes connus de tes styles, loin de ceux que tu as choisis
+function qzNegPool() {
+  const near = new Set();
+  for (const k of Object.keys(QZ.like)) { near.add(k); const a = ART.byNorm.get(k); if (a) a.rel.forEach(j => { const b = ART.list[j]; if (b) near.add(b.k); }); }
+  return qzPool(QZ.cats.length ? QZ.cats : ['rfr', 'rus']).filter(x => !near.has(x.k)).slice(0, 60);
+}
+function qzNegTile(x) {
+  return `<button class="qz-art neg" type="button" data-qz-neg="${esc(x.k)}" data-name="${esc(x.name)}" aria-pressed="${!!QZ.hide[x.k]}">
+    <span class="qz-pic"><span class="qz-av">${artAvatar(x.name, x.r)}</span><span class="qz-badge" aria-hidden="true"></span></span>
+    <span class="qz-name">${esc(x.name)}</span></button>`;
+}
+function qzNegGridHtml() {
+  const q = norm(QZ.q);
+  const list = q ? qzPool([]).filter(x => x.k.includes(q) && !QZ.like[x.k]).slice(0, 24) : qzNegPool().slice(0, 18);
+  const extra = Object.entries(QZ.hide).filter(([k]) => !list.some(x => x.k === k)).map(([k]) => qzByKey(k)).filter(Boolean);
+  const all = q ? list : [...extra, ...list];
+  return all.length ? `<div class="qz-grid">${all.map(qzNegTile).join('')}</div>` : `<p class="qz-empty">${q ? `Aucun artiste « ${esc(QZ.q)} ».` : 'Aucun artiste à proposer.'}</p>`;
+}
+function qzNegCountHtml() {
+  const n = Object.keys(QZ.hide).length;
+  return n ? `<b>${n}</b> ${plural(n, 'artiste écarté', 'artistes écartés')}` : 'Facultatif : passe si personne ne te dérange.';
 }
 // réglage têtes d’affiche ↔ underground : quatre artistes à ce niveau, avec leur photo
 function lvPreviewHtml(u) {
@@ -4500,15 +4652,15 @@ function lvPreviewHtml(u) {
   const i = Math.round((pool.length - 1) * (u / 100)), from = Math.max(0, Math.min(pool.length - 4, i - 1));
   return pool.slice(from, from + 4).map(x => `<span class="lv-a"><span class="lv-c">${artAvatar(x.name, x.r)}</span><b>${esc(x.name)}</b>${x.a && x.a.f ? `<small>${fmtFans(x.a.f)} fans</small>` : ''}</span>`).join('');
 }
-function qzBar() { return `<div class="qz-bar" aria-hidden="true">${[1, 2, 3, 4, 5].map(i => `<i class="${i <= QZ.step ? 'on' : ''}"></i>`).join('')}</div>`; }
+function qzBar() { return `<div class="qz-bar" aria-hidden="true">${[1, 2, 3, 4, 5, 6].map(i => `<i class="${i <= QZ.step ? 'on' : ''}"></i>`).join('')}</div>`; }
 function paintQuiz() {
   const el = $('#quiz'); if (!el || !QZ) return;
-  const step = QZ_STEPS[QZ.step], k = n => `<p class="qz-k">Question ${n} sur 5</p>`;
+  const step = QZ_STEPS[QZ.step], k = n => `<p class="qz-k">Question ${n} sur 6</p>`;
   let body = '', next = 'Suivant', can = true, top = '';
   if (step === 'hello') {
     top = '<span></span><button class="qz-skip" type="button" data-qz-skip>Plus tard</button>';
     body = `<div class="qz-hello"><div class="qz-hello-art" aria-hidden="true">${introArt('radar')}</div>
-      <p class="qz-k">${ME.profile && ME.profile.n ? `Bienvenue, ${esc(ME.profile.n.split(' ')[0])} · cinq questions` : 'Une minute, cinq questions'}</p><h2 class="qz-h">Calibrons ton radar.</h2>
+      <p class="qz-k">${ME.profile && ME.profile.n ? `Bienvenue, ${esc(ME.profile.n.split(' ')[0])} · six questions` : 'Une minute, six questions'}</p><h2 class="qz-h">Calibrons ton radar.</h2>
       <p class="qz-p">Dis-nous ce que tu écoutes : le site te recommande les artistes qui y ressemblent, et range le reste plus bas.</p></div>`;
     next = 'C’est parti';
   } else if (step === 'cats') {
@@ -4523,19 +4675,33 @@ function paintQuiz() {
     body = `${k(2)}<h2 class="qz-h">Qui tu écoutes ?</h2><p class="qz-p">Choisis tes artistes. On s’en sert pour te recommander ceux qui leur ressemblent.</p>
       <div class="qz-pick">
         <label class="qz-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" data-qz-search placeholder="Chercher un artiste" value="${esc(QZ.q)}" aria-label="Chercher un artiste"></label>
-        <p class="qz-count" id="qz-count">${qzCountHtml()}</p>
+        <div class="qz-countrow"><p class="qz-count" id="qz-count">${qzCountHtml()}</p>${qzChosenBtn()}</div>
         <div id="qz-res">${qzGridHtml()}</div>
       </div>`;
     QZ.fresh.clear();
     next = Object.keys(QZ.like).length ? 'Suivant' : 'Passer';
+  } else if (step === 'avoid') {
+    body = `${k(3)}<h2 class="qz-h">Et ceux que tu ne veux pas voir ?</h2><p class="qz-p">Touche ceux qui ne sont pas pour toi : leurs sorties, et celles des artistes qui leur ressemblent, passeront plus bas.</p>
+      <div class="qz-pick">
+        <label class="qz-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" data-qz-search placeholder="Chercher un artiste" value="${esc(QZ.q)}" aria-label="Chercher un artiste"></label>
+        <p class="qz-count" id="qz-count">${qzNegCountHtml()}</p>
+        <div id="qz-res">${qzNegGridHtml()}</div>
+      </div>`;
+    next = Object.keys(QZ.hide).length ? 'Suivant' : 'Personne, suivant';
   } else if (step === 'level') {
-    body = `${k(3)}<h2 class="qz-h">Tu règles ton radar sur…</h2><p class="qz-p">Des têtes d’affiche jusqu’aux artistes qui montent.</p>
+    // première fois : le curseur se place d’après les artistes choisis (leur nombre de fans dans leur style)
+    if (!QZ.ugAuto) {
+      QZ.ugAuto = true;
+      const ranks = Object.values(QZ.like).map(fansRank).filter(x => x != null).sort((a, b) => a - b);
+      if (ranks.length >= 2 && !TASTE) { const med = ranks[Math.floor(ranks.length / 2)]; QZ.ug = Math.max(5, Math.min(95, Math.round((1 - med) * 100))); QZ.ugFrom = true; }
+    }
+    body = `${k(4)}<h2 class="qz-h">Tu règles ton radar sur…</h2><p class="qz-p">${QZ.ugFrom ? 'Réglé d’après tes artistes : ajuste si tu veux plus de têtes d’affiche ou plus de pépites.' : 'Des têtes d’affiche jusqu’aux artistes qui montent.'}</p>
       <div class="lv"><p class="lv-l" id="lv-l">${qzLevelOfU(QZ.ug)}</p>
         <input class="lv-range" type="range" min="0" max="100" step="1" value="${QZ.ug}" data-qz-ug aria-label="Têtes d’affiche ou underground" style="--v:${QZ.ug}%">
         <div class="lv-ends"><span>Têtes d’affiche</span><span>Underground</span></div>
         <div class="lv-prev" id="lv-p">${lvPreviewHtml(QZ.ug)}</div></div>`;
   } else if (step === 'fmt') {
-    body = `${k(4)}<h2 class="qz-h">Tu écoutes surtout…</h2><p class="qz-p">Ce que tu veux voir en premier. Plusieurs choix possibles.</p>
+    body = `${k(5)}<h2 class="qz-h">Tu écoutes surtout…</h2><p class="qz-p">Ce que tu veux voir en premier. Plusieurs choix possibles.</p>
       <div class="qz-opts">${QZ_FMT.map(([f, t, d]) => `<button class="qz-opt" type="button" data-qz-fmt="${f}" aria-pressed="${QZ.fmt.includes(f)}"><span class="qz-fi ${f}" aria-hidden="true"></span><span class="qz-ot"><b>${t}</b><span>${d}</span></span>${qzCheck}</button>`).join('')}</div>`;
   } else if (step === 'metro') {
     next = 'Voir mon profil';
@@ -4543,7 +4709,7 @@ function paintQuiz() {
     for (const c of CONCERTS.items) if (c.date >= today() && c.metro) zones[c.metro] = (zones[c.metro] || 0) + 1;
     const z = Object.entries(zones).sort((a, b) => b[1] - a[1]).slice(0, 14);
     if (QZ.metro && !zones[QZ.metro]) z.unshift([QZ.metro, 0]);
-    body = `${k(5)}<h2 class="qz-h">Et en concert ?</h2><p class="qz-p">La ville où l’onglet Concerts s’ouvrira.</p>
+    body = `${k(6)}<h2 class="qz-h">Et en concert ?</h2><p class="qz-p">La ville où l’onglet Concerts s’ouvrira.</p>
       <div class="qz-chips"><button class="qz-chip" type="button" data-qz-metro="" aria-pressed="${!QZ.metro}">Partout</button>${CONCERTS.loaded ? z.map(([m, n]) => `<button class="qz-chip" type="button" data-qz-metro="${esc(m)}" aria-pressed="${QZ.metro === m}">${esc(m)}${n ? ` <span>${n} ${plural(n, 'date', 'dates')}</span>` : ''}</button>`).join('') : '<span class="qz-p">Chargement des villes…</span>'}</div>`;
   } else {
     const [pt, pd] = persona(TASTE);
@@ -4571,37 +4737,46 @@ function paintQuiz() {
   const done = step === 'done', hello = step === 'hello';
   el.innerHTML = `<div class="qz-in" role="dialog" aria-modal="true" aria-label="Quiz : tes goûts">
     <div class="qz-top">${done ? '' : hello ? top : `${qzBar()}<button class="qz-skip" type="button" data-qz-skip>Plus tard</button>`}</div>
-    <div class="qz-body" data-step="${step}">${body}</div>
+    <div class="qz-body${QZ.painted === QZ.step ? ' still' : ''}" data-step="${step}">${body}</div>
     <div class="qz-nav">${done ? '<button class="qz-next wide" type="button" data-qz-end>Voir ma sélection</button>'
       : `${QZ.step > 1 ? '<button class="qz-back" type="button" data-qz-back>Retour</button>' : ''}<button class="qz-next${hello ? ' wide' : ''}" type="button" data-qz-next ${can ? '' : 'disabled'}>${next}</button>`}</div>
   </div>`;
+  QZ.painted = QZ.step;
   const f = done ? $('[data-qz-end]', el) : null; if (f) f.focus({ preventScroll: true });
 }
 document.addEventListener('click', e => {
   const t = e.target.closest('button'); if (!t) return;
   const d = t.dataset;
   if (d.quiz !== undefined) { openQuiz(); return; }
+  if (d.sigReset !== undefined) { SIG = {}; store.set('sig', SIG); RECO = null; toast('Apprentissage effacé : tes recommandations repartent du quiz'); render(); return; }
   if (d.showhid !== undefined) { SHOW_HID = !SHOW_HID; render(); return; }
   if (d.unhide !== undefined && TASTE) { delete TASTE.hide[norm(d.unhide)]; store.set('taste', TASTE); RECO = null; toast(`${d.unhide} peut de nouveau apparaître dans tes recommandations`); render(); return; }
   if (!QZ || !t.closest('#quiz')) return;
   if (d.qzSkip !== undefined) { store.set('tasteAsked', 1); closeQuiz(); toast(TASTE ? 'Quiz fermé : tes goûts restent les mêmes' : 'Tu pourras faire le quiz quand tu veux dans Paramètres › Mes goûts'); return; }
-  if (d.qzCat) { QZ.cats = QZ.cats.includes(d.qzCat) ? QZ.cats.filter(c => c !== d.qzCat) : [...QZ.cats, d.qzCat]; paintQuiz(); return; }
-  if (d.qzFmt) { QZ.fmt = QZ.fmt.includes(d.qzFmt) ? QZ.fmt.filter(f => f !== d.qzFmt) : [...QZ.fmt, d.qzFmt]; paintQuiz(); return; }
-  if (d.qzMetro !== undefined) { QZ.metro = d.qzMetro; paintQuiz(); return; }
+  if (d.qzCat) { QZ.cats = QZ.cats.includes(d.qzCat) ? QZ.cats.filter(c => c !== d.qzCat) : [...QZ.cats, d.qzCat]; t.setAttribute('aria-pressed', String(QZ.cats.includes(d.qzCat))); const n = $('[data-qz-next]'); if (n) n.disabled = !QZ.cats.length; return; }
+  if (d.qzFmt) { QZ.fmt = QZ.fmt.includes(d.qzFmt) ? QZ.fmt.filter(f => f !== d.qzFmt) : [...QZ.fmt, d.qzFmt]; t.setAttribute('aria-pressed', String(QZ.fmt.includes(d.qzFmt))); return; }
+  if (d.qzMetro !== undefined) { QZ.metro = d.qzMetro; $$('[data-qz-metro]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.qzMetro === QZ.metro))); return; }
   if (d.qzArt) {
     const k = d.qzArt;
-    if (QZ.like[k]) { delete QZ.like[k]; t.setAttribute('aria-pressed', 'false'); qzRefresh(); return; }
-    QZ.like[k] = d.name;
-    if (QZ.q) {   // choisi depuis la recherche : il rejoint la grille, avec ses artistes proches
-      QZ.q = ''; const s = $('[data-qz-search]'); if (s) s.value = '';
-      if (!QZ.shown.includes(k)) QZ.shown.unshift(k);
-      qzExpand(k); paintArtists(); return;
-    }
-    t.setAttribute('aria-pressed', 'true');
-    const before = new Set(QZ.shown); qzExpand(k);
-    const added = QZ.shown.filter(x => !before.has(x)).map(qzByKey).filter(Boolean);
-    if (added.length) t.insertAdjacentHTML('afterend', added.map(qzTile).join(''));
-    QZ.fresh.clear(); qzRefresh();
+    if (QZ.like[k]) delete QZ.like[k]; else QZ.like[k] = d.name;
+    $$(`#qz-res [data-qz-art="${CSS.escape(k)}"]`).forEach(el => el.setAttribute('aria-pressed', String(!!QZ.like[k])));
+    if (QZ.view === 'chosen' && !QZ.like[k]) { t.remove(); if (!Object.keys(QZ.like).length) { QZ.view = 'all'; paintArtists(); return; } }
+    qzRefresh();
+    return;
+  }
+  if (d.qzChosen !== undefined) {
+    QZ.view = QZ.view === 'chosen' ? 'all' : 'chosen';
+    QZ.q = ''; const s = $('[data-qz-search]'); if (s) s.value = '';
+    paintArtists();
+    return;
+  }
+  if (d.qzNeg) {
+    const k = d.qzNeg;
+    if (QZ.hide[k]) delete QZ.hide[k]; else QZ.hide[k] = d.name;
+    t.setAttribute('aria-pressed', String(!!QZ.hide[k]));
+    if (QZ.q) { QZ.q = ''; const s = $('[data-qz-search]'); if (s) s.value = ''; const g = $('#qz-res'); if (g) g.innerHTML = qzNegGridHtml(); }
+    const c = $('#qz-count'); if (c) c.innerHTML = qzNegCountHtml();
+    const n = $('[data-qz-next]'); if (n) n.textContent = Object.keys(QZ.hide).length ? 'Suivant' : 'Personne, suivant';
     return;
   }
   if (d.qzMore !== undefined) {
@@ -4612,13 +4787,13 @@ document.addEventListener('click', e => {
     QZ.fresh.clear(); qzRefresh();
     return;
   }
-  if (d.qzBack !== undefined) { QZ.step = Math.max(1, QZ.step - 1); paintQuiz(); return; }
-  if (d.qzNext !== undefined) { if (QZ_STEPS[QZ.step] === 'metro') finishQuiz(); QZ.step++; paintQuiz(); return; }
+  if (d.qzBack !== undefined) { QZ.q = ''; QZ.view = 'all'; QZ.step = Math.max(1, QZ.step - 1); paintQuiz(); return; }
+  if (d.qzNext !== undefined) { QZ.q = ''; QZ.view = 'all'; if (QZ_STEPS[QZ.step] === 'metro') finishQuiz(); QZ.step++; paintQuiz(); return; }
   if (d.qzEnd !== undefined) { closeQuiz(); if (location.hash !== '#semaine') location.hash = '#semaine'; else render(); scrollTo({ top: 0 }); }
 });
 document.addEventListener('input', e => {
   if (!QZ) return;
-  if (e.target.matches('[data-qz-search]')) { QZ.q = e.target.value; const g = $('#qz-res'); if (g) g.innerHTML = qzGridHtml(); }
+  if (e.target.matches('[data-qz-search]')) { QZ.q = e.target.value; if (QZ.q && QZ.view === 'chosen') { QZ.view = 'all'; qzRefresh(); } const g = $('#qz-res'); if (g) g.innerHTML = QZ_STEPS[QZ.step] === 'avoid' ? qzNegGridHtml() : qzGridHtml(); }
   if (e.target.matches('[data-qz-ug]')) {
     QZ.ug = Number(e.target.value); e.target.style.setProperty('--v', `${QZ.ug}%`);
     $('#lv-l').textContent = qzLevelOfU(QZ.ug); $('#lv-p').innerHTML = lvPreviewHtml(QZ.ug);
@@ -4631,19 +4806,10 @@ document.addEventListener('keydown', e => {
 // « Pour toi » : des artistes que tu n’as pas cités, proches de ceux que tu écoutes, dans tes styles et à ton niveau
 function forYouPicks(list, top) {
   if (!TASTE) return [];
-  const u = ugOf(TASTE) / 100, rank = popRank(list);
-  return list.filter(r => r !== top && !isHidden(r) && !splitArtists(r.artist).some(follows)).map(r => {
-    const q = rank(r), rc = recoOf(r), cat = TASTE.cats.includes(r.cat), fl = r.feats.find(follows);
-    if (!cat && !fl && !(rc && rc.s >= 0.6)) return null;
-    let s = (rc ? Math.min(rc.s, 3) * 130 : 0) + (fl ? 160 : 0) + (cat ? 60 : 0) + 70 * ((1 - u) * q + u * (1 - q));
-    if (TASTE.fmt && TASTE.fmt.length && TASTE.fmt.includes(r.rt === 'compile' ? 'album' : r.rt)) s += 35;
-    let why = '';
-    if (fl) why = `Avec ${fl}`;
-    else if (rc && rc.x.rel >= 0.4) { const v = [...rc.x.vr].sort((a, b) => b[1] - a[1]).map(([n]) => n); why = v.length > 1 ? `Proche de ${v[0]} et ${v[1]}` : `Proche de ${v[0]}`; }
-    else if (rc && rc.x.feat) why = `A rappé avec ${rc.x.feat}`;
-    else why = u > 0.6 && q < 0.45 ? 'Pépite qui monte' : q > 0.8 ? 'Très attendu' : `Dans ton style ${catName(r.cat).replace('Rap', 'rap')}`;
-    return { r, s, why };
-  }).filter(Boolean).sort((a, b) => b.s - a.s);
+  const rank = popRank(list);
+  return list.filter(r => r !== top && !isHidden(r) && !splitArtists(r.artist).some(follows))
+    .map(r => ({ r, s: tasteScore(r, rank(r)), why: tasteWhy(r) || (TASTE.cats.includes(r.cat) ? `Dans ton style ${catName(r.cat).replace('Rap', 'rap')}` : '') }))
+    .filter(x => x.why).sort((a, b) => b.s - a.s);
 }
 function forYouHtml(list, top) {
   if (!TASTE || S.q.trim()) return '';
@@ -4665,7 +4831,7 @@ function horsHtml(list, upcoming) {
 }
 function quizCtaHtml(redo) {
   if (redo && TASTE) return `<button class="qz-cta" type="button" data-quiz><span class="qz-cta-i" aria-hidden="true">♥</span><span><b>${esc(persona(TASTE)[0])}</b><span>Ton profil d’auditeur. Tes goûts ont changé ?</span></span><span class="qz-cta-go">Refaire le quiz</span></button>`;
-  return `<button class="qz-cta" type="button" data-quiz><span class="qz-cta-i" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg></span><span><b>Calibre ton radar</b><span>Cinq questions pour des recommandations sur mesure.</span></span><span class="qz-cta-go">Faire le quiz</span></button>`;
+  return `<button class="qz-cta" type="button" data-quiz><span class="qz-cta-i" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg></span><span><b>Calibre ton radar</b><span>Six questions pour des recommandations sur mesure.</span></span><span class="qz-cta-go">Faire le quiz</span></button>`;
 }
 const hiddenNote = n => `<p class="hid-note">${SHOW_HID ? 'Les artistes que tu as masqués sont affichés.' : `${n} ${plural(n, 'sortie', 'sorties')} d’artistes que tu as masqués.`}<button type="button" data-showhid>${SHOW_HID ? 'Les masquer' : 'Afficher'}</button></p>`;
 // à l’ouverture : l’écran du compte pour qui n’en a pas, le quiz pour un compte qui ne l’a pas encore fait
