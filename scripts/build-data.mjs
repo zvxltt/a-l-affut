@@ -20,7 +20,7 @@ const DEADLINE = T0 + (Number(process.env.BUDGET_MIN) || 38) * 60e3;
 // découverte élargie (rap underground, petits artistes) ; DRY=1 : essai sans rien publier, avec le résumé de ce qui serait ajouté
 const UG_ON = process.env.UG !== '0';   // UG=0 : revenir à l’ancienne découverte
 const DRY = process.env.DRY === '1';
-const UG_V = 3;   // changer ce numéro relance toutes les découvertes au passage suivant
+const UG_V = 4;   // changer ce numéro relance toutes les découvertes au passage suivant
 // Le site ne suit que le rap : rap FR (France, Belgique, Suisse, Québec) et rap US/UK (anglophone).
 const RAP = new Set(['rfr', 'rus']);
 const RAP_V = 1;   // grand ménage « rap seulement » : toutes les discographies relues avant de relancer la découverte
@@ -184,7 +184,7 @@ async function loadAnnonces() {
 // rfr (rap FR) / rus (rap US/UK) : rappeurs ; fr : artiste FR de la liste de départ dont seules les sorties rap comptent.
 // Les anciens genres (mfr musique FR, frx proche de la variété, int international) ne sont plus publiés.
 function catOf(a, genreId, genreName, title) {
-  if (!a || a.off) return null;   // pas du rap, ou rap d’une autre langue : rien n’est publié
+  if (!a || a.off || a.np) return null;   // pas du rap, rap d’une autre langue ou sans photo : rien n’est publié
   const gid = genreId > 0 ? genreId : null;
   const known = gid != null || !!genreName;
   const rap = gid === 116 || (!gid && /rap|hip/i.test(genreName || ''));
@@ -204,7 +204,7 @@ function pop(a) {
 }
 // Sortie dont on ignore le genre (annonce presse, MusicBrainz), concert : on suit l’artiste.
 function leanCat(a) {
-  if (!a || a.off) return null;
+  if (!a || a.off || a.np) return null;
   if (RAP.has(a.c)) return a.c;
   if (a.c === 'fr' && a.rp >= 50) return 'rfr';
   return null;
@@ -257,8 +257,7 @@ async function artistsStep(state, items) {
     state.rel[id] = { t: now, r: list.map(r => r.id) };
     for (const r of list) { const p = picOf(r.picture_medium); if (p) state.pic[r.id] = p; }
   }).catch(() => {})));
-  const noPic = [...inc].filter(id => !state.pic[id]).sort((x, y) => fans(y) - fans(x)).slice(0, PIC_CAP);
-  await Promise.all(noPic.map(id => dz(`/artist/${id}`).then(ar => { state.pic[id] = picOf(ar.picture_medium) || '-'; }).catch(() => {})));
+  const noPic = [];
   // ménage : seulement les artistes encore suivis
   for (const id of Object.keys(state.rel)) if (!artists[id]) delete state.rel[id];
   for (const id of Object.keys(state.pic)) if (!artists[id]) delete state.pic[id];
@@ -280,12 +279,50 @@ async function artistsStep(state, items) {
 }
 
 /* ------------------------------------------------------------------ découverte d’artistes */
+// Objectif : le plus de rappeurs possible (jusqu’à environ 10 000), tous avec une photo Deezer.
+// Les candidats trouvés attendent dans une file ; chaque passage en ajoute quelques milliers, vérifiés aussitôt
+// (discographie lue : vraiment du rap, en français ou en anglais), pour que le robot reste rapide.
+const TARGET_RAP = 10500, ADD_PER_RUN = 2200;
+const rapCount = state => Object.values(state.artists).filter(a => leanCat(a)).length;
+function addPending(state) {
+  const q = state.relPending || [];
+  if (!q.length) return;
+  const room = Math.max(0, Math.min(ADD_PER_RUN, TARGET_RAP - rapCount(state)));
+  let added = 0;
+  const rest = [];
+  for (const v of q) {
+    if (state.artists[v.id] || IGNORE.has(v.id)) continue;
+    if (added < room) {
+      state.artists[v.id] = { n: v.n, c: v.c, f: v.f, src: v.src || 'rel', it: 0, ro: 1 };
+      if (v.p) state.pic[v.id] = v.p;
+      added++;
+    } else rest.push(v);
+  }
+  state.relPending = rest;
+  if (added) log(`découverte : ${added} artistes ajoutés depuis la file (${rest.length} en attente, ${rapCount(state)} rappeurs suivis)`);
+}
+// photo Deezer obligatoire : un artiste sans photo n’est pas publié
+async function picturesStep(state) {
+  state.pic = state.pic || {};
+  const todo = Object.entries(state.artists).filter(([id, a]) => !a.off && RAP.has(a.c) && state.pic[id] === undefined)
+    .sort((x, y) => (y[1].f || 0) - (x[1].f || 0)).slice(0, 2500);
+  let none = 0;
+  await Promise.all(todo.map(([id]) => dz(`/artist/${id}`).then(ar => {
+    const p = picOf(ar.picture_medium);
+    state.pic[id] = p || '-';
+    if (!p) none++;
+  }).catch(e => { if (e instanceof DzError && e.code === 800) state.pic[id] = '-'; })));
+  for (const [id, a] of Object.entries(state.artists)) { if (state.pic[id] === '-') a.np = 1; else delete a.np; }
+  if (todo.length) log(`photos : ${todo.length} artistes vérifiés, ${none} sans photo (écartés)`);
+}
+
 // 1) Artistes « similaires » sur Deezer, sur deux niveaux (les artistes de départ, puis les plus suivis des découverts).
 // Tout artiste ajouté par la découverte n’apporte que ses sorties rangées en rap (ro), et il est écarté
 // s’il s’avère ne pas faire de rap ou rapper dans une autre langue (voir fetchDiscographies).
 const voteCat = c => (c === 'fr' ? 'rfr' : RAP.has(c) ? c : null);
 async function discoverRelated(state) {
-  const due = !state.relAt || Date.now() - state.relAt >= 6 * DAY || (UG_ON && state.relV !== UG_V);
+  const due = !state.relAt || Date.now() - state.relAt >= 6 * DAY || (UG_ON && state.relV !== UG_V)
+    || (rapCount(state) < TARGET_RAP - 1000 && !(state.relPending || []).length && Date.now() - state.relAt >= DAY);   // tant qu’on est loin de l’objectif : chaque jour
   if (!due) return;
   const artists = state.artists;
   // points de départ : la liste de départ, puis tout le rap déjà suivi à partir de 6 000 fans (20 000 en rap US/UK) :
@@ -297,8 +334,8 @@ async function discoverRelated(state) {
   const inOld = new Set(oldBase.map(([id]) => id));
   // rap FR dont les titres sont en français (pas le rap suisse alémanique ou flamand des catégories Wikipédia)
   const rapBase = !UG_ON ? [] : Object.entries(artists)
-    .filter(([id, a]) => !inOld.has(id) && rapOk(a) && ((a.c === 'rfr' && a.f >= 6000 && !(a.lf < 20)) || (a.c === 'rus' && a.f >= 20000)))
-    .sort(byRank).slice(0, 2600);
+    .filter(([id, a]) => !inOld.has(id) && rapOk(a) && !a.np && ((a.c === 'rfr' && a.f >= 1500 && !(a.lf < 20)) || (a.c === 'rus' && a.f >= 4000)))
+    .sort(byRank).slice(0, 7000);
   const base = [...oldBase, ...rapBase];
   log(`découverte : artistes similaires de ${base.length} artistes…`);
   const votes = new Map();
@@ -306,13 +343,14 @@ async function discoverRelated(state) {
     const cat = voteCat(s.c);
     for (const r of res.data || []) {
       if (artists[r.id] || IGNORE.has(r.id)) continue;
-      const v = votes.get(r.id) || { id: r.id, n: r.name, f: r.nb_fan || 0, cats: {} };
+      const v = votes.get(r.id) || { id: r.id, n: r.name, f: r.nb_fan || 0, cats: {}, p: '' };
       v.cats[cat] = (v.cats[cat] || 0) + 1;
       v.f = r.nb_fan || v.f;
+      v.p = v.p || picOf(r.picture_medium);
       votes.set(r.id, v);
     }
   }).catch(() => {})));
-  let added = 0;
+  const queue = [];
   const cands = [...votes.values()].map(v => {
     const total = Object.values(v.cats).reduce((a, b) => a + b, 0);
     const top = Object.entries(v.cats).sort((a, b) => b[1] - a[1])[0][0];
@@ -320,18 +358,21 @@ async function discoverRelated(state) {
   }).sort((a, b) => b.total - a.total || b.f - a.f);
   for (const v of cands) {
     const cat = v.top;
-    // rap FR dès 1 000 fans, rap US/UK dès 6 000, s’il est voisin d’au moins deux artistes suivis
-    const minFans = UG_ON ? (cat === 'rus' ? 4000 : 700) : (cat === 'rus' ? 60000 : 10000);
-    if (v.f < minFans) continue;
+    // rap FR dès 400 fans, rap US/UK dès 1 500, s’il est voisin d’au moins deux artistes suivis ; toujours avec une photo
+    const minFans = UG_ON ? (cat === 'rus' ? 1500 : 400) : (cat === 'rus' ? 60000 : 10000);
+    if (v.f < minFans || !v.p) continue;
     if (v.total < 2 && v.f < (cat === 'rfr' ? 25000 : 150000)) continue;
     // une star inconnue du suivi n’est presque jamais un rappeur : au-delà d’un million de fans, quatre voisins rappeurs au moins
     if (v.f >= 1e6 && v.total < 4) continue;
-    artists[v.id] = { n: v.n, c: cat, f: v.f, src: 'rel', it: 0, ro: 1 };
-    if (++added >= (UG_ON ? 6000 : 1500)) break;
+    queue.push({ id: v.id, n: v.n, c: cat, f: v.f, p: v.p });
+    if (queue.length >= 20000) break;
   }
+  // les plus cités et les plus suivis d’abord
+  const known = new Set((state.relPending || []).map(v => v.id));
+  state.relPending = [...(state.relPending || []), ...queue.filter(v => !known.has(v.id))];
   state.relAt = Date.now();
   if (UG_ON) state.relV = UG_V;
-  log(`découverte : ${added} artistes similaires ajoutés (${Object.keys(artists).length} suivis)`);
+  log(`découverte : ${queue.length} candidats similaires avec photo mis en file (${state.relPending.length} en attente, ${Object.keys(artists).length} suivis)`);
 }
 
 // 2) Catégories Wikipédia : rappeurs français, belges, suisses, québécois, américains et britanniques.
@@ -447,8 +488,9 @@ async function discoverUnderground(state, list) {
     const m = ms.length > 1 && ms[1].nb_fan > ms[0].nb_fan * 0.35 ? null : ms[0];
     if (!m && ms.length > 1) unsure++;
     state.ug[norm(name)] = { id: m ? m.id : 0, t: Date.now() };
-    if (!m || state.artists[m.id] || IGNORE.has(m.id) || m.nb_fan < (c === 'rus' ? 1000 : 200)) return;
+    if (!m || state.artists[m.id] || IGNORE.has(m.id) || m.nb_fan < (c === 'rus' ? 1000 : 200) || !picOf(m.picture_medium)) return;
     state.artists[m.id] = { n: m.name, c, f: m.nb_fan, src: 'ug', it: 0, ro: 1 };
+    (state.pic = state.pic || {})[m.id] = picOf(m.picture_medium);
     added++;
   }).catch(() => {})));
   log(`découverte liste underground : ${todo.length} noms cherchés, ${added} artistes ajoutés${unsure ? `, ${unsure} homonymes écartés` : ''}`);
@@ -481,7 +523,7 @@ async function discoverPlaylists(state) {
   await Promise.all(PL_QUERIES.map(([q, c]) => dz(`/search/playlist?limit=12&q=${encodeURIComponent(q)}`).then(res => {
     let n = 0;
     for (const p of res.data || []) {
-      if (n >= 6 || seenPl.has(p.id) || (p.nb_tracks || 0) < 15) continue;
+      if (n >= 10 || seenPl.has(p.id) || (p.nb_tracks || 0) < 15) continue;
       seenPl.add(p.id); pls.push({ id: p.id, c }); n++;
     }
   }).catch(() => {})));
@@ -504,13 +546,16 @@ async function discoverPlaylists(state) {
       votes.set(ar.id, v);
     }
   }).catch(() => {})));
-  const cands = [...votes.values()].filter(v => v.pl >= 2).sort((a, b) => b.pl - a.pl).slice(0, 3000);
+  const cands = [...votes.values()].filter(v => v.pl >= 2).sort((a, b) => b.pl - a.pl).slice(0, 4000);
+  state.pic = state.pic || {};
   let added = 0;
   await Promise.all(cands.map(v => dz(`/artist/${v.id}`).then(ar => {
     const c = (v.cats.rus || 0) > (v.cats.rfr || 0) ? 'rus' : 'rfr';
     const f = ar.nb_fan || 0;
-    if (artists[v.id] || f < (c === 'rus' ? 2000 : 400) || (f >= 1e6 && v.pl < 4)) return;
+    const p = picOf(ar.picture_medium);
+    if (artists[v.id] || !p || f < (c === 'rus' ? 1200 : 300) || (f >= 1e6 && v.pl < 4)) return;
     artists[v.id] = { n: ar.name || v.n, c, f, src: 'pl', it: 0, ro: 1 };
+    state.pic[v.id] = p;
     added++;
   }).catch(() => {})));
   state.plAt = Date.now(); state.plV = UG_V;
@@ -549,10 +594,18 @@ async function fetchDiscographies(state) {
     if (e && !force) {
       const age = a.last ? (Date.parse(TODAY) - Date.parse(a.last)) / DAY : 9999;
       const future = e.items.some(x => x.date > TODAY);
-      const ttl = a.off ? 30 * DAY : future || age <= 150 ? 0 : age <= 500 ? 6 * HOUR : 24 * HOUR;
+      // avec 10 000 artistes : les gros noms à chaque passage, les plus petits un peu moins souvent
+      const f = a.f || 0, act = f >= 20000 ? 0 : f >= 5000 ? HOUR : 3 * HOUR;
+      const ttl = a.off || a.np ? 30 * DAY : future ? 0 : age <= 150 ? act : age <= 500 ? 6 * HOUR : 24 * HOUR;
       if (ttl && now - e.t < ttl) { out.set(id, e.items.filter(x => x.date >= HISTORY_FROM)); continue; }
     }
     todo.push(id);
+  }
+  // plafond par passage : les nouveaux artistes d’abord, puis les plus suivis ; le reste au passage suivant
+  const DISCO_CAP = 5000;
+  if (todo.length > DISCO_CAP) {
+    todo.sort((x, y) => (state.disco[x] ? 1 : 0) - (state.disco[y] ? 1 : 0) || (artists[y].f || 0) - (artists[x].f || 0));
+    for (const id of todo.splice(DISCO_CAP)) if (state.disco[id]) out.set(id, state.disco[id].items.filter(x => x.date >= HISTORY_FROM));
   }
   let fails = 0;
   if (force) state.discoV = DISCO_V;
@@ -689,7 +742,7 @@ function buildDeezerReleases(artists, discos, albums) {
   const map = new Map();
   for (const [id, items] of discos) {
     const a = artists[id];
-    if (!a) continue;
+    if (!a || a.np) continue;
     for (const x of items) {
       let r = map.get(x.id);
       if (!r) {
@@ -1662,6 +1715,9 @@ async function main() {
   if (DRY) { await dryRunReport(state, before); return; }
   rapOnly(state);
   if (state.wiki) await discoverFromNames(state, state.wiki.items.map(x => x.artist).filter(n => n !== 'Divers artistes'));
+  state.pic = state.pic || {};
+  addPending(state);
+  await picturesStep(state);
   KNOWN = new Set(Object.values(state.artists).map(a => norm(a.n)));
   const artists = state.artists;
   log(`${Object.keys(artists).length} artistes suivis`);

@@ -1763,8 +1763,13 @@ function recoOf(r) {
 }
 // rang de popularité d’une sortie dans une liste (0 : la plus discrète, 1 : la plus attendue)
 function popRank(list) {
-  const pops = list.map(r => r.pop).sort((a, b) => a - b);
-  return r => (pops.length > 1 ? pops.filter(x => x < r.pop).length / (pops.length - 1) : 0.5);
+  const pops = list.map(r => r.pop).sort((a, b) => a - b), n = pops.length;
+  return r => {   // recherche dichotomique : rapide même avec des milliers de sorties
+    if (n < 2) return 0.5;
+    let lo = 0, hi = n;
+    while (lo < hi) { const m = (lo + hi) >> 1; if (pops[m] < r.pop) lo = m + 1; else hi = m; }
+    return lo / (n - 1);
+  };
 }
 const likesRelease = r => splitArtists(r.artist).some(follows) || r.feats.some(follows);
 // dans tes goûts : tes artistes, leurs voisins et featurings, ou une sortie de tes styles à ton niveau
@@ -4401,7 +4406,11 @@ const QZ_CATS = [['rfr', 'Rap FR', 'France, Belgique, Suisse, Québec'], ['rus',
 const QZ_FMT = [['album', 'Les albums', 'Écouter un projet en entier'], ['ep', 'Les EP', 'Format court, souvent les pépites'], ['single', 'Les singles', 'Les sons qui tournent tout de suite']];
 let QZ = null;
 // artistes des sorties publiées (secours quand le fichier des artistes manque), avec leur sortie la plus attendue
+const QA_MEMO = new Map();
 function quizArtists(cats) {
+  const key = `${DATA.generatedAt}|${cats.join()}`;
+  if (QA_MEMO.has(key)) return QA_MEMO.get(key);
+  if (QA_MEMO.size > 8) QA_MEMO.clear();
   const by = new Map();
   for (const r of DATA.items) {
     if (cats.length && !cats.includes(r.cat)) continue;
@@ -4411,7 +4420,9 @@ function quizArtists(cats) {
       if (!cur || r.pop > cur.r.pop) by.set(k, { k, name: cur ? cur.name : a, r });
     }
   }
-  return [...by.values()].sort((a, b) => b.r.pop - a.r.pop);
+  const out = [...by.values()].sort((a, b) => b.r.pop - a.r.pop);
+  QA_MEMO.set(key, out);
+  return out;
 }
 // artistes proposés dans le quiz, les plus suivis d’abord
 function qzPool(cats) {
