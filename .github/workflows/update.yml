@@ -72,5 +72,9 @@ jobs:
           others=$(gh run list -R "$REPO" --workflow update.yml --limit 20 --json databaseId,status \
             --jq "[.[] | select(.databaseId != $RUN_ID) | select(.status != \"completed\")] | length")
           if [ "$others" -gt 0 ]; then echo "un passage est déjà prévu ($others) : rien à relancer"; exit 0; fi
-          gh workflow run update.yml -R "$REPO" --ref main
-          echo "passage suivant lancé"
+          # GitHub refuse parfois l’envoi (erreur 500 passagère) : on réessaie, sinon la chaîne des passages s’arrête
+          for i in 1 2 3 4 5; do
+            if gh workflow run update.yml -R "$REPO" --ref main; then echo "passage suivant lancé"; exit 0; fi
+            echo "échec de la relance ($i), nouvel essai dans 30 s"; sleep 30
+          done
+          exit 1
