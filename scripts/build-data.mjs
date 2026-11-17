@@ -361,7 +361,7 @@ async function discoverRelated(state) {
     // rap FR dès 400 fans, rap US/UK dès 1 500, s’il est voisin d’au moins deux artistes suivis ; toujours avec une photo
     const minFans = UG_ON ? (cat === 'rus' ? 1500 : 400) : (cat === 'rus' ? 60000 : 10000);
     if (v.f < minFans || !v.p) continue;
-    if (v.total < 2 && v.f < (cat === 'rfr' ? 25000 : 150000)) continue;
+    if (v.total < 2 && v.f < (cat === 'rfr' ? 5000 : 15000)) continue;
     // une star inconnue du suivi n’est presque jamais un rappeur : au-delà d’un million de fans, quatre voisins rappeurs au moins
     if (v.f >= 1e6 && v.total < 4) continue;
     queue.push({ id: v.id, n: v.n, c: cat, f: v.f, p: v.p });
@@ -515,15 +515,15 @@ const PL_QUERIES = [
     'manchester rap', 'birmingham rap', 'uk grime classics', 'uk female rap', 'scottish rap', 'uk afroswing rap'].map(q => [q, 'rus']),
 ];
 async function discoverPlaylists(state) {
-  const due = !state.plAt || Date.now() - state.plAt >= 6 * DAY || state.plV !== UG_V;
+  const due = !state.plAt || Date.now() - state.plAt >= 6 * DAY || state.plV !== UG_V || (rapCount(state) < TARGET_RAP - 1000 && Date.now() - state.plAt >= DAY);
   if (!due) return;
   if (!DRY && Date.now() - T0 > 12 * MIN) { log('découverte playlists : remise au passage suivant'); return; }
   const artists = state.artists;
   const seenPl = new Set(), pls = [];
-  await Promise.all(PL_QUERIES.map(([q, c]) => dz(`/search/playlist?limit=12&q=${encodeURIComponent(q)}`).then(res => {
+  await Promise.all(PL_QUERIES.map(([q, c]) => dz(`/search/playlist?limit=25&q=${encodeURIComponent(q)}`).then(res => {
     let n = 0;
     for (const p of res.data || []) {
-      if (n >= 10 || seenPl.has(p.id) || (p.nb_tracks || 0) < 15) continue;
+      if (n >= 18 || seenPl.has(p.id) || (p.nb_tracks || 0) < 15) continue;
       seenPl.add(p.id); pls.push({ id: p.id, c }); n++;
     }
   }).catch(() => {})));
@@ -546,14 +546,16 @@ async function discoverPlaylists(state) {
       votes.set(ar.id, v);
     }
   }).catch(() => {})));
-  const cands = [...votes.values()].filter(v => v.pl >= 2).sort((a, b) => b.pl - a.pl).slice(0, 4000);
+  const cands = [...votes.values()].filter(v => v.pl >= 1).sort((a, b) => b.pl - a.pl).slice(0, 6000);
   state.pic = state.pic || {};
   let added = 0;
   await Promise.all(cands.map(v => dz(`/artist/${v.id}`).then(ar => {
     const c = (v.cats.rus || 0) > (v.cats.rfr || 0) ? 'rus' : 'rfr';
     const f = ar.nb_fan || 0;
     const p = picOf(ar.picture_medium);
-    if (artists[v.id] || !p || f < (c === 'rus' ? 1200 : 300) || (f >= 1e6 && v.pl < 4)) return;
+    // dans deux playlists de rap ou plus : dès 300 fans (FR) / 1 200 (US/UK) ; dans une seule : dès 3 000 / 8 000
+    const min = v.pl >= 2 ? (c === 'rus' ? 1200 : 300) : (c === 'rus' ? 8000 : 3000);
+    if (artists[v.id] || !p || f < min || (f >= 1e6 && v.pl < 4) || rapCount(state) >= TARGET_RAP) return;
     artists[v.id] = { n: ar.name || v.n, c, f, src: 'pl', it: 0, ro: 1 };
     state.pic[v.id] = p;
     added++;
@@ -644,7 +646,8 @@ async function fetchDiscographies(state) {
         else foreign = true;
       } else if (!foreign && a.c === 'rus' && tot >= 4 && frs / tot >= 0.3 && fr > en) a.c = 'rfr';
       // vraiment du rap : au moins la moitié des sorties rangées en rap (dès 3 sorties au genre connu), pas surtout du R&B
-      if ((known >= 2 && rap === 0) || (known >= 3 && a.rp < 50) || (known >= 3 && a.rb >= 50) || foreign) a.off = 1; else delete a.off;
+      const blind = known < 2 && (a.f || 0) >= 50000;   // genre (presque) jamais indiqué, et déjà très suivi : on ne devine pas
+      if ((known >= 2 && rap === 0) || (known >= 3 && a.rp < 50) || (known >= 3 && a.rb >= 50) || foreign || blind) a.off = 1; else delete a.off;
     } else if (a.src !== 'seed' && RAP.has(a.c)) {
       // rappeur suivi depuis longtemps (hors liste de départ) : même règle, sans changer de genre
       const manyForeign = n >= 5 && (es + xo) / n >= 0.35;
