@@ -1058,6 +1058,201 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 .is-os span { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
 .is-end { display: flex; gap: 8px; justify-content: space-between; flex-wrap: wrap; }
 
+/* ---------- quiz « Mes goûts » ---------- */
+.quiz { position: fixed; inset: 0; z-index: 100; background: radial-gradient(120% 70% at 50% 0%, #1E1D1B 0%, #121211 60%); color: #F1F0EC; display: flex; align-items: center; justify-content: center; animation: intro-in .35s ease-out; }
+.quiz.out { opacity: 0; transition: opacity .25s; }
+.qz-in { width: min(580px, 100%); height: 100%; max-height: 900px; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 16px; padding: calc(16px + env(safe-area-inset-top)) 22px calc(20px + env(safe-area-inset-bottom)); }
+.qz-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 40px; }
+.qz-bar { flex: 1; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.qz-bar i { height: 4px; border-radius: 2px; background: rgba(241, 240, 236, .16); transition: background-color .35s; }
+.qz-bar i.on { background: #F1F0EC; }
+.qz-skip { font-size: 14px; font-weight: 500; color: rgba(241, 240, 236, .65); padding: 8px 2px; }
+.qz-skip:hover { color: #fff; }
+.qz-body { min-height: 0; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; margin: 0 -22px; padding: 0 22px 10px; animation: intro-up .45s both cubic-bezier(.2, .8, .2, 1); }
+.qz-body::-webkit-scrollbar { display: none; }
+.qz-k { margin: 6px 0 10px; font-size: 13.5px; font-weight: 600; color: #F0503A; }
+.qz-h { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: clamp(30px, 8vw, 40px); line-height: 1.06; letter-spacing: -0.03em; text-wrap: balance; }
+.qz-p { margin: 10px 0 0; font-size: 15.5px; line-height: 1.5; color: rgba(241, 240, 236, .7); }
+/* accueil */
+.qz-body[data-step="hello"] { display: grid; align-content: center; }
+.qz-hello-art { display: grid; place-items: center; margin-bottom: 34px; }
+.qz-hello-art .ia-radar { width: min(230px, 56vw); }
+/* styles */
+.qz-styles { display: grid; gap: 12px; margin-top: 24px; }
+.qz-style { position: relative; display: grid; grid-template-columns: 110px minmax(0, 1fr) 26px; gap: 16px; align-items: center; padding: 16px; border-radius: 22px; background: #1C1C1A; border: 1.5px solid #2B2B29; color: inherit; text-align: left; transition: border-color .15s, background-color .15s, transform .12s; }
+.qz-style:active { transform: scale(.985); }
+.qz-style[aria-pressed="true"] { border-color: #F1F0EC; background: #252523; }
+.qz-fan { position: relative; height: 84px; }
+.qz-fan > span { position: absolute; top: 4px; left: calc(var(--i) * 24px); width: 66px; height: 66px; border-radius: 10px; overflow: hidden; background: #2B2B29; box-shadow: 0 8px 18px -8px rgba(0, 0, 0, .8); transform: rotate(calc((var(--i) - 1) * 7deg)); transition: transform .3s cubic-bezier(.2, 1.4, .3, 1); }
+.qz-fan > span:nth-child(2) { z-index: 1; top: 0; }
+.qz-style[aria-pressed="true"] .qz-fan > span { transform: rotate(calc((var(--i) - 1) * 12deg)) translateY(-3px); }
+.qz-fan img, .qz-fan .ph, .qz-av img, .qz-av .ph, .sw-cov img, .sw-cov .ph, .lv-c img, .lv-c .ph, .pf-av img, .pf-av .ph, .pf-pc img, .pf-pc .ph, .sw-end-a img, .sw-end-a .ph { width: 100%; height: 100%; object-fit: cover; display: grid; place-items: center; }
+.qz-style-t { display: grid; gap: 3px; min-width: 0; }
+.qz-style-t b { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+.qz-style-t span { font-size: 13.5px; color: rgba(241, 240, 236, .6); }
+.qz-style-t small { font-size: 12px; color: #F0503A; font-weight: 600; margin-top: 4px; }
+.qz-ck { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #3B3B38; display: grid; place-items: center; transition: background-color .15s, border-color .15s; }
+[aria-pressed="true"] > .qz-ck { background: #F1F0EC; border-color: #F1F0EC; }
+[aria-pressed="true"] > .qz-ck::after { content: ""; width: 10px; height: 5px; border-left: 2.5px solid #121211; border-bottom: 2.5px solid #121211; transform: translateY(-1px) rotate(-45deg); }
+/* cartes à glisser */
+#sw { margin-top: 18px; min-width: 0; }
+.sw-end-more { display: grid; place-items: center; background: #F1F0EC; color: #121211; font-size: 15px; font-weight: 700; }
+.sw-stack { position: relative; width: min(100%, 360px, 44vh); aspect-ratio: .78; margin: 0 auto; }
+.sw-card { position: absolute; inset: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto; border-radius: 26px; overflow: hidden; background: #1C1C1A; border: 1px solid #2B2B29; box-shadow: 0 24px 50px -24px rgba(0, 0, 0, .9); transform: translateY(calc(var(--n) * 14px)) scale(calc(1 - var(--n) * .05)); transition: transform .3s cubic-bezier(.2, .8, .2, 1), opacity .25s; touch-action: none; user-select: none; -webkit-user-select: none; }
+.sw-card[style*="--n:2"] { opacity: .6; } .sw-card[style*="--n:1"] { opacity: .85; }
+.sw-card[data-sw-top] { cursor: grab; }
+.sw-card.drag { transition: none; cursor: grabbing; }
+.sw-card.fly-r { transform: translate(140%, -20px) rotate(24deg) !important; opacity: 0; }
+.sw-card.fly-l { transform: translate(-140%, -20px) rotate(-24deg) !important; opacity: 0; }
+.sw-card.fly-u { transform: translateY(-120%) scale(.9) !important; opacity: 0; }
+.sw-cov { min-height: 0; overflow: hidden; pointer-events: none; }
+.sw-cov img, .sw-cov .ph { -webkit-user-drag: none; }
+.sw-info { display: grid; gap: 3px; padding: 14px 18px 16px; pointer-events: none; }
+.sw-info b { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+.sw-info span { font-size: 13.5px; color: rgba(241, 240, 236, .6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sw-info em { justify-self: start; margin-top: 6px; padding: 3px 10px; border-radius: 999px; background: #2B2B29; font-style: normal; font-size: 12px; font-weight: 600; color: rgba(241, 240, 236, .8); }
+.sw-stamp { position: absolute; top: 22px; padding: 8px 16px; border-radius: 12px; border: 3px solid; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; pointer-events: none; opacity: 0; }
+.sw-stamp.like { left: 18px; color: #F1F0EC; border-color: #F1F0EC; background: rgba(18, 18, 17, .55); transform: rotate(-10deg); opacity: var(--like, 0); }
+.sw-stamp.hide { right: 18px; color: #F0503A; border-color: #F0503A; background: rgba(18, 18, 17, .55); transform: rotate(10deg); opacity: var(--hide, 0); }
+.sw-card.fly-r .sw-stamp.like, .sw-card.fly-l .sw-stamp.hide { opacity: 1; }
+.sw-ctrl { display: flex; justify-content: center; align-items: center; gap: 18px; margin-top: 26px; }
+.sw-b { display: grid; place-items: center; border-radius: 999px; font-weight: 700; transition: transform .12s, background-color .15s; }
+.sw-b:active { transform: scale(.9); }
+.sw-b.no, .sw-b.yes { width: 62px; height: 62px; font-size: 24px; }
+.sw-b.no { background: #1C1C1A; border: 2px solid #F0503A; color: #F0503A; }
+.sw-b.yes { background: #F1F0EC; color: #121211; }
+.sw-b.mid { height: 44px; padding: 0 18px; background: #1C1C1A; border: 1.5px solid #2B2B29; color: rgba(241, 240, 236, .8); font-size: 14px; font-weight: 600; }
+.sw-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 18px; font-size: 13.5px; color: rgba(241, 240, 236, .6); }
+.sw-n { font-variant-numeric: tabular-nums; }
+.qz-link { color: rgba(241, 240, 236, .75); font-size: 14px; font-weight: 500; padding: 6px 0; }
+.qz-link:disabled { opacity: .3; }
+.qz-count { display: flex; gap: 14px; font-size: 14.5px; font-weight: 600; color: #F1F0EC; font-variant-numeric: tabular-nums; }
+.qz-count span { display: inline-flex; align-items: center; gap: 6px; }
+.lg-like, .lg-hide { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; font-style: normal; font-size: 11px; font-weight: 700; }
+.lg-like { background: #F1F0EC; color: #121211; } .lg-hide { background: #F0503A; color: #fff; }
+.sw-end { display: grid; gap: 4px; min-width: 0; }
+.sw-end .qz-p { text-align: center; }
+.sw-end-arts { display: flex; justify-content: center; padding: 14px 0 6px; }
+.sw-end-a { width: 64px; height: 64px; margin-left: -14px; border-radius: 50%; overflow: hidden; border: 3px solid #121211; background: #2B2B29; animation: pop-in .4s calc(var(--i) * .06s) both cubic-bezier(.2, 1.6, .3, 1); }
+.sw-end-a:first-child { margin-left: 0; }
+.sw-end-none { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: #1C1C1A; font-size: 24px; }
+.sw-end-t { margin: 10px 0 0; text-align: center; font-size: 18px; font-weight: 600; }
+.sw-end .qz-link { justify-self: center; margin-top: 14px; text-decoration: underline; text-underline-offset: 3px; }
+.qz-search { display: flex; align-items: center; gap: 10px; height: 46px; margin-top: 14px; padding: 0 14px; border-radius: 14px; background: #1C1C1A; border: 1.5px solid #2B2B29; color: rgba(241, 240, 236, .55); }
+.qz-search:focus-within { border-color: rgba(241, 240, 236, .5); }
+.qz-search svg { width: 18px; height: 18px; flex: none; }
+.qz-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: #F1F0EC; font: inherit; font-size: 16px; }
+.qz-search input::placeholder { color: rgba(241, 240, 236, .45); }
+.qz-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 16px 10px; margin-top: 18px; }
+.qz-art { display: grid; gap: 8px; justify-items: center; text-align: center; color: inherit; min-width: 0; -webkit-tap-highlight-color: transparent; }
+.qz-pic { position: relative; width: 72px; height: 72px; }
+.qz-av { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; background: #2B2B29; transition: opacity .18s, filter .18s; }
+.qz-pic::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; border: 3px solid transparent; transition: border-color .18s; }
+.qz-badge { position: absolute; right: -4px; bottom: -4px; z-index: 1; width: 26px; height: 26px; border-radius: 50%; display: none; place-items: center; font-size: 12px; font-weight: 700; border: 3px solid #121211; }
+.qz-art[data-st="like"] .qz-pic::after { border-color: #F1F0EC; }
+.qz-art[data-st="like"] .qz-badge { display: grid; background: #F1F0EC; color: #121211; animation: pop-in .25s cubic-bezier(.2, 1.6, .3, 1); }
+.qz-art[data-st="like"] .qz-badge::before { content: "♥"; }
+.qz-art[data-st="hide"] .qz-av { opacity: .3; filter: grayscale(1); }
+.qz-art[data-st="hide"] .qz-badge { display: grid; background: #F0503A; color: #fff; animation: pop-in .25s cubic-bezier(.2, 1.6, .3, 1); }
+.qz-art[data-st="hide"] .qz-badge::before { content: "✕"; }
+.qz-art[data-st="hide"] .qz-name { color: rgba(241, 240, 236, .4); text-decoration: line-through; }
+@keyframes pop-in { from { transform: scale(.3); opacity: 0; } }
+.qz-name { font-size: 13px; font-weight: 500; line-height: 1.25; max-width: 100%; overflow-wrap: anywhere; }
+.qz-empty { margin-top: 18px; font-size: 14.5px; color: rgba(241, 240, 236, .6); }
+/* réglage têtes d’affiche ↔ underground */
+.lv { margin-top: 30px; }
+.lv-l { margin: 0 0 18px; font-size: 26px; font-weight: 600; letter-spacing: -0.02em; text-align: center; }
+.lv-range { -webkit-appearance: none; appearance: none; width: 100%; height: 10px; border-radius: 999px; background: linear-gradient(90deg, #F1F0EC 0 var(--v), #2B2B29 var(--v) 100%); outline: none; }
+.lv-range::-webkit-slider-thumb { -webkit-appearance: none; width: 32px; height: 32px; border-radius: 50%; background: #F1F0EC; border: 6px solid #F0503A; box-shadow: 0 6px 16px -4px rgba(0, 0, 0, .7); cursor: grab; }
+.lv-range::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: #F1F0EC; border: 6px solid #F0503A; cursor: grab; }
+.lv-range:focus-visible::-webkit-slider-thumb { outline: 2px solid #fff; outline-offset: 3px; }
+.lv-ends { display: flex; justify-content: space-between; margin-top: 12px; font-size: 13px; font-weight: 500; color: rgba(241, 240, 236, .6); }
+.lv-cap { margin: 34px 0 14px; font-size: 13px; font-weight: 600; color: rgba(241, 240, 236, .55); text-align: center; }
+.lv-prev { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.lv-a { display: grid; gap: 8px; justify-items: center; text-align: center; font-size: 13px; font-weight: 500; animation: pop-in .3s both; }
+.lv-c { width: 100%; max-width: 120px; aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: #2B2B29; }
+/* formats */
+.qz-opts { display: grid; gap: 10px; margin-top: 24px; }
+.qz-opt { display: grid; grid-template-columns: 46px minmax(0, 1fr) 26px; align-items: center; gap: 14px; text-align: left; padding: 16px; border-radius: 20px; background: #1C1C1A; border: 1.5px solid #2B2B29; color: inherit; transition: border-color .15s, background-color .15s, transform .12s; }
+.qz-opt:active { transform: scale(.985); }
+.qz-opt[aria-pressed="true"] { border-color: #F1F0EC; background: #252523; }
+.qz-ot { display: grid; gap: 3px; }
+.qz-ot b { font-size: 18px; font-weight: 600; }
+.qz-ot span { font-size: 13.5px; color: rgba(241, 240, 236, .6); }
+.qz-fi { position: relative; width: 46px; height: 46px; }
+.qz-fi.album::before, .qz-fi.album::after { content: ""; position: absolute; border-radius: 6px; background: #3B3B38; }
+.qz-fi.album::before { inset: 6px 0 0 6px; } .qz-fi.album::after { inset: 0 6px 6px 0; background: #F1F0EC; }
+.qz-fi.ep::before { content: ""; position: absolute; inset: 6px; border-radius: 8px; background: #F1F0EC; box-shadow: 8px 0 0 -2px #3B3B38; }
+.qz-fi.single::before { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: radial-gradient(circle, #121211 0 14%, #F1F0EC 15% 34%, #3B3B38 35% 38%, #F1F0EC 39%); }
+/* concerts */
+.qz-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.qz-chip { padding: 11px 16px; border-radius: 999px; background: #1C1C1A; border: 1.5px solid #2B2B29; color: inherit; font-size: 15px; font-weight: 500; transition: background-color .15s, color .15s; }
+.qz-chip span { color: rgba(241, 240, 236, .45); font-size: 12.5px; margin-left: 2px; }
+.qz-chip[aria-pressed="true"] { background: #F1F0EC; color: #121211; border-color: #F1F0EC; }
+.qz-chip[aria-pressed="true"] span { color: rgba(18, 18, 17, .55); }
+/* navigation */
+.qz-nav { display: flex; align-items: center; gap: 12px; }
+.qz-back { height: 52px; padding: 0 18px; border-radius: 999px; color: rgba(241, 240, 236, .75); font-weight: 500; font-size: 15px; }
+.qz-next { margin-left: auto; height: 52px; padding: 0 28px; border-radius: 999px; background: #F1F0EC; color: #121211; font-weight: 600; font-size: 16px; transition: opacity .15s, transform .12s; }
+.qz-next.wide { flex: 1; }
+.qz-next:active { transform: scale(.97); }
+.qz-next:disabled { opacity: .3; cursor: default; }
+/* profil */
+.pf { display: grid; gap: 0; padding-top: 6px; }
+.pf-card { position: relative; overflow: hidden; padding: 22px 20px 20px; border-radius: 26px; background: linear-gradient(160deg, #262523 0%, #1A1A19 55%, #2A1714 100%); border: 1px solid #33322F; animation: pf-in .6s both cubic-bezier(.2, .8, .2, 1); }
+@keyframes pf-in { from { opacity: 0; transform: translateY(24px) scale(.97); } }
+.pf-top { display: flex; align-items: center; gap: 12px; }
+.pf-ico { width: 40px; height: 40px; flex: none; }
+.pf-ico .ia-radar { width: 40px; } .pf-ico .ia-radar i { border-width: 1.5px; } .pf-ico .ia-radar span { width: 6px; height: 6px; }
+.pf-k { margin: 0; font-size: 13.5px; font-weight: 600; color: #F0503A; }
+.pf-h { margin: 16px 0 0; font-size: clamp(34px, 9vw, 44px); font-weight: 600; letter-spacing: -0.035em; line-height: 1.02; }
+.pf-p { margin: 10px 0 0; font-size: 15px; line-height: 1.5; color: rgba(241, 240, 236, .72); }
+.pf-stats { display: grid; gap: 12px; margin-top: 20px; }
+.pf-s { display: grid; grid-template-columns: 96px minmax(0, 1fr) 46px; gap: 12px; align-items: center; font-size: 13.5px; color: rgba(241, 240, 236, .75); }
+.pf-s i { height: 8px; border-radius: 999px; background: #33322F; overflow: hidden; position: relative; }
+.pf-s i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--v); border-radius: inherit; background: #F1F0EC; transform-origin: left; animation: pf-bar .9s .3s both cubic-bezier(.2, .8, .2, 1); }
+.pf-s:nth-child(3) i::after { background: #F0503A; }
+@keyframes pf-bar { from { transform: scaleX(0); } }
+.pf-s b { text-align: right; font-weight: 600; color: #F1F0EC; font-variant-numeric: tabular-nums; }
+.pf-arts { display: flex; align-items: center; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid #33322F; font-size: 13.5px; color: rgba(241, 240, 236, .75); }
+.pf-av { display: flex; flex: none; }
+.pf-av > span { width: 36px; height: 36px; margin-left: -10px; border-radius: 50%; overflow: hidden; border: 2px solid #1F1E1C; background: #33322F; }
+.pf-av > span:first-child { margin-left: 0; }
+.pf-sel { margin: 24px 0 12px; font-size: 13.5px; font-weight: 600; color: rgba(241, 240, 236, .6); }
+.pf-picks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.pf-pick { display: grid; gap: 6px; min-width: 0; animation: intro-up .5s both; }
+.pf-pick:nth-child(2) { animation-delay: .08s; } .pf-pick:nth-child(3) { animation-delay: .16s; }
+.pf-pc { aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: #2B2B29; }
+.pf-pick b { font-size: 13.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pf-pick span:last-child { font-size: 11.5px; font-weight: 600; color: #F0503A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qz-note { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 12px; align-items: start; margin: 22px 0 0; padding: 14px 16px; border-radius: 16px; background: #1C1C1A; border: 1px solid #2B2B29; font-size: 14.5px; line-height: 1.45; color: rgba(241, 240, 236, .82); }
+.qz-note svg { width: 22px; height: 22px; color: #F0503A; }
+.qz-note b { color: #F1F0EC; }
+
+/* sélection « Pour toi », invitation au quiz, sorties masquées */
+.pt-sub { margin-left: auto; font-size: 13px; color: var(--muted); }
+.pt-rail { grid-auto-columns: minmax(150px, 172px); }
+.pt-card { display: grid; gap: 5px; align-content: start; text-align: left; min-width: 0; scroll-snap-align: start; }
+.pt-card .cover { width: 100%; border-radius: 10px; transition: transform .2s; }
+.pt-card:hover .cover { transform: translateY(-2px); }
+.pt-why { justify-self: start; max-width: 100%; margin-top: 5px; padding: 3px 9px; border-radius: 999px; background: color-mix(in srgb, var(--signal) 13%, transparent); color: var(--signal); font-size: 11.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pt-t { font-weight: 600; font-size: 14.5px; line-height: 1.25; overflow-wrap: anywhere; }
+.pt-a { font-size: 13px; color: var(--ink-2); }
+.qz-cta { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 14px; align-items: center; width: 100%; margin: 4px 0 18px; padding: 14px 14px 14px 16px; border-radius: 18px; background: var(--ink); color: var(--bg); text-align: left; transition: transform .15s; }
+.qz-cta:hover { transform: translateY(-1px); }
+.qz-cta-i { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: color-mix(in srgb, var(--bg) 14%, transparent); }
+.qz-cta-i svg { width: 22px; height: 22px; }
+.qz-cta b { display: block; font-size: 16px; font-weight: 600; }
+.qz-cta span span { font-size: 13.5px; opacity: .7; }
+.qz-cta-go { padding: 10px 16px; border-radius: 999px; background: var(--bg); color: var(--ink); font-size: 14px; font-weight: 600; white-space: nowrap; }
+.hid-note { margin: 22px 0 0; font-size: 13.5px; color: var(--muted); }
+.hid-note button { margin-left: 8px; color: var(--ink); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 480px) { .qz-cta { grid-template-columns: 40px minmax(0, 1fr); } .qz-cta-go { grid-column: 1 / -1; text-align: center; } }
+@media (prefers-reduced-motion: reduce) { .quiz, .quiz * { animation: none !important; } .qz-done-i circle, .qz-done-i path { stroke-dashoffset: 0; } }
+
+.pt-redo { margin-left: 12px; font-size: 13.5px; font-weight: 600; color: var(--accent, #F0503A); white-space: nowrap; }
+.pt-redo:hover { text-decoration: underline; text-underline-offset: 3px; }
+
 .set-st .live { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 7px; vertical-align: 1px; opacity: .7; }
 .month { margin: 38px 0 0; font: 600 12px var(--font-mono); color: var(--muted); }
 .month + .days { margin-top: 10px; }
@@ -1304,6 +1499,7 @@ async function loadData(first) {
     const items = (j.items || []).filter(x => isYmd(x.d) && CATS[x.c]).map(mapItem);
     const added = DATA.items.length ? items.filter(x => !before.has(x.key)).length : 0;
     DATA = { generatedAt: j.generatedAt, items, byKey: new Map(items.map(x => [x.key, x])), artists: j.artists || 0, co: j.co || 0 };
+    try { if (QZ && !(QZ.deck && QZ.deck.length)) paintQuiz(); } catch (e) {}   // quiz ouvert avant l’arrivée des données
     if (CONCERTS.loaded && CONCERTS.generatedAt !== j.generatedAt) loadConcerts(true);
     render();
     if (pendingFiche) openFiche(pendingFiche);
@@ -1378,6 +1574,12 @@ const follows = name => !!FOLLOW[norm(name)];
 const isMine = r => [...splitArtists(r.artist), ...(r.feats || [])].some(follows);
 const isMineConcert = c => c.artists.some(follows);
 const matchMine = r => !S.mine || isMine(r);
+// « Mes goûts » (quiz) : styles, profil, artistes masqués (« pas pour moi ») et ville des concerts
+let TASTE = store.get('taste', null);
+let SHOW_HID = false;
+const hides = name => !!(TASTE && TASTE.hide && TASTE.hide[norm(name)]);
+const isHidden = r => !!TASTE && splitArtists(r.artist).some(hides);
+const matchHide = r => SHOW_HID || !isHidden(r);
 function toggleFollowArtist(name) {
   const k = norm(name);
   if (!k) return;
@@ -1387,12 +1589,13 @@ function toggleFollowArtist(name) {
 }
 const matchType = r => S.type === 'all' || r.rt === S.type || (S.type === 'album' && r.rt === 'compile');
 const matchCat = r => S.cat === 'all' || r.cat === S.cat;
-const applyFilters = list => { const q = norm(S.q); return list.filter(r => matchCat(r) && matchType(r) && matchMine(r) && matchQ(r, q)); };
+const applyFilters = list => { const q = norm(S.q); return list.filter(r => matchCat(r) && matchType(r) && matchMine(r) && matchHide(r) && matchQ(r, q)); };
+const countHidden = base => { if (!TASTE) return 0; const q = norm(S.q); return base.filter(r => isHidden(r) && matchCat(r) && matchType(r) && matchMine(r) && matchQ(r, q)).length; };
 function elsewhereHtml(base) {
   const q = norm(S.q);
   if (q.length < 2) return '';
   const here = new Set(base.map(r => r.key)), t = today(), lo = addDays(weekStartOf(t), -MAX_BACK * 7);
-  const hits = DATA.items.filter(r => !here.has(r.key) && r.date >= lo && matchCat(r) && matchType(r) && matchMine(r) && matchQ(r, q))
+  const hits = DATA.items.filter(r => !here.has(r.key) && r.date >= lo && matchHide(r) && matchCat(r) && matchType(r) && matchMine(r) && matchQ(r, q))
     .sort((a, b) => Math.abs(daysBetween(t, a.date)) - Math.abs(daysBetween(t, b.date)) || b.pop - a.pop).slice(0, 8);
   return hits.length ? section('Ailleurs sur le site', hits.length, `<div class="rows">${hits.map(r => rowHtml(r, false)).join('')}</div>`) : '';
 }
@@ -1401,7 +1604,7 @@ function paintFilters(base) {
   const cc = { all: 0, rfr: 0, rus: 0 }, tc = { all: 0, album: 0, ep: 0, single: 0 };
   let mine = 0;
   for (const r of base) {
-    if (!matchQ(r, q)) continue;
+    if (!matchQ(r, q) || !matchHide(r)) continue;
     if (matchCat(r) && matchType(r) && isMine(r)) mine++;
     if (!matchMine(r)) continue;
     if (matchType(r)) { cc.all++; cc[r.cat]++; }
@@ -1556,13 +1759,13 @@ function dateStripHtml(list) {
   }).join('')}</div>`;
 }
 // la sortie à la une : grande pochette, chiffres clés, écoute
-function featureHtml(r) {
+function featureHtml(r, tag) {
   INDEX.set(r.key, r);
   const facts = [r.n > 1 ? `<b>${r.n}</b> titres` : '', r.dur ? `<b>${esc(fmtTotal(r.dur))}</b>` : '', r.label ? esc(r.label) : '', esc(catName(r.cat))].filter(Boolean);
   const q = encodeURIComponent(`${r.artist} ${baseTitle(r.title)}`);
   const play = r.dz ? `https://www.deezer.com/fr/album/${r.dz}` : r.su || `https://open.spotify.com/search/${q}`;
   return `<article class="feature">
-    <p class="feature-tag"><span></span>${S.week === 0 ? 'La sortie la plus attendue' : 'La sortie la plus écoutée'} · ${esc(fmtShort(r.date))}</p>
+    <p class="feature-tag"><span></span>${tag ? esc(tag) : S.week === 0 ? 'La sortie la plus attendue' : 'La sortie la plus écoutée'} · ${esc(fmtShort(r.date))}</p>
     <button class="feature-cov cover" type="button" data-key="${esc(r.key)}" aria-label="${esc(`Ouvrir ${r.title}, ${r.artist}`)}">${coverHtml(r, innerWidth * (devicePixelRatio || 1) < 700 ? 500 : 1000).replace('loading="lazy"', 'fetchpriority="high"')}</button>
     <div class="feature-t">
       <h2 class="feature-h">${titleHtml(r)}</h2>
@@ -1595,10 +1798,19 @@ function viewWeek() {
   const singles = out.filter(r => r.rt === 'single');
   const wr = FB_CONFIG ? WEEKREV.get(ws) : null;
   const usedAt = wr ? wr.at : -1;
-  let html = S.week === 0 ? rateCtaHtml() : '';
-  // à la une : l’album le plus attendu de la semaine (hors recherche)
-  const top = !S.q.trim() && albums.length ? albums[0] : null;
-  if (top) { html += featureHtml(top); albums.shift(); }
+  let html = S.week === 0 ? (!TASTE && !S.q.trim() ? quizCtaHtml() : '') + rateCtaHtml() : '';
+  // à la une : l’album le plus attendu de la semaine (hors recherche) ; avec le quiz, d’abord un artiste que tu écoutes
+  let top = null, topTag = '';
+  if (!S.q.trim() && albums.length) {
+    top = albums[0];
+    if (TASTE) {
+      const fav = albums.find(r => splitArtists(r.artist).some(follows));
+      if (fav) { top = fav; topTag = `Pour toi · tu écoutes ${splitArtists(fav.artist).find(follows)}`; }
+      else top = albums.find(r => TASTE.cats.includes(r.cat)) || top;
+    }
+    html += featureHtml(top, topTag); albums.splice(albums.indexOf(top), 1);
+  }
+  html += forYouHtml(out, top);
   // nouvelle disposition : colonne principale (une, albums, EP) + colonne des singles et de ce qui arrive
   const sorted = arr => { const x = [...arr]; if (S.sort === 'date') x.sort((p, q) => p.date.localeCompare(q.date) || q.pop - p.pop); else if (S.sort === 'az') x.sort((p, q) => p.title.localeCompare(q.title, 'fr')); return x; };
   const A = sorted(albums), E2 = sorted(eps), SG = sorted(singles);
@@ -1620,6 +1832,8 @@ function viewWeek() {
   if (SG.length) side += section('Singles', SG.length, `<div class="rows">${(sFull ? SG : SG.slice(0, SCAP)).map(r => rowHtml(r, false)).join('')}</div>${!sFull && SG.length > SCAP ? `<p class="more-row"><button class="btn" type="button" data-open="sec-singles">Afficher les ${SG.length - SCAP} autres singles</button></p>` : ''}`, 'sec-singles');
   if (soon.length) side += section('Arrive bientôt cette semaine', soon.length, `<div class="rows">${soon.map(r => rowHtml(r, true)).join('')}</div>`, 'sec-soon');
   html = list.length ? `<div class="wk"><div class="wk-main">${main}</div>${side ? `<aside class="wk-side">${side}</aside>` : ''}</div>` : html;
+  const nHid = countHidden(base);
+  if (nHid) html += hiddenNote(nHid);
   const more = elsewhereHtml(base);
   if (!list.length) html += more ? `<div class="empty"><strong>Rien cette semaine pour « ${esc(S.q.trim())} ».</strong>Voici ce qui correspond ailleurs.</div>` : emptyHtml(base.length ? 'filters' : 'week');
   html += more;
@@ -1656,6 +1870,8 @@ function viewUpcoming() {
   for (const r of list) { const ws = weekStartOf(r.date); let g = groups[groups.length - 1]; if (!g || g.date !== ws) groups.push(g = { date: ws, items: [] }); g.items.push(r); }
   paintDays(groups, r => rowHtml(r, true), weekRel, ws => `Semaine du ${fmtRange(ws, addDays(ws, 6))}`);
   $content.insertAdjacentHTML('afterbegin', dateStripHtml(all));
+  const nHid = countHidden(base);
+  if (nHid) $content.insertAdjacentHTML('beforeend', hiddenNote(nHid));
   if (more) $content.insertAdjacentHTML('beforeend', more);
 }
 
@@ -1771,6 +1987,11 @@ function viewSettings() {
   $head.innerHTML = '<div class="head-main"><p class="kicker">Réglages</p><h1 class="h1">Paramètres</h1></div>';
   const used = (() => { try { return Object.keys(localStorage).filter(k => k.startsWith('affut:')).length; } catch (e) { return 0; } })();
   $content.innerHTML = `
+    <section class="set-sec"><h2 class="set-h">Mes goûts</h2>
+      ${setRow(TASTE ? 'Refaire le quiz' : 'Faire le quiz', TASTE ? `Ton profil : ${persona(TASTE)[0]} (${qzCatsLabel(TASTE.cats)}, ${qzLevelLabel(levelOf(ugOf(TASTE))).toLowerCase()}${TASTE.metro ? `, concerts à ${TASTE.metro}` : ''}). Tes suggestions « Pour toi » en dépendent.` : 'Quelques questions sur ce que tu écoutes : le site te propose ensuite une sélection « Pour toi ».', `<button class="btn sm solid" type="button" data-quiz>${TASTE ? 'Refaire le quiz' : 'Faire le quiz'}</button>`)}
+      ${TASTE && Object.keys(TASTE.hide).length ? `<p class="set-about">Artistes masqués : leurs sorties n’apparaissent plus. Touche un nom pour le revoir.</p>
+        <div class="chips">${Object.values(TASTE.hide).sort((a, b) => a.localeCompare(b, 'fr')).map(n => `<button class="chip fchip" type="button" data-unhide="${esc(n)}">${esc(n)}<span aria-hidden="true">✕</span></button>`).join('')}</div>` : ''}
+    </section>
     <section class="set-sec"><h2 class="set-h">Apparence</h2>
       ${setRow('Thème', 'Automatique : clair ou sombre comme ton appareil.', choice('theme', theme, [['auto', 'Automatique'], ['light', 'Clair'], ['dark', 'Sombre']]))}
       ${setRow('Taille du texte', 'Agrandit tout le site, textes et pochettes.', choice('text', SET.text, [['normal', 'Normale'], ['grand', 'Grande'], ['tres-grand', 'Très grande']]))}
@@ -3415,13 +3636,13 @@ function showcaseHtml(u, own) {
 }
 function viewProfile() {
   $head.innerHTML = '';
-  if (!FB_CONFIG) { $content.innerHTML = '<div class="empty"><strong>Les profils arrivent bientôt.</strong></div>'; return; }
+  if (!FB_CONFIG) { $content.innerHTML = quizCtaHtml(true) + '<div class="empty"><strong>Les profils arrivent bientôt.</strong></div>'; return; }
   let data = null;
   if (S.view === 'profil') {
     if (!ME.ready) { $content.innerHTML = '<div class="empty"><strong>Connexion…</strong></div>'; return; }
     if (!ME.user) {
       $head.innerHTML = '<div class="head-main"><p class="kicker">Profil</p><h1 class="h1">Ton profil</h1><p class="sub">Connecte-toi pour noter les sorties de la semaine, écrire tes critiques, composer ta vitrine et suivre d’autres membres.</p></div>';
-      $content.innerHTML = `<div class="empty"><strong>Tu n’es pas connecté.</strong>Ton profil rassemble tes notes, tes critiques, ta vitrine, tes abonnés et tes abonnements.<br><button class="btn solid" type="button" data-act="signin">Se connecter</button></div>`;
+      $content.innerHTML = quizCtaHtml(true) + `<div class="empty"><strong>Tu n’es pas connecté.</strong>Ton profil rassemble tes notes, tes critiques, ta vitrine, tes abonnés et tes abonnements.<br><button class="btn solid" type="button" data-act="signin">Se connecter</button></div>`;
       return;
     }
     if (!ME.profile) { $content.innerHTML = `<div class="empty"><strong>Il te reste à choisir ton pseudo.</strong><br><button class="btn solid" type="button" data-act="onboard">Créer mon profil</button></div>`; return; }
@@ -3478,7 +3699,7 @@ function viewProfile() {
   }
   if (texts.length) html += section(own ? 'Mes critiques' : 'Ses critiques', texts.length, `<div class="rv-list wide">${texts.map(x => reviewHtml(x, true)).join('')}</div>`);
   if (!reviews.length) html += `<div class="empty"><strong>${own ? 'Tu n’as encore rien noté.' : 'Aucune note pour l’instant.'}</strong>${own ? 'Albums, EP, singles et chaque son se notent pendant leur semaine de sortie : ouvre une fiche dans « Cette semaine ».<br><a class="btn" href="#semaine">Voir les sorties de la semaine</a>' : ''}</div>`;
-  $content.innerHTML = html;
+  $content.innerHTML = (own ? quizCtaHtml(true) : '') + html;
 }
 let PROFILE_VIEW = [], PROFILE_SC = [];
 let SONGS_ALL = '';
@@ -3743,6 +3964,7 @@ document.addEventListener('error', e => {
 }, true);
 let routed = false;
 function route() {
+  if (location.hash.split('?')[0] === '#quiz') { history.replaceState(null, '', '#semaine'); setTimeout(() => (DATA.items.length ? openQuiz() : setTimeout(route, 300)), 0); }
   const base = location.hash.split('?')[0];   // adresse sans onglet : l'onglet d'ouverture choisi dans les paramètres
   const fm = location.hash.match(FICHE_RE);
   const hm = base.match(/^#u\/([a-z0-9_]{3,20})(?:\/(abonnes|abonnements))?$/);
@@ -3847,6 +4069,7 @@ function closeIntro() {
   store.set('introSeen', 1);
   document.documentElement.classList.remove('intro-on');
   el.classList.add('out'); setTimeout(() => el.remove(), 260);
+  if (!TASTE && !store.get('tasteAsked', 0)) setTimeout(openQuiz, 300);   // juste après la présentation : le quiz des goûts
 }
 document.addEventListener('click', e => {
   if (e.target.closest('[data-intro]')) { openIntro(); return; }
@@ -3864,6 +4087,290 @@ document.addEventListener('keydown', e => {
   document.addEventListener('touchend', e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null;
     if (dx < -50 && introI < INTRO.length - 1) { introI++; paintIntro(); } else if (dx > 50 && introI > 0) { introI--; paintIntro(); } }, { passive: true }); }
 if (!store.get('introSeen', 0) && !navigator.webdriver) openIntro();
+
+/* ---------- quiz « Mes goûts » : calibrer son radar, pour des suggestions sur mesure ---------- */
+// étapes : accueil, styles, artistes (cartes à glisser), réglage têtes d’affiche ↔ underground, formats, concerts, profil
+const QZ_STEPS = ['hello', 'cats', 'swipe', 'level', 'fmt', 'metro', 'done'];
+const QZ_CATS = [['rfr', 'Rap FR', 'France, Belgique, Suisse, Québec'], ['rus', 'Rap US / UK', 'Atlanta, New York, Chicago, Londres']];
+const QZ_FMT = [['album', 'Les albums', 'Écouter un projet en entier'], ['ep', 'Les EP', 'Format court, souvent les pépites'], ['single', 'Les singles', 'Les sons qui tournent tout de suite']];
+let QZ = null;
+const ugOf = t => (t && typeof t.ug === 'number' ? t.ug : t && t.level === 'top' ? 15 : t && t.level === 'ug' ? 85 : 50);
+const levelOf = u => (u <= 33 ? 'top' : u >= 67 ? 'ug' : 'mix');
+const qzCatsLabel = cats => cats.map(c => (c === 'rfr' ? 'Rap FR' : 'Rap US/UK')).join(' · ');
+const qzLevelLabel = l => ({ top: 'Les grosses sorties', mix: 'Un peu de tout', ug: 'L’underground' }[l] || 'Un peu de tout');
+const qzLevelOfU = u => qzLevelLabel(levelOf(u));
+function persona(t) {
+  const u = ugOf(t), both = t.cats.length > 1, fr = t.cats[0] === 'rfr';
+  if (u >= 67) return ['Chasseur de pépites', 'Tu entends les artistes avant tout le monde. Ton radar est réglé sur ceux qui montent.'];
+  if (u <= 33) return both ? ['Fan des grosses sorties', 'Tu veux les projets que tout le monde attend, en France comme aux États-Unis.']
+    : fr ? ['Fidèle du rap FR', 'Les têtes d’affiche du rap français, dès la minute de leur sortie.'] : ['Accro au rap US/UK', 'Les grosses sorties d’Atlanta à Londres, sans en rater une.'];
+  return both ? ['L’Éclectique', 'Un peu de tout, des deux côtés de l’Atlantique. Ton radar balaie large.']
+    : fr ? ['Curieux du rap FR', 'Les grosses sorties françaises et les pépites qui montent.'] : ['Curieux du rap US/UK', 'Les gros noms et les nouvelles têtes, d’Atlanta à Londres.'];
+}
+function quizArtists(cats) {
+  const by = new Map();
+  for (const r of DATA.items) {
+    if (cats.length && !cats.includes(r.cat)) continue;
+    for (const a of splitArtists(r.artist)) {
+      const k = norm(a); if (!k) continue;
+      const cur = by.get(k);
+      if (!cur || r.pop > cur.r.pop) by.set(k, { k, name: cur ? cur.name : a, r });
+    }
+  }
+  return [...by.values()].sort((a, b) => b.r.pop - a.r.pop);
+}
+// paquet de cartes : surtout des artistes connus, avec quelques noms qui montent
+function qzDeck() {
+  const all = quizArtists(QZ.cats).filter(x => !QZ.like[x.k] && !QZ.hide[x.k]);
+  const n = all.length, a = Math.ceil(n * 0.25), b = Math.ceil(n * 0.6);
+  const top = all.slice(0, a), mid = all.slice(a, b), low = all.slice(b);
+  const pattern = 'ttmttlttmtltmtml', out = [];
+  for (const c of pattern) { const src = c === 't' ? top : c === 'm' ? mid : low; const x = src.shift() || top.shift() || mid.shift() || low.shift(); if (x) out.push(x); }
+  return out;
+}
+function openQuiz() {
+  if ($('#quiz')) return;
+  QZ = { step: 0, cats: TASTE ? [...TASTE.cats] : [], ug: ugOf(TASTE), fmt: TASTE && TASTE.fmt ? [...TASTE.fmt] : [], like: { ...FOLLOW }, hide: { ...(TASTE ? TASTE.hide : {}) },
+    metro: TASTE ? TASTE.metro : S.metro || '', q: '', deck: null, di: 0, hist: [] };
+  document.body.insertAdjacentHTML('beforeend', '<div class="quiz" id="quiz"></div>');
+  document.documentElement.classList.add('intro-on');
+  loadConcerts(false).then(() => { if (QZ && QZ_STEPS[QZ.step] === 'metro') paintQuiz(); });
+  paintQuiz();
+}
+function closeQuiz() {
+  const el = $('#quiz'); if (!el) return;
+  QZ = null;
+  document.documentElement.classList.remove('intro-on');
+  el.classList.add('out'); setTimeout(() => el.remove(), 260);
+}
+function finishQuiz() {
+  TASTE = { cats: QZ.cats, ug: QZ.ug, level: levelOf(QZ.ug), fmt: QZ.fmt, hide: QZ.hide, metro: QZ.metro, at: Date.now() };
+  store.set('taste', TASTE); store.set('tasteAsked', 1);
+  FOLLOW = { ...QZ.like }; store.set('follow', FOLLOW);   // « j’écoute » = artistes suivis (filtre « Mes artistes »)
+  S.cat = QZ.cats.length === 1 ? QZ.cats[0] : 'all';
+  S.metro = QZ.metro;
+  savePrefs();
+}
+const qzCheck = '<i class="qz-ck" aria-hidden="true"></i>';
+function qzArtTile(x) {
+  const st = QZ.like[x.k] ? 'like' : QZ.hide[x.k] ? 'hide' : '';
+  return `<button class="qz-art" type="button" data-qz-art="${esc(x.name)}" data-st="${st}" aria-label="${esc(x.name)}">
+    <span class="qz-pic"><span class="qz-av">${coverHtml(x.r, 250)}</span><span class="qz-badge" aria-hidden="true"></span></span>
+    <span class="qz-name">${esc(x.name)}</span></button>`;
+}
+function qzSearchHtml() {
+  const q = norm(QZ.q);
+  if (!q) return '';
+  const list = quizArtists([]).filter(x => norm(x.name).includes(q)).slice(0, 24);
+  return list.length ? `<div class="qz-grid">${list.map(qzArtTile).join('')}</div>` : `<p class="qz-empty">Aucun artiste « ${esc(QZ.q)} » pour l’instant : il apparaîtra dès sa prochaine sortie.</p>`;
+}
+// la pile de cartes à glisser
+function swCardHtml(x, n) {
+  const r = x.r;
+  return `<div class="sw-card" style="--n:${n}" ${n ? 'aria-hidden="true"' : `data-sw-top data-k="${esc(x.name)}"`}>
+    <div class="sw-cov">${coverHtml(r, 500)}</div>
+    <div class="sw-info"><b>${esc(x.name)}</b><span>${esc(TYPE_LABEL[r.rt] || 'Sortie')} · ${esc(r.title)}</span><em>${esc(catName(r.cat))}</em></div>
+    <span class="sw-stamp like">J’écoute</span><span class="sw-stamp hide">Pas pour moi</span>
+  </div>`;
+}
+function swHtml() {
+  const deck = QZ.deck, left = deck.length - QZ.di;
+  const l = Object.keys(QZ.like).length, h = Object.keys(QZ.hide).length;
+  const counts = `<span><i class="lg-like">♥</i>${l}</span><span><i class="lg-hide">✕</i>${h}</span>`;
+  if (left <= 0) {
+    const liked = quizArtists([]).filter(x => QZ.like[x.k]).slice(0, 8);
+    return `<div class="sw-end">
+      <div class="sw-end-arts">${liked.slice(0, 6).map((x, i) => `<span class="sw-end-a" style="--i:${i}">${coverHtml(x.r, 250)}</span>`).join('') + (liked.length > 6 ? `<span class="sw-end-a sw-end-more" style="--i:6">+${liked.length - 6}</span>` : '') || '<span class="sw-end-none">♥</span>'}</div>
+      <p class="sw-end-t">${l ? `${l} ${plural(l, 'artiste', 'artistes')} sur ton radar` : 'Aucun artiste pour l’instant'}${h ? `, ${h} ${plural(h, 'écarté', 'écartés')}` : ''}.</p>
+      <p class="qz-p">Il en manque un ? Cherche-le : un toucher pour « j’écoute », deux pour « pas pour moi ».</p>
+      <label class="qz-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" data-qz-search placeholder="Chercher un artiste" value="${esc(QZ.q)}" aria-label="Chercher un artiste"></label>
+      <div id="qz-res">${qzSearchHtml()}</div>
+      <button class="qz-link" type="button" data-sw-again>Encore des artistes</button>
+    </div>`;
+  }
+  const cards = deck.slice(QZ.di, QZ.di + 3).map((x, i) => swCardHtml(x, i)).reverse().join('');
+  return `<div class="sw-stack">${cards}</div>
+    <div class="sw-ctrl">
+      <button class="sw-b no" type="button" data-sw="hide" aria-label="Pas pour moi">✕</button>
+      <button class="sw-b mid" type="button" data-sw="skip">Je connais pas</button>
+      <button class="sw-b yes" type="button" data-sw="like" aria-label="J’écoute">♥</button>
+    </div>
+    <div class="sw-foot"><button class="qz-link" type="button" data-sw-undo ${QZ.hist.length ? '' : 'disabled'}>↺ Annuler</button><span class="sw-n">${QZ.di + 1} / ${deck.length}</span><span class="qz-count">${counts}</span></div>`;
+}
+function paintSwipe() { const w = $('#sw'); if (w) w.innerHTML = swHtml(); bindSwipe(); }
+function swDecide(act) {
+  const card = $('[data-sw-top]'); if (!QZ || !card || card.classList.contains('gone')) return;
+  const x = QZ.deck[QZ.di];
+  card.classList.add('gone', act === 'like' ? 'fly-r' : act === 'hide' ? 'fly-l' : 'fly-u');
+  if (act === 'like') QZ.like[x.k] = x.name; else if (act === 'hide') QZ.hide[x.k] = x.name;
+  QZ.hist.push({ k: x.k, act }); QZ.di++;
+  setTimeout(paintSwipe, 230);
+}
+function bindSwipe() {
+  const card = $('[data-sw-top]'); if (!card) return;
+  let x0 = null, y0 = 0, dx = 0;
+  card.addEventListener('pointerdown', e => { x0 = e.clientX; y0 = e.clientY; dx = 0; card.setPointerCapture(e.pointerId); card.classList.add('drag'); });
+  card.addEventListener('pointermove', e => {
+    if (x0 === null) return;
+    dx = e.clientX - x0; const dy = (e.clientY - y0) * 0.25;
+    card.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx / 18}deg)`;
+    card.style.setProperty('--like', Math.max(0, Math.min(1, dx / 90)));
+    card.style.setProperty('--hide', Math.max(0, Math.min(1, -dx / 90)));
+  });
+  const up = () => {
+    if (x0 === null) return; x0 = null; card.classList.remove('drag');
+    if (dx > 90) swDecide('like'); else if (dx < -90) swDecide('hide');
+    else { card.style.transform = ''; card.style.setProperty('--like', 0); card.style.setProperty('--hide', 0); }
+  };
+  card.addEventListener('pointerup', up); card.addEventListener('pointercancel', up);
+}
+// réglage têtes d’affiche ↔ underground : trois artistes d’exemple à ce niveau
+function lvPreviewHtml(u) {
+  const all = quizArtists(QZ.cats); if (!all.length) return '';
+  const i = Math.round((all.length - 1) * (u / 100)), from = Math.max(0, Math.min(all.length - 3, i - 1));
+  return all.slice(from, from + 3).map(x => `<span class="lv-a"><span class="lv-c">${coverHtml(x.r, 250)}</span><span>${esc(x.name)}</span></span>`).join('');
+}
+function qzBar() { return `<div class="qz-bar" aria-hidden="true">${[1, 2, 3, 4, 5].map(i => `<i class="${i <= QZ.step ? 'on' : ''}"></i>`).join('')}</div>`; }
+function paintQuiz() {
+  const el = $('#quiz'); if (!el || !QZ) return;
+  const step = QZ_STEPS[QZ.step], k = n => `<p class="qz-k">Question ${n} sur 5</p>`;
+  let body = '', next = 'Suivant', can = true, top = '';
+  if (step === 'hello') {
+    top = '<span></span><button class="qz-skip" type="button" data-qz-skip>Plus tard</button>';
+    body = `<div class="qz-hello"><div class="qz-hello-art" aria-hidden="true">${introArt('radar')}</div>
+      <p class="qz-k">Une minute, cinq questions</p><h2 class="qz-h">Calibrons ton radar.</h2>
+      <p class="qz-p">Dis-nous ce que tu écoutes. Ensuite, le site met en avant ce qui te ressemble, et range ce qui ne te ressemble pas.</p></div>`;
+    next = 'C’est parti';
+  } else if (step === 'cats') {
+    can = QZ.cats.length > 0;
+    const counts = c => new Set(DATA.items.filter(r => r.cat === c).flatMap(r => splitArtists(r.artist).map(norm))).size;
+    body = `${k(1)}<h2 class="qz-h">Tu écoutes quoi ?</h2><p class="qz-p">Un style ou les deux.</p>
+      <div class="qz-styles">${QZ_CATS.map(([c, t, d]) => { const covers = quizArtists([c]).slice(0, 3); return `<button class="qz-style" type="button" data-qz-cat="${c}" aria-pressed="${QZ.cats.includes(c)}">
+        <span class="qz-fan">${covers.map((x, i) => `<span style="--i:${i}">${coverHtml(x.r, 250)}</span>`).join('')}</span>
+        <span class="qz-style-t"><b>${t}</b><span>${d}</span><small>${counts(c)} artistes cette saison</small></span>${qzCheck}</button>`; }).join('')}</div>`;
+  } else if (step === 'swipe') {
+    // paquet refait si les styles ont changé ou si les données n’étaient pas encore là
+    if (!QZ.deck || !QZ.deck.length || QZ.deckFor !== QZ.cats.join()) { QZ.deck = qzDeck(); QZ.deckFor = QZ.cats.join(); QZ.di = 0; QZ.hist = []; }
+    body = `${k(2)}<h2 class="qz-h">Tu les écoutes ?</h2><p class="qz-p">Glisse à droite si tu écoutes, à gauche si ce n’est pas pour toi.</p><div id="sw">${swHtml()}</div>`;
+    next = QZ.di >= QZ.deck.length ? 'Suivant' : 'Passer';
+  } else if (step === 'level') {
+    body = `${k(3)}<h2 class="qz-h">Tu règles ton radar sur…</h2><p class="qz-p">Des têtes d’affiche jusqu’aux artistes qui montent.</p>
+      <div class="lv"><p class="lv-l" id="lv-l">${qzLevelOfU(QZ.ug)}</p>
+        <input class="lv-range" type="range" min="0" max="100" step="1" value="${QZ.ug}" data-qz-ug aria-label="Têtes d’affiche ou underground" style="--v:${QZ.ug}%">
+        <div class="lv-ends"><span>Têtes d’affiche</span><span>Underground</span></div>
+        <p class="lv-cap">À ce niveau, par exemple</p><div class="lv-prev" id="lv-p">${lvPreviewHtml(QZ.ug)}</div></div>`;
+  } else if (step === 'fmt') {
+    body = `${k(4)}<h2 class="qz-h">Tu écoutes surtout…</h2><p class="qz-p">Ce que tu veux voir en premier dans « Pour toi ». Plusieurs choix possibles.</p>
+      <div class="qz-opts">${QZ_FMT.map(([f, t, d]) => `<button class="qz-opt" type="button" data-qz-fmt="${f}" aria-pressed="${QZ.fmt.includes(f)}"><span class="qz-fi ${f}" aria-hidden="true"></span><span class="qz-ot"><b>${t}</b><span>${d}</span></span>${qzCheck}</button>`).join('')}</div>`;
+  } else if (step === 'metro') {
+    next = 'Voir mon profil';
+    const zones = {};
+    for (const c of CONCERTS.items) if (c.date >= today() && c.metro) zones[c.metro] = (zones[c.metro] || 0) + 1;
+    const z = Object.entries(zones).sort((a, b) => b[1] - a[1]).slice(0, 14);
+    if (QZ.metro && !zones[QZ.metro]) z.unshift([QZ.metro, 0]);
+    body = `${k(5)}<h2 class="qz-h">Et en concert ?</h2><p class="qz-p">La ville où l’onglet Concerts s’ouvrira.</p>
+      <div class="qz-chips"><button class="qz-chip" type="button" data-qz-metro="" aria-pressed="${!QZ.metro}">Partout</button>${CONCERTS.loaded ? z.map(([m, n]) => `<button class="qz-chip" type="button" data-qz-metro="${esc(m)}" aria-pressed="${QZ.metro === m}">${esc(m)}${n ? ` <span>${n} ${plural(n, 'date', 'dates')}</span>` : ''}</button>`).join('') : '<span class="qz-p">Chargement des villes…</span>'}</div>`;
+  } else {
+    const [pt, pd] = persona(TASTE);
+    const all = quizArtists([]), liked = all.filter(x => QZ.like[x.k]);
+    const frShare = liked.length ? Math.round((100 * liked.filter(x => x.r.cat === 'rfr').length) / liked.length) : TASTE.cats.length > 1 ? 50 : TASTE.cats[0] === 'rfr' ? 100 : 0;
+    const t = today(), ws = weekStartOf(t);
+    const picks = forYouPicks(DATA.items.filter(r => r.date >= ws && r.date <= t), null).slice(0, 3);
+    const h = Object.keys(QZ.hide).length;
+    body = `<div class="pf">
+      <div class="pf-card">
+        <div class="pf-top"><span class="pf-ico" aria-hidden="true">${introArt('radar')}</span><p class="pf-k">Ton profil d’auditeur</p></div>
+        <h2 class="pf-h">${esc(pt)}</h2><p class="pf-p">${esc(pd)}</p>
+        <div class="pf-stats">
+          <div class="pf-s"><span>Rap FR</span><i style="--v:${frShare}%"></i><b>${frShare} %</b></div>
+          <div class="pf-s"><span>Rap US/UK</span><i style="--v:${100 - frShare}%"></i><b>${100 - frShare} %</b></div>
+          <div class="pf-s"><span>Underground</span><i style="--v:${QZ.ug}%"></i><b>${QZ.ug} %</b></div>
+        </div>
+        ${liked.length ? `<div class="pf-arts"><span class="pf-av">${liked.slice(0, 6).map(x => `<span>${coverHtml(x.r, 250)}</span>`).join('')}</span><span>${liked.length} ${plural(liked.length, 'artiste', 'artistes')} sur ton radar${h ? ` · ${h} ${plural(h, 'écarté', 'écartés')}` : ''}</span></div>` : ''}
+      </div>
+      ${picks.length ? `<p class="pf-sel">Ta sélection de la semaine</p><div class="pf-picks">${picks.map(({ r, why }) => `<div class="pf-pick"><span class="pf-pc">${coverHtml(r, 250)}</span><b>${esc(r.title)}</b><span>${esc(why)}</span></div>`).join('')}</div>` : ''}
+      <p class="qz-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9 7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>
+        <span>Tu changes d’avis ? Refais le quiz quand tu veux dans <b>Paramètres › Mes goûts</b>.</span></p></div>`;
+  }
+  const done = step === 'done', hello = step === 'hello';
+  el.innerHTML = `<div class="qz-in" role="dialog" aria-modal="true" aria-label="Quiz : tes goûts">
+    <div class="qz-top">${done ? '' : hello ? top : `${qzBar()}<button class="qz-skip" type="button" data-qz-skip>Plus tard</button>`}</div>
+    <div class="qz-body" data-step="${step}">${body}</div>
+    <div class="qz-nav">${done ? '<button class="qz-next wide" type="button" data-qz-end>Voir ma sélection</button>'
+      : `${QZ.step > 1 ? '<button class="qz-back" type="button" data-qz-back>Retour</button>' : ''}<button class="qz-next${hello ? ' wide' : ''}" type="button" data-qz-next ${can ? '' : 'disabled'}>${next}</button>`}</div>
+  </div>`;
+  if (step === 'swipe') bindSwipe();
+  const f = done ? $('[data-qz-end]', el) : null; if (f) f.focus({ preventScroll: true });
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('button'); if (!t) return;
+  const d = t.dataset;
+  if (d.quiz !== undefined) { openQuiz(); return; }
+  if (d.showhid !== undefined) { SHOW_HID = !SHOW_HID; render(); return; }
+  if (d.unhide !== undefined && TASTE) { delete TASTE.hide[norm(d.unhide)]; store.set('taste', TASTE); toast(`${d.unhide} peut de nouveau apparaître dans tes suggestions`); render(); return; }
+  if (!QZ || !t.closest('#quiz')) return;
+  if (d.qzSkip !== undefined) { store.set('tasteAsked', 1); closeQuiz(); toast(TASTE ? 'Quiz fermé : tes goûts restent les mêmes' : 'Tu pourras faire le quiz quand tu veux dans Paramètres › Mes goûts'); return; }
+  if (d.qzCat) { QZ.cats = QZ.cats.includes(d.qzCat) ? QZ.cats.filter(c => c !== d.qzCat) : [...QZ.cats, d.qzCat]; QZ.deck = null; paintQuiz(); return; }
+  if (d.qzFmt) { QZ.fmt = QZ.fmt.includes(d.qzFmt) ? QZ.fmt.filter(f => f !== d.qzFmt) : [...QZ.fmt, d.qzFmt]; paintQuiz(); return; }
+  if (d.qzMetro !== undefined) { QZ.metro = d.qzMetro; paintQuiz(); return; }
+  if (d.sw) { swDecide(d.sw); setTimeout(() => { const n = $('[data-qz-next]'); if (n && QZ && QZ.di >= QZ.deck.length) n.textContent = 'Suivant'; }, 240); return; }
+  if (d.swUndo !== undefined && QZ.hist.length) { const h = QZ.hist.pop(); delete QZ.like[h.k]; delete QZ.hide[h.k]; QZ.di = Math.max(0, QZ.di - 1); paintSwipe(); return; }
+  if (d.swAgain !== undefined) { QZ.deck = qzDeck(); QZ.di = 0; QZ.hist = []; QZ.q = ''; paintSwipe(); const n = $('[data-qz-next]'); if (n) n.textContent = 'Passer'; return; }
+  if (d.qzArt) {
+    const k = norm(d.qzArt);
+    if (QZ.like[k]) { delete QZ.like[k]; QZ.hide[k] = d.qzArt; t.dataset.st = 'hide'; }
+    else if (QZ.hide[k]) { delete QZ.hide[k]; t.dataset.st = ''; }
+    else { QZ.like[k] = d.qzArt; t.dataset.st = 'like'; }
+    return;
+  }
+  if (d.qzBack !== undefined) { QZ.step = Math.max(1, QZ.step - 1); paintQuiz(); return; }
+  if (d.qzNext !== undefined) { if (QZ_STEPS[QZ.step] === 'metro') finishQuiz(); QZ.step++; paintQuiz(); return; }
+  if (d.qzEnd !== undefined) { closeQuiz(); if (location.hash !== '#semaine') location.hash = '#semaine'; else render(); setTimeout(() => { const s = $('#sec-pt'); if (s) s.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 400); }
+});
+document.addEventListener('input', e => {
+  if (!QZ) return;
+  if (e.target.matches('[data-qz-search]')) { QZ.q = e.target.value; const g = $('#qz-res'); if (g) g.innerHTML = qzSearchHtml(); }
+  if (e.target.matches('[data-qz-ug]')) {
+    QZ.ug = Number(e.target.value); e.target.style.setProperty('--v', `${QZ.ug}%`);
+    $('#lv-l').textContent = qzLevelOfU(QZ.ug); $('#lv-p').innerHTML = lvPreviewHtml(QZ.ug);
+  }
+});
+document.addEventListener('keydown', e => {
+  if (!QZ) return;
+  if (e.key === 'Escape') { if (QZ_STEPS[QZ.step] !== 'done') store.set('tasteAsked', 1); closeQuiz(); return; }
+  if (QZ_STEPS[QZ.step] === 'swipe' && !e.target.matches('input')) { if (e.key === 'ArrowRight') swDecide('like'); else if (e.key === 'ArrowLeft') swDecide('hide'); else if (e.key === 'ArrowDown') swDecide('skip'); }
+});
+// sélection « Pour toi » : artistes écoutés, leurs featurings, tes styles, tes formats et ton réglage têtes d’affiche ↔ underground
+function forYouPicks(list, top) {
+  if (!TASTE) return [];
+  const u = ugOf(TASTE) / 100;
+  const pops = list.map(r => r.pop).sort((a, b) => a - b);
+  const pct = p => (pops.length > 1 ? pops.filter(x => x < p).length / (pops.length - 1) : 0.5);
+  return list.filter(r => r !== top && !isHidden(r)).map(r => {
+    const main = splitArtists(r.artist).find(follows), feat = r.feats.find(follows), q = pct(r.pop);
+    let s = 0, why = '';
+    if (main) { s += 1000; why = `Tu écoutes ${main}`; } else if (feat) { s += 600; why = `Avec ${feat}`; }
+    if (TASTE.cats.includes(r.cat)) s += 100; else if (!main && !feat) return null;
+    s += 80 * ((1 - u) * q + u * (1 - q));
+    if (TASTE.fmt && TASTE.fmt.length && TASTE.fmt.includes(r.rt === 'compile' ? 'album' : r.rt)) s += 45;
+    if (!why) why = u > 0.6 && q < 0.45 ? 'Pépite underground' : q > 0.8 ? 'Très attendu' : `Nouveau ${r.rt === 'single' ? 'son' : 'projet'} ${catName(r.cat).replace('Rap', 'rap')}`;
+    return { r, s, why };
+  }).filter(Boolean).sort((a, b) => b.s - a.s);
+}
+function forYouHtml(list, top) {
+  if (!TASTE || S.q.trim()) return '';
+  const picks = forYouPicks(list, top).slice(0, 12);
+  if (picks.length < 3) return '';
+  return `<section class="sec" id="sec-pt"><div class="sec-h"><h2>Pour toi</h2><span class="n">${picks.length}</span><span class="pt-sub">${esc(persona(TASTE)[0])}</span><button class="pt-redo" type="button" data-quiz>Refaire le quiz</button></div>
+    <div class="rail pt-rail">${picks.map(({ r, why }) => { INDEX.set(r.key, r); return `<button class="pt-card" type="button" data-key="${esc(r.key)}"><span class="cover">${coverHtml(r, 250)}</span><span class="pt-why">${esc(why)}</span><span class="pt-t">${titleHtml(r)}</span><span class="pt-a">${esc(r.artist)}</span></button>`; }).join('')}</div></section>`;
+}
+function quizCtaHtml(redo) {
+  if (redo && TASTE) return `<button class="qz-cta" type="button" data-quiz><span class="qz-cta-i" aria-hidden="true">♥</span><span><b>${esc(persona(TASTE)[0])}</b><span>Ton profil d’auditeur. Tes goûts ont changé ?</span></span><span class="qz-cta-go">Refaire le quiz</span></button>`;
+  return `<button class="qz-cta" type="button" data-quiz><span class="qz-cta-i" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg></span><span><b>Calibre ton radar</b><span>Cinq questions pour des suggestions sur mesure.</span></span><span class="qz-cta-go">Faire le quiz</span></button>`;
+}
+const hiddenNote = n => `<p class="hid-note">${SHOW_HID ? 'Les artistes que tu as masqués sont affichés.' : `${n} ${plural(n, 'sortie', 'sorties')} d’artistes que tu as masqués.`}<button type="button" data-showhid>${SHOW_HID ? 'Les masquer' : 'Afficher'}</button></p>`;
+// le quiz s’ouvre juste après la présentation, ou à la prochaine ouverture pour ceux qui l’ont déjà vue
+if (store.get('introSeen', 0) && !TASTE && !store.get('tasteAsked', 0) && !navigator.webdriver) { const go = () => (DATA.items.length ? openQuiz() : setTimeout(go, 300)); go(); }
 
 /* ---------- installer sur l’écran d’accueil (téléphone) ---------- */
 let installEvt = null;
