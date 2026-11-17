@@ -222,6 +222,10 @@ a.row { text-decoration: none; }
 }
 .cover::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(128, 128, 128, .16); pointer-events: none; }
 .cover img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
+/* l’image remplit toujours son cadre carré (Safari sur iPhone) */
+.cover > img, .cover > .ph { position: absolute; inset: 0; width: 100%; height: 100%; }
+.fc-hi { opacity: 0; transition: opacity .35s ease, transform .4s ease; }
+.fc-hi.ok { opacity: 1; }
 .card:hover .cover img { transform: scale(1.035); }
 .ph {
   position: absolute; inset: 0; display: grid; place-items: center;
@@ -1705,10 +1709,17 @@ function artAvatar(name, r) {
   const ini = String(name).split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
   let h = 0; for (const ch of norm(name)) h = (h * 31 + ch.charCodeAt(0)) % 360;
   const ph = `<span class="av-ph" style="--h:${h}" aria-hidden="true">${esc(ini)}</span>`;
-  if (u) return `${ph}<img class="av-img" src="${esc(u)}" alt="" loading="lazy" decoding="async">`;
+  if (u) return `<img class="av-img" src="${esc(u)}" alt="" loading="lazy" decoding="async" data-ini="${esc(ini)}" data-h="${h}">`;
   return r && !a ? coverHtml(r, 250) : ph;   // pochette seulement quand on ne connaît pas l’artiste
 }
-document.addEventListener('error', e => { if (e.target && e.target.classList && e.target.classList.contains('av-img')) e.target.remove(); }, true);
+document.addEventListener('error', e => {
+  const img = e.target;
+  if (!img || !img.classList || !img.classList.contains('av-img')) return;
+  const s = document.createElement('span'); s.className = 'av-ph'; s.setAttribute('aria-hidden', 'true');
+  s.textContent = img.dataset.ini || ''; s.style.setProperty('--h', img.dataset.h || 20); img.replaceWith(s);
+}, true);
+// grande pochette de la une : la petite (déjà en cache) d’abord, la grande en fondu une fois chargée
+document.addEventListener('load', e => { if (e.target && e.target.classList && e.target.classList.contains('fc-hi')) e.target.classList.add('ok'); }, true);
 
 /* ---------- recommandations : les voisins Deezer et les featurings des artistes que tu écoutes ---------- */
 let RECO = null;
@@ -1966,7 +1977,7 @@ function featureHtml(r, tag) {
   const play = r.dz ? `https://www.deezer.com/fr/album/${r.dz}` : r.su || `https://open.spotify.com/search/${q}`;
   return `<article class="feature">
     <p class="feature-tag"><span></span>${tag ? esc(tag) : S.week === 0 ? 'La sortie la plus attendue' : 'La sortie la plus écoutée'} · ${esc(fmtShort(r.date))}</p>
-    <button class="feature-cov cover" type="button" data-key="${esc(r.key)}" aria-label="${esc(`Ouvrir ${r.title}, ${r.artist}`)}">${coverHtml(r, innerWidth * (devicePixelRatio || 1) < 700 ? 500 : 1000).replace('loading="lazy"', 'fetchpriority="high"')}</button>
+    <button class="feature-cov cover" type="button" data-key="${esc(r.key)}" aria-label="${esc(`Ouvrir ${r.title}, ${r.artist}`)}">${coverHtml(r, 250).replace(' loading="lazy"', '')}${coverUrl(r, 500) ? `<img class="fc-hi" src="${esc(coverUrl(r, innerWidth * (devicePixelRatio || 1) < 700 ? 500 : 1000))}" alt="" fetchpriority="high" decoding="async">` : ''}</button>
     <div class="feature-t">
       <h2 class="feature-h">${titleHtml(r)}</h2>
       <p class="feature-by">${esc(r.artist)}${r.feats.length ? ` <span>feat. ${esc(r.feats.join(', '))}</span>` : ''}</p>
@@ -2010,12 +2021,11 @@ function viewWeek() {
     top = albums[0];
     if (TASTE) {
       const fav = albums.find(r => splitArtists(r.artist).some(follows));
-      if (fav) { top = fav; topTag = `Pour toi · tu écoutes ${splitArtists(fav.artist).find(follows)}`; }
+      if (fav) { top = fav; topTag = `Tu écoutes ${splitArtists(fav.artist).find(follows)}`; }
       else top = albums.find(r => TASTE.cats.includes(r.cat)) || top;
     }
     html += featureHtml(top, topTag); albums.splice(albums.indexOf(top), 1);
   }
-  html += forYouHtml(out, top);
   // nouvelle disposition : colonne principale (une, albums, EP) + colonne des singles et de ce qui arrive
   const sorted = arr => { const x = [...arr]; if (S.sort === 'date') x.sort((p, q) => p.date.localeCompare(q.date) || q.pop - p.pop); else if (S.sort === 'az') x.sort((p, q) => p.title.localeCompare(q.title, 'fr')); return x; };
   const A = sorted(albums), E2 = sorted(eps), SG = sorted(singles);
@@ -2054,7 +2064,12 @@ function viewUpcoming() {
   const t = today();
   const base = DATA.items.filter(r => r.date > t);
   paintFilters(base);
-  const all = applyFilters(base).sort((a, b) => a.date.localeCompare(b.date) || b.pop - a.pop);
+  // avec un profil (hors recherche), ce qui sort de tes goûts descend dans « Hors de tes recommandations »
+  const split = !!TASTE && !S.q.trim();
+  const every = (split ? applyFiltersAll(base) : applyFilters(base)).sort((a, b) => a.date.localeCompare(b.date) || b.pop - a.pop);
+  const rank = split ? popRank(every) : null;
+  const all = split ? every.filter(r => inTaste(r, rank(r))) : every, allSet = new Set(all);
+  const hors = split ? every.filter(r => !allSet.has(r)) : [];
   // classé par semaine de sortie (du vendredi au jeudi) ; S.day garde la semaine choisie dans la frise
   if (S.day && !all.some(r => weekStartOf(r.date) === S.day)) S.day = null;
   const list = S.day ? all.filter(r => weekStartOf(r.date) === S.day) : all;
@@ -2066,7 +2081,7 @@ function viewUpcoming() {
     ${statsHtml([[list.length, plural(list.length, 'sortie annoncée', 'sorties annoncées')], [next7, 'dans les 7 jours'], [c.album, plural(c.album, 'album', 'albums')], [c.ep, 'EP'], [c.single, plural(c.single, 'single', 'singles')]])}`;
   const more = elsewhereHtml(base);
   if (!list.length) {
-    $content.innerHTML = more ? `<div class="empty"><strong>Rien d’annoncé pour « ${esc(S.q.trim())} ».</strong>Voici ce qui correspond ailleurs.</div>${more}` : emptyHtml(base.length ? 'filters' : 'upcoming');
+    $content.innerHTML = more ? `<div class="empty"><strong>Rien d’annoncé pour « ${esc(S.q.trim())} ».</strong>Voici ce qui correspond ailleurs.</div>${more}` : hors.length ? horsHtml(hors, true) : emptyHtml(base.length ? 'filters' : 'upcoming');
     return;
   }
   const thisW = weekStartOf(t);
@@ -2075,8 +2090,8 @@ function viewUpcoming() {
   for (const r of list) { const ws = weekStartOf(r.date); let g = groups[groups.length - 1]; if (!g || g.date !== ws) groups.push(g = { date: ws, items: [] }); g.items.push(r); }
   paintDays(groups, r => rowHtml(r, true), weekRel, ws => `Semaine du ${fmtRange(ws, addDays(ws, 6))}`);
   $content.insertAdjacentHTML('afterbegin', dateStripHtml(all));
-  const nHid = countHidden(base);
-  if (nHid) $content.insertAdjacentHTML('beforeend', hiddenNote(nHid));
+  if (hors.length) $content.insertAdjacentHTML('beforeend', horsHtml(hors, true));
+  else if (!split) { const nHid = countHidden(base); if (nHid) $content.insertAdjacentHTML('beforeend', hiddenNote(nHid)); }
   if (more) $content.insertAdjacentHTML('beforeend', more);
 }
 
@@ -2194,7 +2209,7 @@ function viewSettings() {
   $content.innerHTML = `
     <section class="set-sec"><h2 class="set-h">Mes goûts</h2>
       ${!acctActive() ? setRow('Recommandations', 'Crée un compte pour faire le quiz : chaque semaine, une sélection faite pour toi.', '<button class="btn sm solid" type="button" data-gate="up">Créer un compte</button>') : ''}
-      ${acctActive() ? setRow(TASTE ? 'Refaire le quiz' : 'Faire le quiz', TASTE ? `Ton profil : ${persona(TASTE)[0]} (${qzCatsLabel(TASTE.cats)}, ${qzLevelLabel(levelOf(ugOf(TASTE))).toLowerCase()}${TASTE.metro ? `, concerts à ${TASTE.metro}` : ''}). Tes suggestions « Pour toi » en dépendent.` : 'Quelques questions sur ce que tu écoutes : le site te propose ensuite une sélection « Pour toi ».', `<button class="btn sm solid" type="button" data-quiz>${TASTE ? 'Refaire le quiz' : 'Faire le quiz'}</button>`) : ''}
+      ${acctActive() ? setRow(TASTE ? 'Refaire le quiz' : 'Faire le quiz', TASTE ? `Ton profil : ${persona(TASTE)[0]} (${qzCatsLabel(TASTE.cats)}, ${qzLevelLabel(levelOf(ugOf(TASTE))).toLowerCase()}${TASTE.metro ? `, concerts à ${TASTE.metro}` : ''}). Tes recommandations en dépendent.` : 'Quelques questions sur ce que tu écoutes : le site te propose ensuite une sélection « Pour toi ».', `<button class="btn sm solid" type="button" data-quiz>${TASTE ? 'Refaire le quiz' : 'Faire le quiz'}</button>`) : ''}
       ${TASTE && Object.keys(TASTE.hide).length ? `<p class="set-about">Artistes masqués : leurs sorties n’apparaissent plus. Touche un nom pour le revoir.</p>
         <div class="chips">${Object.values(TASTE.hide).sort((a, b) => a.localeCompare(b, 'fr')).map(n => `<button class="chip fchip" type="button" data-unhide="${esc(n)}">${esc(n)}<span aria-hidden="true">✕</span></button>`).join('')}</div>` : ''}
     </section>
@@ -4105,7 +4120,7 @@ document.addEventListener('click', e => {
   }
   if (ds.share) { shareRelease(ds.share); return; }
   if (ds.jump) { const t = document.getElementById(ds.jump); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
-  if (ds.open) { S.open.add(`${S.week}:${ds.open}`); render(); return; }
+  if (ds.open) { S.open.add(ds.open === 'up-hors' ? 'up:sec-hors' : `${S.week}:${ds.open}`); render(); return; }
   if (el.id === 'scrim' || el.id === 'd-close') { closeDetail(); return; }
   if (el.id === 'ftoggle') {
     const open = $filters.hidden;
@@ -4449,11 +4464,13 @@ function qzCountHtml() {
   const n = Object.keys(QZ.like).length;
   return n ? `<b>${n}</b> ${plural(n, 'artiste choisi', 'artistes choisis')}${n < 3 ? ' · encore un ou deux pour des recos plus justes' : ''}` : 'Touche ceux que tu écoutes. Leurs artistes proches apparaissent à côté.';
 }
-function paintArtists() {
-  const g = $('#qz-res'); if (g) g.innerHTML = qzGridHtml();
+function qzRefresh() {
   const c = $('#qz-count'); if (c) c.innerHTML = qzCountHtml();
   const n = $('[data-qz-next]'); if (n) n.textContent = Object.keys(QZ.like).length ? 'Suivant' : 'Passer';
-  QZ.fresh.clear();
+}
+function paintArtists() {
+  const g = $('#qz-res'); if (g) g.innerHTML = qzGridHtml();
+  qzRefresh(); QZ.fresh.clear();
 }
 // réglage têtes d’affiche ↔ underground : quatre artistes à ce niveau, avec leur photo
 function lvPreviewHtml(u) {
@@ -4496,7 +4513,7 @@ function paintQuiz() {
         <div class="lv-ends"><span>Têtes d’affiche</span><span>Underground</span></div>
         <div class="lv-prev" id="lv-p">${lvPreviewHtml(QZ.ug)}</div></div>`;
   } else if (step === 'fmt') {
-    body = `${k(4)}<h2 class="qz-h">Tu écoutes surtout…</h2><p class="qz-p">Ce que tu veux voir en premier dans « Pour toi ». Plusieurs choix possibles.</p>
+    body = `${k(4)}<h2 class="qz-h">Tu écoutes surtout…</h2><p class="qz-p">Ce que tu veux voir en premier. Plusieurs choix possibles.</p>
       <div class="qz-opts">${QZ_FMT.map(([f, t, d]) => `<button class="qz-opt" type="button" data-qz-fmt="${f}" aria-pressed="${QZ.fmt.includes(f)}"><span class="qz-fi ${f}" aria-hidden="true"></span><span class="qz-ot"><b>${t}</b><span>${d}</span></span>${qzCheck}</button>`).join('')}</div>`;
   } else if (step === 'metro') {
     next = 'Voir mon profil';
@@ -4551,18 +4568,31 @@ document.addEventListener('click', e => {
   if (d.qzMetro !== undefined) { QZ.metro = d.qzMetro; paintQuiz(); return; }
   if (d.qzArt) {
     const k = d.qzArt;
-    if (QZ.like[k]) { delete QZ.like[k]; t.setAttribute('aria-pressed', 'false'); paintArtists(); return; }
+    if (QZ.like[k]) { delete QZ.like[k]; t.setAttribute('aria-pressed', 'false'); qzRefresh(); return; }
     QZ.like[k] = d.name;
-    if (!QZ.shown.includes(k)) QZ.shown.unshift(k);   // choisi depuis la recherche : il rejoint la grille
-    qzExpand(k);
-    if (QZ.q) { QZ.q = ''; const s = $('[data-qz-search]'); if (s) s.value = ''; }
-    paintArtists();
+    if (QZ.q) {   // choisi depuis la recherche : il rejoint la grille, avec ses artistes proches
+      QZ.q = ''; const s = $('[data-qz-search]'); if (s) s.value = '';
+      if (!QZ.shown.includes(k)) QZ.shown.unshift(k);
+      qzExpand(k); paintArtists(); return;
+    }
+    t.setAttribute('aria-pressed', 'true');
+    const before = new Set(QZ.shown); qzExpand(k);
+    const added = QZ.shown.filter(x => !before.has(x)).map(qzByKey).filter(Boolean);
+    if (added.length) t.insertAdjacentHTML('afterend', added.map(qzTile).join(''));
+    QZ.fresh.clear(); qzRefresh();
     return;
   }
-  if (d.qzMore !== undefined) { qzMore(); paintArtists(); return; }
+  if (d.qzMore !== undefined) {
+    const before = QZ.shown.length; qzMore();
+    const g = $('#qz-res .qz-grid'), added = QZ.shown.slice(before).map(qzByKey).filter(Boolean);
+    if (g) g.insertAdjacentHTML('beforeend', added.map(qzTile).join('')); else paintArtists();
+    if (qzPool(QZ.cats).length <= QZ.shown.length) t.remove();
+    QZ.fresh.clear(); qzRefresh();
+    return;
+  }
   if (d.qzBack !== undefined) { QZ.step = Math.max(1, QZ.step - 1); paintQuiz(); return; }
   if (d.qzNext !== undefined) { if (QZ_STEPS[QZ.step] === 'metro') finishQuiz(); QZ.step++; paintQuiz(); return; }
-  if (d.qzEnd !== undefined) { closeQuiz(); if (location.hash !== '#semaine') location.hash = '#semaine'; else render(); setTimeout(() => { const s = $('#sec-pt'); if (s) s.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 400); }
+  if (d.qzEnd !== undefined) { closeQuiz(); if (location.hash !== '#semaine') location.hash = '#semaine'; else render(); scrollTo({ top: 0 }); }
 });
 document.addEventListener('input', e => {
   if (!QZ) return;
@@ -4601,15 +4631,15 @@ function forYouHtml(list, top) {
     <div class="rail pt-rail">${picks.map(({ r, why }) => { INDEX.set(r.key, r); return `<button class="pt-card" type="button" data-key="${esc(r.key)}"><span class="cover">${coverHtml(r, 250)}</span><span class="pt-why">${esc(why)}</span><span class="pt-t">${titleHtml(r)}</span><span class="pt-a">${esc(r.artist)}</span></button>`; }).join('')}</div></section>`;
 }
 // bas de la semaine : tout ce qui sort de tes goûts, rangé par format
-function horsHtml(list) {
-  const open = S.open.has(`${S.week}:sec-hors`), CAP = 6, t = today();
+function horsHtml(list, upcoming) {
+  const key = upcoming ? 'up:sec-hors' : `${S.week}:sec-hors`, open = S.open.has(key), CAP = 6, t = today();
   const groups = [['Albums', r => r.rt === 'album' || r.rt === 'compile'], ['EP', r => r.rt === 'ep'], ['Singles', r => r.rt === 'single']]
     .map(([name, f]) => [name, list.filter(f)]).filter(([, l]) => l.length);
   const hidden = groups.reduce((n, [, l]) => n + Math.max(0, l.length - CAP), 0);
   return `<section class="sec hors" id="sec-hors"><div class="sec-h"><h2>Hors de tes recommandations</h2><span class="n">${list.length}</span></div>
-    <p class="hors-sub">Les autres sorties de la semaine, en dehors de tes styles, de ton niveau et des artistes proches de tes goûts.</p>
+    <p class="hors-sub">${upcoming ? 'Les autres sorties annoncées' : 'Les autres sorties de la semaine'}, en dehors de tes styles, de ton niveau et des artistes proches de tes goûts.</p>
     <div class="hors-cols">${groups.map(([name, l]) => `<div class="hors-g"><h3>${name} <span>${l.length}</span></h3><div class="rows">${(open ? l : l.slice(0, CAP)).map(r => rowHtml(r, r.date > t)).join('')}</div></div>`).join('')}</div>
-    ${!open && hidden ? `<p class="more-row"><button class="btn" type="button" data-open="sec-hors">Tout afficher (${hidden} de plus)</button></p>` : ''}</section>`;
+    ${!open && hidden ? `<p class="more-row"><button class="btn" type="button" data-open="${upcoming ? 'up-hors' : 'sec-hors'}">Tout afficher (${hidden} de plus)</button></p>` : ''}</section>`;
 }
 function quizCtaHtml(redo) {
   if (redo && TASTE) return `<button class="qz-cta" type="button" data-quiz><span class="qz-cta-i" aria-hidden="true">♥</span><span><b>${esc(persona(TASTE)[0])}</b><span>Ton profil d’auditeur. Tes goûts ont changé ?</span></span><span class="qz-cta-go">Refaire le quiz</span></button>`;
