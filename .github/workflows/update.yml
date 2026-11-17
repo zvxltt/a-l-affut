@@ -41,6 +41,8 @@ jobs:
           OUT_DIR: site/data
           TICKETMASTER_KEY: ${{ secrets.TICKETMASTER_KEY }}
           ODESLI_KEY: ${{ secrets.ODESLI_KEY }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

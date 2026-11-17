@@ -831,7 +831,7 @@ async function fetchTrackCredits(releases, state, details) {
 /* ------------------------------------------------------------------ Apple Music */
 // Identifiants Apple Music des artistes suivis : 70 recherches à chaque passage, les plus suivis d’abord.
 async function appleIds(state) {
-  const missing = Object.entries(state.artists).filter(([, a]) => !a.it && a.f >= 8000 && (!a.itT || Date.now() - a.itT > 30 * DAY))
+  const missing = Object.entries(state.artists).filter(([, a]) => leanCat(a) && !a.it && a.f >= 1000 && (!a.itT || Date.now() - a.itT > 30 * DAY))
     .sort((x, y) => y[1].f - x[1].f).slice(0, FAST ? 1000 : 70);
   let found = 0, tried = 0;
   for (const [, a] of missing) {
@@ -849,11 +849,16 @@ async function appleIds(state) {
 }
 
 async function appleStep(state, details) {
-  const due = !state.apple || Date.now() - state.apple.t > 3 * HOUR;
-  if (!due || Date.now() > DEADLINE) return;
+  if (Date.now() > DEADLINE) return;
   const artists = state.artists;
-  // précommandes : sorties datées dans le futur
-  const list = Object.entries(artists).filter(([, a]) => a.it).sort((x, y) => y[1].f - x[1].f);
+  // précommandes (API iTunes, gratuite, sans clé : lookup par artiste avec entity=album) : sorties datées dans le futur.
+  // Les 300 artistes les plus suivis toutes les 3 heures, tous les autres à tour de rôle (250 par passage).
+  const all = Object.entries(artists).filter(([, a]) => a.it && leanCat(a)).sort((x, y) => y[1].f - x[1].f);
+  const topDue = !state.apple || !state.apple.topT || Date.now() - state.apple.topT > 3 * HOUR;
+  const head = all.slice(0, 300), tail = all.slice(300), R = Math.min(tail.length, 250);
+  const start = ((state.apple && state.apple.rot) || 0) % Math.max(1, tail.length);
+  const list = [...(topDue ? head : []), ...Array.from({ length: R }, (_, i) => tail[(start + i) % tail.length])];
+  if (!list.length) return;
   const byIt = new Map(list.map(([id, a]) => [a.it, { id, ...a }]));
   const items = [];
   const failed = new Set();
@@ -879,11 +884,12 @@ async function appleStep(state, details) {
       }
     } catch (e) { for (const [id] of group) failed.add(id); }
   }
-  // un groupe d’artistes resté sans réponse garde ses précommandes déjà connues
-  const keep = ((state.apple && state.apple.items) || []).filter(x => failed.has(x.aid) && x.date > TODAY);
+  // artistes pas relus à ce passage, ou restés sans réponse : leurs précommandes déjà connues sont gardées
+  const looked = new Set(list.map(([id]) => id));
+  const keep = ((state.apple && state.apple.items) || []).filter(x => (failed.has(x.aid) || !looked.has(x.aid)) && x.date > TODAY && artists[x.aid]);
   const uniq = uniqBy([...items, ...keep], x => String(x.id));
-  // tracklists connues des précommandes
-  for (const group of chunk(uniq, 10)) {
+  // tracklists connues des précommandes (celles relues à ce passage, ou encore sans tracklist)
+  for (const group of chunk(uniq.filter(x => looked.has(x.aid) || !details[`it${x.id}`]), 10)) {
     try {
       const j = await apple(`https://itunes.apple.com/lookup?entity=song&country=fr&limit=200&id=${group.map(x => x.id).join(',')}`);
       for (const it of group) {
@@ -898,8 +904,8 @@ async function appleStep(state, details) {
       }
     } catch (e) { /* tracklist plus tard */ }
   }
-  if (ok) state.apple = { t: Date.now(), items: uniq };
-  log(`Apple Music : ${uniq.length} précommandes (${ok}/${chunk(list, 10).length} requêtes réussies)`);
+  if (ok) state.apple = { t: Date.now(), topT: topDue ? Date.now() : state.apple && state.apple.topT, rot: start + R, items: uniq };
+  log(`Apple Music : ${uniq.length} précommandes (${ok}/${chunk(list, 10).length} requêtes réussies, ${list.length} artistes relus sur ${all.length})`);
 }
 
 /* ------------------------------------------------------------------ MusicBrainz */
@@ -1022,11 +1028,19 @@ async function wikipediaStep(state) {
 // « Star Academy : Léa Doffey annonce son album » concerne Léa Doffey, et dans « Morphine annonce l’album Cocoon »,
 // Cocoon est un titre, pas l’artiste du même nom. Un sujet que le robot ne suit pas encore est vérifié sur Deezer
 // et ajouté s’il est proche des artistes suivis.
+// raplume.eu n’est plus Raplume (le média est devenu SHADES, surtout sur les réseaux ; l’ancien site publie des pubs de casino) : retiré.
+// Booska-P, HotNewHipHop et HipHopDX n’ont pas (ou plus) de flux à jour lisible : on les suit aussi par Google News (site:…).
+// L’état de chaque flux (articles lus, date du plus récent) est écrit dans le journal du robot.
 const FEEDS = [
-  'https://raplume.eu/feed/', 'https://www.rapunchline.fr/feed/', 'https://www.hiphopcorner.fr/feed/', 'https://www.reaphit.com/feed/',
+  'https://www.rapunchline.fr/feed/', 'https://www.hiphopcorner.fr/feed/', 'https://www.reaphit.com/feed/',
   'https://lerapcetaitmieuxavant.fr/feed/', 'https://www.booska-p.com/feed/', 'https://www.abcdrduson.com/feed/', 'https://www.lerapenfrance.fr/feed/',
   'https://www.xxlmag.com/feed/', 'https://www.rap-up.com/feed/', 'https://hiphopdx.com/rss/news.xml', 'https://www.hotnewhiphop.com/rss.xml',
+  // Reddit : r/rapfrancais et r/hiphopheads (flux Atom publics des nouveaux messages)
+  'https://www.reddit.com/r/rapfrancais/new/.rss?limit=100', 'https://www.reddit.com/r/hiphopheads/new/.rss?limit=100',
 ];
+const GN_SITES = [['site:booska-p.com album', false], ['site:booska-p.com "date de sortie"', false],
+  ['site:hotnewhiphop.com album "release date"', true], ['site:hotnewhiphop.com announces album', true],
+  ['site:hiphopdx.com album "release date"', true], ['site:hiphopdx.com announces album', true]];
 const GN_FR = ['"annonce son nouvel album"', '"annonce son album"', '"nouvel album" "date de sortie"', '"date de sortie" album rappeur', '"nouvel EP"',
   'mixtape "date de sortie"', 'album "sortira le"', 'album "prévu le" rap', '"premier album" "date de sortie"', 'rappeuse album "sortie"',
   'chanteuse "nouvel album" "sortira"', 'chanteur "nouvel album" "sortira"', 'album "attendu le"'];
@@ -1042,6 +1056,8 @@ const REL_FR = /\b(albums?|eps?|mixtapes?|tapes?|projets?|opus|disques?|singles?
 const ACT_FR = /\b(annonc\w*|sort\w*|para[iî]t\w*|prévu\w*|attendu\w*|dévoil\w*|disponible|arriv\w*|débarqu\w*|dates?|précommande\w*|rendez-vous)\b/i;
 const REL_EN = /\b(albums?|eps?|mixtapes?|tapes?|projects?|lps?|singles?|deluxe)\b/i;
 const ACT_EN = /\b(announc\w*|releas\w*|drop\w*|arriv\w*|due|set for|coming|out|dates?)\b/i;
+// posts d’artistes : ce qui n’est pas une sortie (live, stream, dédicace, soirée…)
+const LOOSE_NOPE = /\b(live|twitch|stream\w*|direct|kick|soir[ée]e|dédicace|dedicace|signature|meet|rencontre|masterclass|interview|podcast|émission|emission|match|giveaway|concours|merch|collection|drop de|vêtements?)\b/i;
 const NOPE = /\b(concert\w*|tourn[ée]e|zénith|zenith|stade|olympia|accor arena|bercy|billet\w*|festival|spectacle|showcase|documentaire|film|série|livre|exposition|procès|tribunal|tour|tickets|arena|documentary|movie|book|lawsuit|court|arrest\w*|certifi\w*|disque d['’]or|platine|anniversaire|birthday)\b/i;
 // noms qui sont aussi des mots courants : on exige la majuscule et des limites de mot
 const COMMON = new Set(['future', 'logic', 'pomme', 'santa', 'offset', 'marine', 'ambre', 'helena', 'kalash', 'vegedream', 'naza', 'drake',
@@ -1117,8 +1133,18 @@ function parseRss(xml) {
     if (source && title.endsWith(` - ${source}`)) title = title.slice(0, -(source.length + 3));
     items.push({ title, desc: strip(tag('description')).slice(0, 400), link: tag('link'), pub: Date.parse(tag('pubDate')) || Date.now(), outlet: cleanOutlet(source) });
   }
+  // Atom (Reddit, chaînes YouTube) : <entry>, <link href>, <published>, <media:description> ou <content>
+  for (const m of String(xml).matchAll(/<entry\b[\s\S]*?<\/entry>/gi)) {
+    const block = m[0];
+    const tag = t => { const x = block.match(new RegExp(`<${t}\\b[^>]*>([\\s\\S]*?)<\\/${t}>`, 'i')); return x ? decodeEntities(x[1]).trim() : ''; };
+    const strip = h => decodeEntities(h).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    const href = (block.match(/<link\b[^>]*rel="alternate"[^>]*href="([^"]+)"/i) || block.match(/<link\b[^>]*href="([^"]+)"/i) || [])[1] || '';
+    items.push({ title: strip(tag('title')), desc: strip(tag('media:description') || tag('content') || tag('summary')).slice(0, 600), link: decodeEntities(href),
+      pub: Date.parse(tag('published') || tag('updated')) || Date.now(), outlet: '' });
+  }
   return items;
 }
+const hostOf = u => { try { const x = new URL(u); return x.hostname.replace(/^www\./, '') + (x.hostname.includes('reddit') ? x.pathname.split('/').slice(0, 3).join('/') : ''); } catch (e) { return u; } };
 async function getText(url) {
   const ctl = new AbortController();
   const t = setTimeout(() => ctl.abort(), 25000);
@@ -1276,21 +1302,48 @@ function findDate(text, pub) {
   }
   return found;
 }
-function extractAnnouncement(item, byFirst) {
-  const subj = subjectOf(item.title, byFirst);
+function extractAnnouncement(item, byFirst, known) {
+  const subj = known ? { artist: known } : subjectOf(item.title, byFirst);
   if (!subj) return null;
   const text = `${item.title} — ${item.desc || ''}`;
   let pick = null;
   for (const d of findDate(text, item.pub)) {
     if (d.date <= TODAY || d.date > addDays(TODAY, 240)) continue;
+    // la chaîne ou le compte de l’artiste : une date future près de « album », « EP », « précommande »… suffit
+    if (known && (known.loose ? /\b(album|ep|mixtape|projet|project|tape|pr[ée]commande|pre-?order|pre-?save|disponible|out|sortie|release|teaser|trailer|tracklist)\b/i.test(d.win) : false) && !NOPE.test(d.near) && !LOOSE_NOPE.test(d.win)) { pick = d; break; }
     const rel = d.fr ? REL_FR : REL_EN, act = d.fr ? ACT_FR : ACT_EN;
     if (!rel.test(d.win) || !act.test(d.win) || NOPE.test(d.near)) continue;
     pick = d;
     break;
   }
+  // chaîne ou compte de l’artiste : dates écrites en chiffres (« LE 12/12 », « 05.12 »), près d’un mot de sortie
+  if (!pick && known && known.loose) {
+    for (const m of text.matchAll(/(?<![\d/.])(\d{1,2})[./](\d{1,2})(?:[./](\d{2,4}))?(?![\d/.])/g)) {
+      const dd = Number(m[1]), mm = Number(m[2]); if (dd < 1 || dd > 31 || mm < 1 || mm > 12) continue;
+      let y = m[3] ? Number(m[3].length === 2 ? `20${m[3]}` : m[3]) : Number(TODAY.slice(0, 4));
+      let date = `${y}-${String(mm).padStart(2, '0')}-${String(dd).padStart(2, '0')}`;
+      if (!m[3] && date <= TODAY) date = `${y + 1}${date.slice(4)}`;
+      if (!isYmd(date) || date <= TODAY || date > addDays(TODAY, 240)) continue;
+      const win = text.slice(Math.max(0, m.index - 70), m.index + 70);
+      const strong = /\b(album|ep|mixtape|projet|project|tape|pr[ée]commande|pre-?order|pre-?save|disponible|out|sortie|release)\b/i.test(win);
+      // « JEFE 2 LE 12/12 » : « le » ou « on » juste avant la date, dans une légende courte
+      const short = /\b(le|on)\s*$/i.test(text.slice(Math.max(0, m.index - 4), m.index)) && String(item.title).split(/\s+/).length <= 8;
+      if ((!strong && !short) || NOPE.test(win) || LOOSE_NOPE.test(win)) continue;
+      pick = { date, fr: !/\b(out|release|on|pre-?order)\b/i.test(win), win, near: win };
+      break;
+    }
+  }
   if (!pick) return null;
   const who = subj.artist ? subj.artist.a.n : subj.unknown;
   let title = quotedIn(item.title);
+  // « ARTISTE - TITRE (Trailer) » : le titre d’une vidéo ou d’un post de l’artiste
+  if (!title && known) {
+    const m = String(item.title).match(/^\s*([^-–|]+?)\s+[-–|]\s+(.+)$/);
+    if (m && norm(m[1]).includes(norm(who))) {
+      const t = m[2].replace(/[\(\[][^\)\]]*[\)\]]/g, ' ').replace(/\b(clip officiel|official (music )?video|official audio|visualizer|lyrics?|trailer|teaser|bande[- ]annonce|extrait|snippet)\b/gi, ' ').replace(/\s+/g, ' ').trim();
+      if (t && t.split(/\s+/).length <= 6) title = t;
+    }
+  }
   if (!title) { const qd = String(item.desc || '').match(QUOTE_DESC); title = qd ? qd[1].trim() : ''; }
   if (title && (norm(title) === norm(who) || GENERIC_TITLE.has(spacedNorm(title)) || title.split(/\s+/).length > 9
     || /\d{1,2}(er)?\s+(janv|f[ée]v|mars|avr|mai|juin|juil|ao[uû]|sept|oct|nov|d[ée]c)/i.test(title))) title = '';
@@ -1374,6 +1427,7 @@ async function pressStep(state) {
   const gn = (q, en) => `https://news.google.com/rss/search?q=${encodeURIComponent(`${q} when:30d`)}&${en ? 'hl=en-US&gl=US&ceid=US:en' : 'hl=fr&gl=FR&ceid=FR:fr'}`;
   for (const q of GN_FR) urls.push(gn(q, false));
   for (const q of GN_EN) urls.push(gn(q, true));
+  for (const [q, en] of GN_SITES) urls.push(gn(q, en));
   // les prochains vendredis : « album "4 décembre" », « "December 4" album rapper »
   let fri = addDays(TODAY, 1);
   while (new Date(`${fri}T12:00:00Z`).getUTCDay() !== 5) fri = addDays(fri, 1);
@@ -1398,7 +1452,7 @@ async function pressStep(state) {
     state.newsRot = (start + 40) % pool.length;
   }
   let ok = 0, read = 0, gnFails = 0;
-  const fresh = [];
+  const fresh = [], health = [];
   for (const url of [...FEEDS, ...urls]) {
     if (Date.now() > DEADLINE) break;
     const google = url.includes('news.google.com');
@@ -1407,9 +1461,11 @@ async function pressStep(state) {
       const xml = google ? await newsGap(() => getText(url)) : await getText(url);
       const items = parseRss(xml);
       ok++; read += items.length;
+      if (!google) health.push(`${hostOf(url)} ${items.length}${items.length ? ` (dernier ${new Date(Math.max(...items.map(i => i.pub))).toISOString().slice(0, 10)})` : ''}`);
       for (const it of items) if (extractAnnouncement(it, byFirst)) fresh.push(it);
-    } catch (e) { if (google) gnFails++; }
+    } catch (e) { if (google) gnFails++; else health.push(`${hostOf(url)} ✗ ${e.status || e.message}`); }
   }
+  log(`presse : état des flux — ${health.join(' · ')}`);
   // les articles déjà repérés sont relus avec les règles du jour : une erreur corrigée disparaît d’elle-même
   const prevRaw = (state.news && state.news.raw) || [];
   let raw = uniqBy([...fresh, ...prevRaw].filter(r => r && r.title && Date.now() - r.pub < 150 * DAY), r => r.link || r.title);
@@ -1424,6 +1480,118 @@ async function pressStep(state) {
   }).sort((a, b) => b.pub - a.pub).slice(0, 400);
   state.news = { t: Date.now(), raw, items: dedupeNews(all) };
   log(`presse : ${ok} flux lus, ${read} articles, ${state.news.items.length} annonces retenues`);
+}
+
+/* ------------------------------------------------------------------ identifiants Wikidata : YouTube, Instagram, Apple Music */
+// Wikidata relie l’identifiant Deezer d’un artiste (P2722) à sa chaîne YouTube (P2397), son compte Instagram (P2003)
+// et son identifiant Apple Music (P2850). Requêtes groupées, gratuites, sans clé ; chaque artiste relu tous les 30 jours.
+async function wikidataStep(state) {
+  if (Date.now() > DEADLINE - 10 * MIN) return;
+  const artists = state.artists;
+  const todo = Object.entries(artists).filter(([, a]) => leanCat(a) && (!a.wdT || Date.now() - a.wdT > 30 * DAY))
+    .sort((x, y) => (y[1].f || 0) - (x[1].f || 0)).slice(0, FAST ? 200 : 3000);
+  if (!todo.length) return;
+  let yt = 0, ig = 0, am = 0, done = 0;
+  for (const group of chunk(todo, 250)) {
+    if (Date.now() > DEADLINE - 8 * MIN) break;
+    const q = `SELECT ?dz ?yt ?ig ?am WHERE { VALUES ?dz { ${group.map(([id]) => `"${id}"`).join(' ')} } ?item wdt:P2722 ?dz .
+      OPTIONAL { ?item wdt:P2397 ?yt } OPTIONAL { ?item wdt:P2003 ?ig } OPTIONAL { ?item wdt:P2850 ?am } }`;
+    try {
+      const r = await fetch(`https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(q)}`, { headers: { 'User-Agent': UA, Accept: 'application/sparql-results+json' } });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const j = await r.json();
+      for (const [id] of group) artists[id].wdT = Date.now();
+      for (const b of j.results.bindings) {
+        const a = artists[b.dz.value]; if (!a) continue;
+        if (b.yt && /^UC[\w-]{22}$/.test(b.yt.value) && a.yt !== b.yt.value) { a.yt = b.yt.value; yt++; }
+        if (b.ig && /^[\w.]{1,30}$/.test(b.ig.value) && a.ig !== b.ig.value.toLowerCase()) { a.ig = b.ig.value.toLowerCase(); ig++; }
+        if (b.am && /^\d+$/.test(b.am.value) && !a.it) { a.it = Number(b.am.value); am++; }
+      }
+      done += group.length;
+      await sleep(FAST ? 0 : 1500);
+    } catch (e) { log(`Wikidata : ${e.message}`); break; }
+  }
+  log(`Wikidata : ${done} artistes lus — ${yt} chaînes YouTube, ${ig} comptes Instagram, ${am} identifiants Apple Music ajoutés`);
+}
+
+/* ------------------------------------------------------------------ YouTube : flux des chaînes d’artistes */
+// Flux RSS gratuit de chaque chaîne (youtube.com/feeds/videos.xml?channel_id=…) : teasers, clips, trailers d’album.
+// Une date future annoncée dans le titre ou la description d’une vidéo récente devient une sortie à venir.
+// Les plus suivis à chaque passage, les autres à tour de rôle.
+async function youtubeStep(state) {
+  if (Date.now() > DEADLINE - 6 * MIN) return;
+  const list = Object.entries(state.artists).filter(([, a]) => leanCat(a) && a.yt).sort((x, y) => (y[1].f || 0) - (x[1].f || 0));
+  if (!list.length) return;
+  state.ytNews = state.ytNews || {};
+  const top = list.slice(0, 150), rest = list.slice(150), N = Math.min(rest.length, 250);
+  const start = (state.ytRot || 0) % Math.max(1, rest.length);
+  const todo = [...top, ...Array.from({ length: N }, (_, i) => rest[(start + i) % rest.length])];
+  state.ytRot = start + N;
+  let ok = 0, found = 0;
+  for (const group of chunk(todo, 8)) {
+    if (Date.now() > DEADLINE - 4 * MIN) break;
+    await Promise.all(group.map(async ([id, a]) => {
+      try {
+        const items = parseRss(await getText(`https://www.youtube.com/feeds/videos.xml?channel_id=${a.yt}`)).filter(v => Date.now() - v.pub < 60 * DAY);
+        ok++;
+        const anns = items.map(v => extractAnnouncement({ ...v, outlet: 'YouTube' }, null, { id, a, loose: true })).filter(x => x && x.date > TODAY);
+        if (anns.length) { state.ytNews[id] = anns; found += anns.length; } else delete state.ytNews[id];
+      } catch (e) { /* chaîne indisponible : on garde ce qu’on avait */ }
+    }));
+  }
+  for (const id of Object.keys(state.ytNews)) if (!state.artists[id] || state.ytNews[id].every(x => x.date <= TODAY)) delete state.ytNews[id];
+  log(`YouTube : ${ok}/${todo.length} chaînes lues (${list.length} connues), ${found} annonces`);
+}
+
+/* ------------------------------------------------------------------ Instagram : Business Discovery (API officielle) */
+// Avec le compte professionnel du site (secrets IG_USER_ID et IG_TOKEN), l’API Graph lit les légendes des derniers posts
+// des comptes publics professionnels ou créateurs des artistes. Pas de scraping. Limite : 200 appels par heure ;
+// ~40 artistes par passage (toutes les 15 minutes), les plus suivis d’abord puis à tour de rôle.
+// Un compte personnel (non lisible par l’API) est mis de côté 30 jours.
+async function instagramStep(state) {
+  const token = process.env.IG_TOKEN, me = process.env.IG_USER_ID;
+  if (!token || !me) return;
+  if (Date.now() > DEADLINE - 5 * MIN) return;
+  state.igNews = state.igNews || {};
+  const list = Object.entries(state.artists).filter(([, a]) => leanCat(a) && a.ig && !(a.igOff && Date.now() - a.igOff < 30 * DAY))
+    .sort((x, y) => (y[1].f || 0) - (x[1].f || 0));
+  if (!list.length) return;
+  const BUDGET = 40, top = list.slice(0, 15), rest = list.slice(15);
+  const start = (state.igRot || 0) % Math.max(1, rest.length), n = Math.min(rest.length, BUDGET - top.length);
+  // les 15 plus suivis : une fois par heure (un passage sur quatre)
+  const hourly = (state.igTurn = ((state.igTurn || 0) + 1) % 4) === 0;
+  const todo = [...(hourly ? top : []), ...Array.from({ length: hourly ? n : Math.min(rest.length, BUDGET) }, (_, i) => rest[(start + i) % rest.length])];
+  state.igRot = start + (hourly ? n : Math.min(rest.length, BUDGET));
+  let ok = 0, found = 0, off = 0;
+  for (const [id, a] of todo) {
+    if (Date.now() > DEADLINE - 3 * MIN) break;
+    const url = `https://graph.facebook.com/v21.0/${me}?fields=${encodeURIComponent(`business_discovery.username(${a.ig}){media.limit(8){caption,timestamp,permalink}}`)}&access_token=${encodeURIComponent(token)}`;
+    try {
+      const r = await fetch(url, { headers: { 'User-Agent': UA } });
+      const j = await r.json();
+      if (j.error) {
+        const c = j.error.code;
+        if ([4, 17, 32, 613].includes(c)) { log('Instagram : limite d’appels atteinte, reprise au passage suivant'); break; }
+        if (c === 190) { log('Instagram : jeton expiré ou invalide (secret IG_TOKEN à renouveler)'); break; }
+        a.igOff = Date.now(); off++; continue;   // compte personnel, introuvable ou privé
+      }
+      ok++;
+      const media = (j.business_discovery && j.business_discovery.media && j.business_discovery.media.data) || [];
+      const anns = media.filter(m => m.caption && Date.now() - Date.parse(m.timestamp) < 60 * DAY)
+        .map(m => extractAnnouncement({ title: m.caption.split('\n')[0].slice(0, 200), desc: m.caption.slice(0, 600), link: m.permalink, pub: Date.parse(m.timestamp), outlet: 'Instagram' }, null, { id, a, loose: true }))
+        .filter(x => x && x.date > TODAY);
+      if (anns.length) { state.igNews[id] = anns; found += anns.length; } else delete state.igNews[id];
+      await sleep(FAST ? 0 : 400);
+    } catch (e) { /* réseau : au passage suivant */ }
+  }
+  for (const id of Object.keys(state.igNews)) if (!state.artists[id] || state.igNews[id].every(x => x.date <= TODAY)) delete state.igNews[id];
+  log(`Instagram : ${ok} comptes lus, ${off} non lisibles (mis de côté 30 jours), ${found} annonces`);
+}
+// toutes les annonces : presse et Reddit, chaînes YouTube, comptes Instagram
+function allNews(state) {
+  const out = [...((state.news && state.news.items) || [])];
+  for (const src of [state.ytNews, state.igNews]) for (const l of Object.values(src || {})) out.push(...l);
+  return dedupeNews(out);
 }
 
 /* ------------------------------------------------------------------ classements */
@@ -1738,10 +1906,13 @@ async function main() {
   log(`Deezer : ${releases.length} sorties entre ${HISTORY_FROM} et ${FUTURE_TO}`);
   await fetchAlbumDetails(releases, state, details);
   await fetchTrackCredits(releases, state, details);
+  await wikidataStep(state);
   await appleIds(state);
   await appleStep(state, details);
   await musicbrainzStep(state, details);
   await pressStep(state);
+  try { await youtubeStep(state); } catch (e) { log(`YouTube : étape sautée (${e.message})`); }
+  try { await instagramStep(state); } catch (e) { log(`Instagram : étape sautée (${e.message})`); }
   await concertsStep(state);
 
   /* ---- fusion ---- */
@@ -1824,7 +1995,7 @@ async function main() {
     byArtist.get(k).push(it);
   }
   const near = (a, b) => Math.abs(Date.parse(a) - Date.parse(b)) <= 6 * DAY;
-  for (const x of (state.news && state.news.items) || []) {
+  for (const x of allNews(state)) {
     const a = artists[x.aid];
     if (!a || x.date <= TODAY) continue;
     const list = byArtist.get(norm(a.n)) || [];
@@ -1899,7 +2070,7 @@ function dedupeReleases(items) {
   return items.filter(it => keep.has(it));
 }
 
-export { extractAnnouncement, makeMatchers, parseRss, subjectOf, quotedIn, dedupeNews, leanCat, dedupeReleases };
+export { extractAnnouncement, makeMatchers, parseRss, subjectOf, quotedIn, dedupeNews, leanCat, dedupeReleases, wikidataStep, youtubeStep, instagramStep, allNews };
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch(e => { console.error('ÉCHEC :', e); process.exit(1); });
