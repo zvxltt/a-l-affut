@@ -2969,7 +2969,7 @@ function reviewHtml(x, withRelease) {
   const long = (x.tx || '').length > 520;
   return `<article class="rv${own ? ' own' : ''}">
     ${withRelease ? `<button class="rv-rel" type="button" data-rkey="${esc(x.k)}"><span class="cover">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : `<span class="ph" aria-hidden="true">${esc(initial(x.t))}</span>`}</span><span><b>${esc(x.t)}</b><span>${esc(x.a)}</span></span></button>`
-      : `<a class="rv-who" href="#u/${esc(x.h || '')}">${avatarHtml(x, 'sm')}<b>${esc(x.n || '?')}</b><span>@${esc(x.h || '')}</span>${own ? '<em>toi</em>' : isFollowing(x.uid) ? '<em class="ami">suivi</em>' : ''}</a>`}
+      : `<a class="rv-who" href="#u/${esc(x.h || '')}">${avatarHtml(x, 'sm')}<b>${own ? 'Moi' : esc(x.n || '?')}</b>${own ? '' : `<span>@${esc(x.h || '')}</span>`}${!own && isFollowing(x.uid) ? '<em class="ami">suivi</em>' : ''}</a>`}
     <div class="rv-meta">${x.r >= 1 ? noteStars(x.r, 'sm') : ''}<span>${esc(timeAgo(tsMs(x.at)))}</span></div>
     ${x.tx ? `<p class="rv-tx${long ? ' clamp' : ''}">${esc(x.tx)}</p>${long ? '<button class="rv-more" type="button" data-act="rv-more">Lire la suite</button>' : ''}` : ''}
   </article>`;
@@ -3754,6 +3754,7 @@ function postHtml(x) {
     : t === 1 ? 'a noté un son' : `a noté ${t} sons ${x.rt === 'ep' ? 'de l’EP' : x.rt === 'single' ? 'du single' : 'de l’album'}`;
   const long = (x.tx || '').length > 420;
   const prof = `#u/${esc(x.h || '')}`;
+  const me = !!(ME.user && x.uid === ME.user.uid);   // ses propres notes : « Moi »
   const one = !albumNote && t === 1 ? songs[0] : null;
   const head = one
     ? `<b>${esc(one.title)}</b><span>${esc(x.a)} · sur ${x.rt === 'single' ? 'le single' : x.rt === 'ep' ? 'l’EP' : 'l’album'} « ${esc(x.t)} »</span>
@@ -3764,7 +3765,7 @@ function postHtml(x) {
   return `<article class="post">
     <a class="post-av" href="${prof}" tabindex="-1" aria-hidden="true">${avatarHtml(x, 'md')}</a>
     <div class="post-b">
-      <p class="post-h"><a href="${prof}"><b>${esc(x.n || '?')}</b></a><span>@${esc(x.h || '')}</span><span aria-hidden="true">·</span><time datetime="${new Date(postTime(x) || Date.now()).toISOString()}">${esc(timeAgo(postTime(x)))}</time></p>
+      <p class="post-h"><a href="${prof}"><b>${me ? 'Moi' : esc(x.n || '?')}</b></a>${me ? '' : `<span>@${esc(x.h || '')}</span>`}<span aria-hidden="true">·</span><time datetime="${new Date(postTime(x) || Date.now()).toISOString()}">${esc(timeAgo(postTime(x)))}</time></p>
       <p class="post-a">${esc(what)}</p>
       <button class="post-rel" type="button" data-rkey="${esc(x.k)}" data-from="feed"${one ? ` data-ti="${one.i}"` : ''}>
         <span class="cover">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : `<span class="ph" aria-hidden="true">${esc(initial(x.t))}</span>`}</span>
