@@ -232,6 +232,53 @@ function rapOnly(state) {
   return { moved, dropped };
 }
 
+/* ------------------------------------------------------------------ artistes : photos et voisins Deezer */
+// Pour le quiz « Mes goûts » et les recommandations « Pour toi » : chaque artiste publié (et les plus suivis de
+// chaque style) avec sa photo Deezer et ses voisins « similaires ». Les voisins sont relus toutes les deux semaines,
+// quelques centaines par passage, pour ne pas ralentir le robot.
+const REL_TTL = 14 * DAY, REL_CAP = 450, PIC_CAP = 350, TOP_PER_CAT = 300, REL_KEEP = 14;
+const picOf = u => { const m = /\/images\/artist\/([0-9a-f]{32})\//.exec(u || ''); return m ? m[1] : ''; };
+async function artistsStep(state, items) {
+  const artists = state.artists;
+  state.rel = state.rel || {}; state.pic = state.pic || {};
+  const byName = new Map();
+  for (const [id, a] of Object.entries(artists)) {
+    if (!leanCat(a)) continue;
+    const k = norm(a.n), cur = byName.get(k);
+    if (!cur || (a.f || 0) > (artists[cur].f || 0)) byName.set(k, id);
+  }
+  const inc = new Set();
+  for (const it of items) for (const nm of [...String(it.a).split(/\s*&\s*/), ...(it.f || [])]) { const id = byName.get(norm(nm)); if (id) inc.add(id); }
+  for (const c of RAP) Object.entries(artists).filter(([, a]) => leanCat(a) === c).sort((x, y) => (y[1].f || 0) - (x[1].f || 0)).slice(0, TOP_PER_CAT).forEach(([id]) => inc.add(id));
+  const now = Date.now(), fans = id => artists[id].f || 0;
+  const due = [...inc].filter(id => !state.rel[id] || now - state.rel[id].t > REL_TTL).sort((x, y) => fans(y) - fans(x)).slice(0, REL_CAP);
+  await Promise.all(due.map(id => dz(`/artist/${id}/related?limit=25`).then(res => {
+    const list = res.data || [];
+    state.rel[id] = { t: now, r: list.map(r => r.id) };
+    for (const r of list) { const p = picOf(r.picture_medium); if (p) state.pic[r.id] = p; }
+  }).catch(() => {})));
+  const noPic = [...inc].filter(id => !state.pic[id]).sort((x, y) => fans(y) - fans(x)).slice(0, PIC_CAP);
+  await Promise.all(noPic.map(id => dz(`/artist/${id}`).then(ar => { state.pic[id] = picOf(ar.picture_medium) || '-'; }).catch(() => {})));
+  // ménage : seulement les artistes encore suivis
+  for (const id of Object.keys(state.rel)) if (!artists[id]) delete state.rel[id];
+  for (const id of Object.keys(state.pic)) if (!artists[id]) delete state.pic[id];
+  // voisins dans les deux sens, les plus proches d’abord
+  const ids = [...inc], idx = new Map(ids.map((id, i) => [id, i])), links = ids.map(() => new Map());
+  ids.forEach((id, i) => ((state.rel[id] && state.rel[id].r) || []).forEach((o, k) => {
+    const j = idx.get(String(o)); if (j === undefined || j === i) return;
+    const w = 25 - k;
+    links[i].set(j, Math.max(links[i].get(j) || 0, w));
+    links[j].set(i, Math.max(links[j].get(i) || 0, w * 0.8));
+  }));
+  const a = ids.map((id, i) => {
+    const x = artists[id], p = state.pic[id];
+    return [x.n, Number(id), p && p !== '-' ? p : '', leanCat(x), x.f || 0, [...links[i]].sort((u, v) => v[1] - u[1]).slice(0, REL_KEEP).map(([j]) => j)];
+  });
+  await writeFile(`${OUT}/artists.json`, JSON.stringify({ v: 1, generatedAt: new Date().toISOString(), a }));
+  const withRel = ids.filter(id => state.rel[id]).length, withPic = ids.filter(id => state.pic[id] && state.pic[id] !== '-').length;
+  log(`artistes : ${ids.length} dans le fichier (${withRel} avec voisins, ${withPic} avec photo) ; ${due.length} listes de voisins relues, ${noPic.length} photos cherchées`);
+}
+
 /* ------------------------------------------------------------------ découverte d’artistes */
 // 1) Artistes « similaires » sur Deezer, sur deux niveaux (les artistes de départ, puis les plus suivis des découverts).
 // Tout artiste ajouté par la découverte n’apporte que ses sorties rangées en rap (ro), et il est écarté
@@ -1762,6 +1809,7 @@ async function main() {
   const generatedAt = new Date().toISOString();
   const upcoming = items.filter(i => i.d > TODAY).length;
   await writeFile(`${OUT}/releases.json`, JSON.stringify({ v: 1, generatedAt, today: TODAY, artists: Object.values(artists).filter(a => leanCat(a) || (a.c === 'fr' && !a.off)).length, co: ((state.concerts && state.concerts.items) || []).filter(x => x.d >= TODAY).length, items }));
+  try { await artistsStep(state, items); } catch (e) { log(`artistes : étape sautée (${e.message})`); }
   await writeFile(`${OUT}/details.json`, JSON.stringify(details));
   const concerts = ((state.concerts && state.concerts.items) || []).filter(x => x.d >= TODAY);
   await writeFile(`${OUT}/concerts.json`, JSON.stringify({ v: 1, generatedAt, updatedAt: state.concerts ? new Date(state.concerts.t).toISOString() : null, items: concerts }));
