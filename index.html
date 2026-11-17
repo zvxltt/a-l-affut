@@ -746,7 +746,7 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 .post-rel .cover { width: 64px; flex: none; border-radius: 8px; }
 .post-rt { display: grid; gap: 3px; min-width: 0; }
 .post-rt b { font-size: 15.5px; line-height: 1.25; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
-.post-rt > span:not(.post-n) { color: var(--ink-2); font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.post-rt > span:not(.post-n):not(.post-songs) { color: var(--ink-2); font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .post-n { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 3px; }
 .post-n i { font: 600 12.5px var(--font-mono); font-style: normal; font-variant-numeric: tabular-nums; }
 .post-n em { font: 500 11.5px var(--font-mono); font-style: normal; color: var(--muted); }
@@ -1368,6 +1368,12 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 .qz-near { display: block; min-height: 15px; margin-top: -4px; font-size: 11px; font-weight: 600; line-height: 1.3; color: #F0503A; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .qz-art[aria-pressed="true"] .qz-near { visibility: hidden; }
 .qz-body.still { animation: none; }
+/* avis : sons notés (sans note du projet) */
+.post-songs { display: grid; gap: 3px; margin-top: 6px; }
+.post-songs > span { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; }
+.post-songs i { font-style: normal; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.post-songs b { flex: none; font-size: 13px; line-height: 1.4; display: inline; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.post-songs em { font-style: normal; font-size: 12px; color: var(--muted); }
 
 .set-st .live { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 7px; vertical-align: 1px; opacity: .7; }
 .month { margin: 38px 0 0; font: 600 12px var(--font-mono); color: var(--muted); }
@@ -3740,22 +3746,29 @@ setInterval(() => {
 }, 5 * 60e3);
 function postHtml(x) {
   const tv = trDecode(x.tr), t = tv.filter(Boolean).length;
-  // sons notés sans note du projet : le son le mieux noté résume le post
-  let bi = -1;
-  tv.forEach((v, i) => { if (v && (bi < 0 || v > tv[bi])) bi = i; });
-  const best = bi >= 0 && !(x.r >= 1) ? `<span class="post-best">Meilleur son : ${esc(trackTitles(x.k, x)[bi] || `titre ${bi + 1}`)} <b>${fmtNote(tv[bi])}★</b></span>` : '';
-  const what = x.r >= 1 ? (x.tx ? 'a écrit une critique' : 'a noté') : `a noté ${t} ${plural(t, 'son', 'sons')} de`;
+  const albumNote = x.r >= 1;
+  // sons notés sans note du projet : le post parle des sons, pas de l’album
+  const titles = t ? trackTitles(x.k, x) : [];
+  const songs = tv.map((v, i) => ({ v, i, title: titles[i] || `Titre ${i + 1}` })).filter(s => s.v).sort((a, b) => b.v - a.v || a.i - b.i);
+  const what = albumNote ? (x.tx ? 'a écrit une critique' : `a noté ${x.rt === 'single' ? 'le single' : x.rt === 'ep' ? 'l’EP' : 'l’album'}`)
+    : t === 1 ? 'a noté un son' : `a noté ${t} sons ${x.rt === 'ep' ? 'de l’EP' : x.rt === 'single' ? 'du single' : 'de l’album'}`;
   const long = (x.tx || '').length > 420;
   const prof = `#u/${esc(x.h || '')}`;
+  const one = !albumNote && t === 1 ? songs[0] : null;
+  const head = one
+    ? `<b>${esc(one.title)}</b><span>${esc(x.a)} · sur ${x.rt === 'single' ? 'le single' : x.rt === 'ep' ? 'l’EP' : 'l’album'} « ${esc(x.t)} »</span>
+       <span class="post-n">${noteStars(one.v, 'sm')}<i>${fmtNote(one.v)}</i></span>`
+    : `<b>${esc(x.t)}</b><span>${esc(x.a)}${TYPE_LABEL[x.rt] ? ` · ${esc(TYPE_LABEL[x.rt])}` : ''}</span>
+       ${albumNote ? `<span class="post-n">${noteStars(x.r, 'sm')}<i>${fmtNote(x.r)}</i>${t ? `<em>+ ${t} ${plural(t, 'son noté', 'sons notés')}</em>` : ''}</span>` : ''}
+       ${!albumNote && t > 1 ? `<span class="post-songs">${songs.slice(0, 3).map(s => `<span><i>${esc(s.title)}</i><b>${fmtNote(s.v)}★</b></span>`).join('')}${t > 3 ? `<em>+ ${t - 3} ${plural(t - 3, 'autre son', 'autres sons')}</em>` : ''}</span>` : ''}`;
   return `<article class="post">
     <a class="post-av" href="${prof}" tabindex="-1" aria-hidden="true">${avatarHtml(x, 'md')}</a>
     <div class="post-b">
       <p class="post-h"><a href="${prof}"><b>${esc(x.n || '?')}</b></a><span>@${esc(x.h || '')}</span><span aria-hidden="true">·</span><time datetime="${new Date(postTime(x) || Date.now()).toISOString()}">${esc(timeAgo(postTime(x)))}</time></p>
       <p class="post-a">${esc(what)}</p>
-      <button class="post-rel" type="button" data-rkey="${esc(x.k)}" data-from="feed">
+      <button class="post-rel" type="button" data-rkey="${esc(x.k)}" data-from="feed"${one ? ` data-ti="${one.i}"` : ''}>
         <span class="cover">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : `<span class="ph" aria-hidden="true">${esc(initial(x.t))}</span>`}</span>
-        <span class="post-rt"><b>${esc(x.t)}</b><span>${esc(x.a)}${TYPE_LABEL[x.rt] ? ` · ${esc(TYPE_LABEL[x.rt])}` : ''}</span>
-          ${x.r >= 1 || t ? `<span class="post-n">${x.r >= 1 ? `${noteStars(x.r, 'sm')}<i>${fmtNote(x.r)}</i>` : best}${t && x.r >= 1 ? `<em>+ ${t} ${plural(t, 'son noté', 'sons notés')}</em>` : ''}</span>` : ''}</span>
+        <span class="post-rt">${head}</span>
       </button>
       ${x.tx ? `<p class="post-tx${long ? ' clamp' : ''}">${esc(x.tx)}</p>${long ? '<button class="rv-more" type="button" data-act="rv-more">Lire la suite</button>' : ''}` : ''}
     </div>
