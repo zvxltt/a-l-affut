@@ -1301,6 +1301,51 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
 .hors-g h3 span { color: var(--muted); font-weight: 500; margin-left: 4px; }
 .hors .rows { opacity: .92; }
 
+/* ---------- écran du compte à l’arrivée ---------- */
+.gate .intro-in { grid-template-rows: auto auto auto; align-content: center; overflow-y: auto; scrollbar-width: none; padding-top: calc(28px + env(safe-area-inset-top)); }
+.gate .intro-art { height: clamp(150px, 27vh, 270px); }
+.ia-gate { position: relative; display: grid; place-items: center; width: min(340px, 100%); height: 100%; }
+.ia-gate .ia-radar { width: min(200px, 50vw, 22vh); }
+.ia-chip { position: absolute; display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 999px; background: #1D1D1B; border: 1px solid #2E2E2B; color: #F1F0EC; font-size: 13px; font-weight: 600; white-space: nowrap; box-shadow: 0 14px 30px -16px rgba(0, 0, 0, .9); animation: ia-chip-in .6s var(--d) both, ia-float 5s var(--d) ease-in-out infinite; }
+.ia-chip i { font-style: normal; color: #F0503A; font-size: 14px; }
+.ia-chip.c1 { left: 0; top: 4%; } .ia-chip.c2 { right: 0; top: 42%; } .ia-chip.c3 { left: 4%; bottom: 2%; }
+@media (max-width: 899px) { .ia-chip { font-size: 12px; padding: 7px 11px; } }
+@keyframes ia-chip-in { from { opacity: 0; } }
+@keyframes ia-float { 50% { translate: 0 -6px; } }
+.gate-perks { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 12px; }
+.gate-perks li { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 12px; align-items: center; animation: intro-up .5s calc(.15s + var(--i) * .08s) both cubic-bezier(.2, .8, .2, 1); }
+.gate-ic { width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; background: rgba(240, 80, 58, .14); color: #F0503A; }
+.gate-ic svg { width: 19px; height: 19px; }
+.gate-perks b { display: block; font-size: 15px; font-weight: 600; }
+.gate-perks li > span > span { display: block; margin-top: 2px; font-size: 13.5px; line-height: 1.4; color: rgba(241, 240, 236, .62); }
+.gate-nav { display: grid; gap: 10px; }
+.gate .intro-next { width: 100%; }
+.gate-login { height: 50px; border-radius: 999px; border: 1.5px solid #3B3B38; color: #F1F0EC; font-size: 16px; font-weight: 600; transition: border-color .15s, background-color .15s; }
+.gate-login:hover { border-color: rgba(241, 240, 236, .55); background: rgba(241, 240, 236, .04); }
+.gate-skip { display: grid; gap: 2px; justify-items: center; padding: 6px; color: rgba(241, 240, 236, .72); font-size: 14.5px; font-weight: 500; }
+.gate-skip:hover { color: #fff; }
+.gate-skip small { font-size: 12.5px; font-weight: 400; color: rgba(241, 240, 236, .45); }
+@media (max-height: 880px) and (max-width: 899px) {
+  .gate-perks li > span > span { display: none; }
+  .gate-perks { gap: 8px; margin-top: 14px; }
+  .gate .intro-in { gap: 16px; padding-top: calc(16px + env(safe-area-inset-top)); }
+  .gate .intro-art { height: clamp(130px, 22vh, 200px); }
+}
+@media (min-width: 900px) and (min-height: 560px) {
+  .gate .intro-in { grid-template-rows: minmax(0, 1fr) auto auto minmax(0, 1fr); align-content: stretch; overflow: visible; padding-top: 48px; }
+  .gate .intro-art { height: auto; }
+  .ia-gate { height: auto; aspect-ratio: 1.15; }
+  .gate-nav { grid-column: 2; grid-row: 3; max-width: 400px; }
+  .ia-gate { width: min(520px, 100%); }
+  .ia-gate .ia-radar { width: min(340px, 30vw, 46vh); }
+  .ia-chip { font-size: 15px; padding: 11px 18px; }
+  .gate-perks { margin-top: 26px; gap: 16px; }
+  .gate-perks b { font-size: 16px; } .gate-perks li > span > span { font-size: 14.5px; }
+}
+/* finitions du quiz */
+.qz-art:focus-visible, .qz-style:focus-visible, .qz-opt:focus-visible, .qz-chip:focus-visible, .gate-login:focus-visible, .gate-skip:focus-visible { outline: 2px solid #F0503A; outline-offset: 4px; border-radius: 16px; }
+@media (prefers-reduced-motion: reduce) { .qz-art.fresh, .ia-chip, .gate-perks li, .pf-card, .pf-s i::after { animation: none !important; } }
+
 .set-st .live { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 7px; vertical-align: 1px; opacity: .7; }
 .month { margin: 38px 0 0; font: 600 12px var(--font-mono); color: var(--muted); }
 .month + .days { margin-top: 10px; }
@@ -1623,11 +1668,20 @@ const isMine = r => [...splitArtists(r.artist), ...(r.feats || [])].some(follows
 const isMineConcert = c => c.artists.some(follows);
 const matchMine = r => !S.mine || isMine(r);
 // « Mes goûts » (quiz) : styles, profil, artistes masqués (« pas pour moi ») et ville des concerts
-let TASTE = store.get('taste', null);
+let MYTASTE = store.get('taste', null);   // profil du quiz, gardé sur l’appareil
+let TASTE = null;                         // profil actif : seulement avec un compte (sans compte, toutes les sorties, sans recommandations)
 let SHOW_HID = false;
 const hides = name => !!(TASTE && TASTE.hide && TASTE.hide[norm(name)]);
 const isHidden = r => !!TASTE && splitArtists(r.artist).some(hides);
 const matchHide = r => SHOW_HID || !isHidden(r);
+// écran du compte à l’arrivée : icônes et avantages (aussi dans l’invitation de la semaine)
+const GATE_IC = [
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/><path d="M12 12 18 6"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 15a2 2 0 0 1-2 2H8l-4 3.5V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/><path d="M8.5 9h7M8.5 12.5h4.5"/></svg>'];
+const GATE_PERKS = [['Une sélection pour toi', 'Chaque semaine, les sorties des artistes proches de ceux que tu écoutes.'],
+  ['Tes notes et tes critiques', 'Note les sorties pendant leur semaine de sortie, retrouve-les sur ton profil.'],
+  ['Les avis de ceux que tu suis', 'Suis d’autres auditeurs et lis leurs critiques.']];
 /* ---------- artistes : photos et voisins Deezer (quiz « Mes goûts », recommandations « Pour toi ») ---------- */
 // fichier préparé par le robot : [nom, id Deezer, photo, style, fans, voisins (rangs dans la liste)]
 const ARTISTS_URL = 'data/artists.json';
@@ -1949,7 +2003,7 @@ function viewWeek() {
   const singles = out.filter(r => r.rt === 'single');
   const wr = FB_CONFIG ? WEEKREV.get(ws) : null;
   const usedAt = wr ? wr.at : -1;
-  let html = S.week === 0 ? (!TASTE && !S.q.trim() ? quizCtaHtml() : '') + rateCtaHtml() : '';
+  let html = S.week === 0 ? (!TASTE && !S.q.trim() ? (acctActive() ? quizCtaHtml() : acctCtaHtml()) : '') + rateCtaHtml() : '';
   // à la une : l’album le plus attendu de la semaine (hors recherche) ; avec le quiz, d’abord un artiste que tu écoutes
   let top = null, topTag = '';
   if (!S.q.trim() && albums.length) {
@@ -2139,7 +2193,8 @@ function viewSettings() {
   const used = (() => { try { return Object.keys(localStorage).filter(k => k.startsWith('affut:')).length; } catch (e) { return 0; } })();
   $content.innerHTML = `
     <section class="set-sec"><h2 class="set-h">Mes goûts</h2>
-      ${setRow(TASTE ? 'Refaire le quiz' : 'Faire le quiz', TASTE ? `Ton profil : ${persona(TASTE)[0]} (${qzCatsLabel(TASTE.cats)}, ${qzLevelLabel(levelOf(ugOf(TASTE))).toLowerCase()}${TASTE.metro ? `, concerts à ${TASTE.metro}` : ''}). Tes suggestions « Pour toi » en dépendent.` : 'Quelques questions sur ce que tu écoutes : le site te propose ensuite une sélection « Pour toi ».', `<button class="btn sm solid" type="button" data-quiz>${TASTE ? 'Refaire le quiz' : 'Faire le quiz'}</button>`)}
+      ${!acctActive() ? setRow('Recommandations', 'Crée un compte pour faire le quiz : chaque semaine, une sélection faite pour toi.', '<button class="btn sm solid" type="button" data-gate="up">Créer un compte</button>') : ''}
+      ${acctActive() ? setRow(TASTE ? 'Refaire le quiz' : 'Faire le quiz', TASTE ? `Ton profil : ${persona(TASTE)[0]} (${qzCatsLabel(TASTE.cats)}, ${qzLevelLabel(levelOf(ugOf(TASTE))).toLowerCase()}${TASTE.metro ? `, concerts à ${TASTE.metro}` : ''}). Tes suggestions « Pour toi » en dépendent.` : 'Quelques questions sur ce que tu écoutes : le site te propose ensuite une sélection « Pour toi ».', `<button class="btn sm solid" type="button" data-quiz>${TASTE ? 'Refaire le quiz' : 'Faire le quiz'}</button>`) : ''}
       ${TASTE && Object.keys(TASTE.hide).length ? `<p class="set-about">Artistes masqués : leurs sorties n’apparaissent plus. Touche un nom pour le revoir.</p>
         <div class="chips">${Object.values(TASTE.hide).sort((a, b) => a.localeCompare(b, 'fr')).map(n => `<button class="chip fchip" type="button" data-unhide="${esc(n)}">${esc(n)}<span aria-hidden="true">✕</span></button>`).join('')}</div>` : ''}
     </section>
@@ -2369,6 +2424,14 @@ const trEncode = arr => arr.slice(0, TR_MAX).map(v => TR_CH[Number.isInteger(v) 
 const HANDLE_RE = /^[a-z0-9_]{3,20}$/;
 let FB = null, fbLoading = null;
 const ME = { ready: !FB_CONFIG, user: null, profile: null, reviews: null, failed: false };
+// les recommandations vont avec le compte (dans la maquette sans comptes, un compte simulé)
+const acctActive = () => (FB_CONFIG ? !!ME.user : !!store.get('demoAcct', 0));
+function syncTaste() {
+  const t = acctActive() ? MYTASTE : null;
+  if (t !== TASTE) { TASTE = t; RECO = null; }
+  if (TASTE) loadArtists();
+}
+syncTaste();
 const REV = new Map();        // clé de sortie -> { at, list } (toutes les notes de la sortie)
 const REVLOAD = new Set();
 const WEEKREV = new Map();    // début de semaine -> { at, list, agg }
@@ -2499,9 +2562,12 @@ async function onUser(user) {
     } catch (e) { ME.failed = true; toast('La base des notes ne répond pas, réessaie dans un instant'); }
   }
   ME.ready = true;
+  syncTaste();
   paintAcct();
+  if (user) closeGate();
   if (user && !ME.failed && !ME.profile) openOnboarding();
   refreshAfterAuth();
+  setTimeout(() => { maybeGate(); maybeQuiz(); }, 300);   // sans compte : l’écran d’accueil ; avec un compte tout neuf : le quiz
 }
 function refreshAfterAuth() {
   FEED = null; FOLLOWERS.clear(); PEOPLE = { q: '', list: null, err: false }; paintFeedBadge();
@@ -3787,13 +3853,13 @@ function showcaseHtml(u, own) {
 }
 function viewProfile() {
   $head.innerHTML = '';
-  if (!FB_CONFIG) { $content.innerHTML = quizCtaHtml(true) + '<div class="empty"><strong>Les profils arrivent bientôt.</strong></div>'; return; }
+  if (!FB_CONFIG) { $content.innerHTML = (acctActive() ? quizCtaHtml(true) : acctCtaHtml()) + '<div class="empty"><strong>Les profils arrivent bientôt.</strong></div>'; return; }
   let data = null;
   if (S.view === 'profil') {
     if (!ME.ready) { $content.innerHTML = '<div class="empty"><strong>Connexion…</strong></div>'; return; }
     if (!ME.user) {
       $head.innerHTML = '<div class="head-main"><p class="kicker">Profil</p><h1 class="h1">Ton profil</h1><p class="sub">Connecte-toi pour noter les sorties de la semaine, écrire tes critiques, composer ta vitrine et suivre d’autres membres.</p></div>';
-      $content.innerHTML = quizCtaHtml(true) + `<div class="empty"><strong>Tu n’es pas connecté.</strong>Ton profil rassemble tes notes, tes critiques, ta vitrine, tes abonnés et tes abonnements.<br><button class="btn solid" type="button" data-act="signin">Se connecter</button></div>`;
+      $content.innerHTML = `<div class="empty"><strong>Tu n’es pas connecté.</strong>Ton profil rassemble tes notes, tes critiques, ta vitrine, tes abonnés et tes abonnements.<br><button class="btn solid" type="button" data-act="signin">Se connecter</button></div>`;
       return;
     }
     if (!ME.profile) { $content.innerHTML = `<div class="empty"><strong>Il te reste à choisir ton pseudo.</strong><br><button class="btn solid" type="button" data-act="onboard">Créer mon profil</button></div>`; return; }
@@ -4115,6 +4181,7 @@ document.addEventListener('error', e => {
 }, true);
 let routed = false;
 function route() {
+  if (location.hash.split('?')[0] === '#bienvenue') { history.replaceState(null, '', '#semaine'); setTimeout(openGate, 0); }
   if (location.hash.split('?')[0] === '#quiz') { history.replaceState(null, '', '#semaine'); setTimeout(() => (DATA.items.length ? openQuiz() : setTimeout(route, 300)), 0); }
   const base = location.hash.split('?')[0];   // adresse sans onglet : l'onglet d'ouverture choisi dans les paramètres
   const fm = location.hash.match(FICHE_RE);
@@ -4190,6 +4257,7 @@ const INTRO = [
   { art: 'avis', k: 'Ensemble', h: 'Compare ton avis à celui des autres.', p: 'Écris ta critique, suis d’autres membres et lis leurs avis dans l’onglet Avis.' },
 ];
 function introArt(a) {
+  if (a === 'gate') return `<div class="ia-gate">${introArt('radar')}${[['♥', 'Proche de tes artistes', 'c1'], ['★', 'Ta note · 8,5', 'c2'], ['◎', 'Pour toi · 12 sorties', 'c3']].map(([i, t, c], k) => `<span class="ia-chip ${c}" style="--d:${0.3 + k * 0.25}s"><i>${i}</i>${t}</span>`).join('')}</div>`;
   if (a === 'radar') return `<div class="ia-radar"><i></i><i></i><i></i><b class="ia-sw"></b><span style="--x:24%;--y:60%;--d:.9s"></span><span style="--x:68%;--y:30%;--d:2.4s"></span><span style="--x:60%;--y:72%;--d:3.9s"></span></div>`;
   if (a === 'cards') return `<div class="ia-cards">${[['Vendredi', 'Album', 'Rap FR'], ['Vendredi', 'Single', 'Rap US'], ['dans 4 j', 'EP', 'Rap UK']].map(([d, t, c], i) => `<div class="ia-card" style="--i:${i}"><span class="ia-cov c${i}"></span><span class="ia-l"><b></b><em></em><small>${c} · ${t}</small></span><span class="ia-d${i === 2 ? ' soon' : ''}">${d}</span></div>`).join('')}</div>`;
   if (a === 'note') return `<div class="ia-note"><div class="ia-week">${['V', 'S', 'D', 'L', 'M', 'M', 'J'].map((d, i) => `<span style="--i:${i}">${d}</span>`).join('')}<u></u></div><div class="ia-stars">${'<span>★</span>'.repeat(5)}</div><div class="ia-lock">Jeudi 23 h 59 : note figée</div></div>`;
@@ -4220,7 +4288,7 @@ function closeIntro() {
   store.set('introSeen', 1);
   document.documentElement.classList.remove('intro-on');
   el.classList.add('out'); setTimeout(() => el.remove(), 260);
-  if (!TASTE && !store.get('tasteAsked', 0)) setTimeout(openQuiz, 300);   // juste après la présentation : le quiz des goûts
+  setTimeout(() => { maybeGate(); maybeQuiz(); }, 300);   // juste après la présentation : l’écran du compte (puis le quiz)
 }
 document.addEventListener('click', e => {
   if (e.target.closest('[data-intro]')) { openIntro(); return; }
@@ -4238,6 +4306,54 @@ document.addEventListener('keydown', e => {
   document.addEventListener('touchend', e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null;
     if (dx < -50 && introI < INTRO.length - 1) { introI++; paintIntro(); } else if (dx > 50 && introI > 0) { introI--; paintIntro(); } }, { passive: true }); }
 if (!store.get('introSeen', 0) && !navigator.webdriver) openIntro();
+
+/* ---------- à l’arrivée : créer un compte (puis le quiz), ou continuer sans compte ---------- */
+function openGate() {
+  if ($('#gate') || (FB_CONFIG ? ME.user : store.get('demoAcct', 0))) return;
+  document.body.insertAdjacentHTML('beforeend', `<div class="intro gate" id="gate"><div class="intro-in gate-in" role="dialog" aria-modal="true" aria-labelledby="gate-h">
+    <div class="intro-art" aria-hidden="true">${introArt('gate')}</div>
+    <div class="intro-txt"><p class="intro-k">Ton compte</p><h2 class="intro-h" id="gate-h">Ton radar, réglé sur toi.</h2>
+      <p class="intro-p">Crée ton compte gratuit et réponds à cinq questions : le site te recommande chaque semaine ce qui te ressemble.</p>
+      <ul class="gate-perks">${GATE_PERKS.map(([t, d], i) => `<li style="--i:${i}"><span class="gate-ic" aria-hidden="true">${GATE_IC[i]}</span><span><b>${t}</b><span>${d}</span></span></li>`).join('')}</ul></div>
+    <div class="gate-nav">
+      <button class="btn primary intro-next" type="button" data-gate="up">Créer un compte</button>
+      <button class="gate-login" type="button" data-gate="in">J’ai déjà un compte</button>
+      <button class="gate-skip" type="button" data-gate="skip">Continuer sans compte<small>Toutes les sorties, sans recommandations.</small></button>
+    </div></div></div>`);
+  document.documentElement.classList.add('intro-on');
+  const b = $('#gate [data-gate="up"]'); if (b) b.focus({ preventScroll: true });
+}
+function closeGate() {
+  const el = $('#gate'); if (!el) return;
+  store.set('gateSeen', 1);
+  if (!$('#quiz') && !$('#intro')) document.documentElement.classList.remove('intro-on');
+  el.classList.add('out'); setTimeout(() => el.remove(), 260);
+}
+// une seule fois, après la présentation, pour qui n’a pas de compte
+function maybeGate() {
+  if ($('#gate') || $('#intro') || $('#quiz') || store.get('gateSeen', 0) || !store.get('introSeen', 0) || navigator.webdriver) return;
+  if (FB_CONFIG ? !ME.ready || ME.user : store.get('demoAcct', 0)) return;
+  openGate();
+}
+// le quiz, dès qu’un compte existe et qu’il n’a pas encore été fait (ni remis à plus tard) sur cet appareil
+function maybeQuiz() {
+  if (MYTASTE || store.get('tasteAsked', 0) || !acctActive() || $('#quiz') || $('#intro') || $('#gate') || $modal.open || navigator.webdriver) return;
+  const go = () => (DATA.items.length ? openQuiz() : setTimeout(go, 300)); go();
+}
+$modal.addEventListener('close', () => setTimeout(maybeQuiz, 250));   // pseudo choisi (ou fenêtre fermée) : le quiz suit
+function acctCtaHtml() {
+  return `<button class="qz-cta" type="button" data-gate="up"><span class="qz-cta-i" aria-hidden="true">${GATE_IC[0]}</span><span><b>Tes recommandations</b><span>Crée un compte : chaque semaine, une sélection faite pour toi.</span></span><span class="qz-cta-go">Créer un compte</span></button>`;
+}
+document.addEventListener('click', e => {
+  const g = e.target.closest('[data-gate]'); if (!g) return;
+  const a = g.dataset.gate;
+  if (a === 'skip') { closeGate(); toast('Tu pourras créer ton compte quand tu veux, depuis Profil'); return; }
+  // maquette sans comptes : on simule la création du compte pour voir la suite
+  if (!FB_CONFIG) { store.set('demoAcct', 1); closeGate(); syncTaste(); render(); setTimeout(maybeQuiz, 300); return; }
+  if (ME.user) { closeGate(); maybeQuiz(); return; }
+  openSignIn(a === 'up' ? 'Crée ton compte pour recevoir tes recommandations, noter les sorties et écrire tes critiques.' : '', a === 'up' ? 'up' : 'in');
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#gate') && !$modal.open) closeGate(); });
 
 /* ---------- quiz « Mes goûts » : calibrer son radar, pour des recommandations sur mesure ---------- */
 // étapes : accueil, styles, artistes écoutés, réglage têtes d’affiche ↔ underground, formats, concerts, profil
@@ -4304,7 +4420,7 @@ function closeQuiz() {
   el.classList.add('out'); setTimeout(() => el.remove(), 260);
 }
 function finishQuiz() {
-  TASTE = { cats: QZ.cats, ug: QZ.ug, level: levelOf(QZ.ug), fmt: QZ.fmt, hide: QZ.hide, metro: QZ.metro, at: Date.now() };
+  MYTASTE = TASTE = { cats: QZ.cats, ug: QZ.ug, level: levelOf(QZ.ug), fmt: QZ.fmt, hide: QZ.hide, metro: QZ.metro, at: Date.now() };
   store.set('taste', TASTE); store.set('tasteAsked', 1);
   FOLLOW = { ...QZ.like }; store.set('follow', FOLLOW);   // artistes choisis = artistes suivis (filtre « Mes artistes »)
   S.cat = 'all';   // tout reste visible : ce qui sort de tes goûts passe dans « Hors de tes recommandations »
@@ -4353,7 +4469,7 @@ function paintQuiz() {
   if (step === 'hello') {
     top = '<span></span><button class="qz-skip" type="button" data-qz-skip>Plus tard</button>';
     body = `<div class="qz-hello"><div class="qz-hello-art" aria-hidden="true">${introArt('radar')}</div>
-      <p class="qz-k">Une minute, cinq questions</p><h2 class="qz-h">Calibrons ton radar.</h2>
+      <p class="qz-k">${ME.profile && ME.profile.n ? `Bienvenue, ${esc(ME.profile.n.split(' ')[0])} · cinq questions` : 'Une minute, cinq questions'}</p><h2 class="qz-h">Calibrons ton radar.</h2>
       <p class="qz-p">Dis-nous ce que tu écoutes : le site te recommande les artistes qui y ressemblent, et range le reste plus bas.</p></div>`;
     next = 'C’est parti';
   } else if (step === 'cats') {
@@ -4500,10 +4616,8 @@ function quizCtaHtml(redo) {
   return `<button class="qz-cta" type="button" data-quiz><span class="qz-cta-i" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg></span><span><b>Calibre ton radar</b><span>Cinq questions pour des recommandations sur mesure.</span></span><span class="qz-cta-go">Faire le quiz</span></button>`;
 }
 const hiddenNote = n => `<p class="hid-note">${SHOW_HID ? 'Les artistes que tu as masqués sont affichés.' : `${n} ${plural(n, 'sortie', 'sorties')} d’artistes que tu as masqués.`}<button type="button" data-showhid>${SHOW_HID ? 'Les masquer' : 'Afficher'}</button></p>`;
-// avec un profil, les artistes servent aux recommandations dès l’ouverture
-if (TASTE) loadArtists();
-// le quiz s’ouvre juste après la présentation, ou à la prochaine ouverture pour ceux qui l’ont déjà vue
-if (store.get('introSeen', 0) && !TASTE && !store.get('tasteAsked', 0) && !navigator.webdriver) { const go = () => (DATA.items.length ? openQuiz() : setTimeout(go, 300)); go(); }
+// à l’ouverture : l’écran du compte pour qui n’en a pas, le quiz pour un compte qui ne l’a pas encore fait
+setTimeout(() => { maybeGate(); maybeQuiz(); }, 0);
 
 /* ---------- installer sur l’écran d’accueil (téléphone) ---------- */
 let installEvt = null;
