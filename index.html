@@ -1599,6 +1599,7 @@ async function loadData(first) {
     try { if (QZ && !(QZ.deck && QZ.deck.length)) paintQuiz(); } catch (e) {}   // quiz ouvert avant l’arrivée des données
     if (CONCERTS.loaded && CONCERTS.generatedAt !== j.generatedAt) loadConcerts(true);
     render();
+    if (first) restorePos();   // rechargement : retour au même endroit de la page
     if (pendingFiche) openFiche(pendingFiche);
     if (added > 0) toast(`${added} ${plural(added, 'nouvelle sortie', 'nouvelles sorties')} à l’instant`);
   } catch (e) {
@@ -4252,6 +4253,29 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') persistSeen();
   else if (Date.now() - lastCheck > 60e3) { lastCheck = Date.now(); loadData(false); }
 });
+/* ---------- rechargement de la page : on reste au même endroit (onglet, semaine, défilement) ---------- */
+const POS_KEY = 'affut:pos';
+try { history.scrollRestoration = 'manual'; } catch (e) {}
+function savePos() {
+  if (!routed) return;
+  try { sessionStorage.setItem(POS_KEY, JSON.stringify({ h: location.hash, v: S.view, y: Math.round(scrollY), w: S.week, o: [...S.open], t: Date.now() })); } catch (e) {}
+}
+let posT = 0;
+addEventListener('scroll', () => { clearTimeout(posT); posT = setTimeout(savePos, 200); }, { passive: true });
+addEventListener('pagehide', savePos);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') savePos(); });
+const POS = (() => {
+  try { const p = JSON.parse(sessionStorage.getItem(POS_KEY) || 'null'); return p && p.h === location.hash && Date.now() - p.t < 6 * 3600e3 ? p : null; }
+  catch (e) { return null; }
+})();
+if (POS) { S.week = Math.min(0, Math.max(-MAX_BACK, Number(POS.w) || 0)); (POS.o || []).forEach(k => S.open.add(k)); }
+// les listes se remplissent au fil du défilement : on insiste jusqu’à retrouver la position
+function restorePos() {
+  if (!POS || POS.v !== S.view || !(POS.y > 0)) return;
+  const y = POS.y, end = Date.now() + 2500;
+  const step = () => { window.scrollTo(0, y); if (Math.abs(scrollY - y) > 4 && Date.now() < end) setTimeout(step, 120); };
+  requestAnimationFrame(step);
+}
 route();
 loadData(true);
 // les concerts (le plus gros fichier) ne sont chargés qu’à l’ouverture de leur onglet
