@@ -1396,10 +1396,6 @@ body[data-view="abonnements"] main { padding-bottom: 8px; }
       <button type="button" data-cc="BE" aria-pressed="false">Belgique <span class="n"></span></button>
       <button type="button" data-cc="CH" aria-pressed="false">Suisse <span class="n"></span></button>
     </div>
-    <div class="seg seg-mine" role="group" aria-label="Artistes">
-      <button type="button" data-mine="0" aria-pressed="true">Tous les artistes</button>
-      <button type="button" data-mine="1" aria-pressed="false">Mes artistes <span class="n"></span></button>
-    </div>
     <label class="fsel seg-metro" for="metro"><span>Près de</span>
       <select id="metro"><option value="">Partout</option></select>
     </label>
@@ -1571,7 +1567,7 @@ const S = {
   cat: CATS[prefs.cat] ? prefs.cat : 'all',
   type: TYPE_LABEL[prefs.type] ? prefs.type : 'all',
   cc: COUNTRY[prefs.cc] ? prefs.cc : 'all',
-  mine: !!prefs.mine, metro: typeof prefs.metro === 'string' ? prefs.metro : '',
+  mine: false, metro: typeof prefs.metro === 'string' ? prefs.metro : '',
   q: '', detail: null, handle: '', sub: '',
   open: new Set(),   // sections dépliées en entier (« semaine:section »)
 };
@@ -1665,7 +1661,7 @@ function paintStatus() {
 }
 
 const matchQ = (r, q) => !q || norm(`${r.title} ${r.artist} ${r.feats.join(' ')}`).includes(q);
-// « Mes artistes » : artistes suivis sur cet appareil (nom normalisé -> nom affiché)
+// artistes choisis dans le quiz, sur cet appareil (nom normalisé -> nom affiché) : base des recommandations
 let FOLLOW = store.get('follow', {});
 const splitArtists = a => String(a || '').split(/\s*(?:&|,|\bx\b|\bfeat\.?)\s*/i).map(x => x.trim()).filter(Boolean);
 const follows = name => !!FOLLOW[norm(name)];
@@ -1844,7 +1840,6 @@ function paintToggle() {
   if (!conc && S.type !== 'all') chips.push(['type', TYPE_LABEL[S.type] === 'Album' ? 'Albums' : TYPE_LABEL[S.type] === 'Single' ? 'Singles' : TYPE_LABEL[S.type]]);
   if (conc && S.cc !== 'all') chips.push(['cc', COUNTRY[S.cc]]);
   if (conc && S.metro) chips.push(['metro', `Près de ${S.metro}`]);
-  if (S.mine) chips.push(['mine', 'Mes artistes']);
   if (S.q.trim()) chips.push(['q', `« ${S.q.trim()} »`]);
   $('#fcount').textContent = chips.length ? chips.length : '';
   const box = $('#fchips');
@@ -2229,11 +2224,6 @@ function viewSettings() {
       ${setRow('Onglet d’ouverture', 'Ce que le site montre quand tu l’ouvres.', choice('start', SET.start, [['semaine', 'Cette semaine'], ['a-venir', 'À venir'], ['concerts', 'Concerts'], ['abonnements', 'Avis']]))}
       ${setRow('Pastilles « Nouveau »', 'Signale ce qui est apparu depuis ta dernière visite.', toggle('news', SET.news, 'Pastilles Nouveau'))}
     </section>
-    <section class="set-sec"><h2 class="set-h">Mes artistes</h2>
-      ${Object.keys(FOLLOW).length ? `<p class="set-about">Le filtre « Mes artistes » montre leurs sorties et leurs concerts. Touche un nom pour ne plus le suivre.</p>
-        <div class="chips">${Object.values(FOLLOW).sort((a, b) => a.localeCompare(b, 'fr')).map(n => `<button class="chip fchip" type="button" data-follow="${esc(n)}">${esc(n)}<span aria-hidden="true">✕</span></button>`).join('')}</div>`
-        : '<p class="set-about">Tu ne suis encore aucun artiste. Ouvre une sortie et touche « Suivre » : le filtre « Mes artistes » montrera ses sorties et ses concerts.</p>'}
-    </section>
     ${FB_CONFIG ? `<section class="set-sec"><h2 class="set-h">Compte</h2>${accountSettingsHtml()}</section>` : ''}
     <section class="set-sec"><h2 class="set-h">Données de cet appareil</h2>
       ${setRow('Présentation', 'Revoir la présentation de l’application, celle de la première ouverture.', '<button class="btn sm" type="button" data-intro>Revoir</button>')}
@@ -2390,10 +2380,7 @@ function paintDetail(r, failed) {
       <h2 class="d-title" id="d-title">${esc(r.title)}</h2>
       <p class="d-artist">${esc(r.artist)}</p>
       <p class="d-date">${released ? 'Sorti le' : 'Sortie prévue le'} ${esc(fmtLong(r.date))}${rel ? ` · ${esc(rel)}` : ''}</p>
-      <div class="d-follow">${splitArtists(r.artist).slice(0, 3).map(a => follows(a)
-        ? `<button class="btn sm fol on" type="button" data-follow="${esc(a)}" aria-pressed="true">${I.check}${splitArtists(r.artist).length > 1 ? esc(a) : 'Artiste suivi'}</button>`
-        : `<button class="btn sm" type="button" data-follow="${esc(a)}" aria-pressed="false">+ Suivre ${splitArtists(r.artist).length > 1 ? esc(a) : 'l’artiste'}</button>`).join('')}
-        ${released ? '' : `<button class="btn sm" type="button" data-ics="${esc(r.key)}">${I.cal}Ajouter à l’agenda</button>`}</div>
+      ${released ? '' : `<div class="d-follow"><button class="btn sm" type="button" data-ics="${esc(r.key)}">${I.cal}Ajouter à l’agenda</button></div>`}
       <div class="d-listen" aria-label="Écouter">${listenHtml(r)}</div>
       ${facts.length ? `<dl class="facts">${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>` : ''}
       ${feats.length ? `<h3 class="d-h3">Featurings</h3><div class="chips">${feats.map(f => `<span class="chip">${esc(f.name)}${f.n > 1 ? `<span class="mono">×${f.n}</span>` : ''}</span>`).join('')}</div>` : ''}
@@ -4472,7 +4459,7 @@ function closeQuiz() {
 function finishQuiz() {
   MYTASTE = TASTE = { cats: QZ.cats, ug: QZ.ug, level: levelOf(QZ.ug), fmt: QZ.fmt, hide: QZ.hide, metro: QZ.metro, at: Date.now() };
   store.set('taste', TASTE); store.set('tasteAsked', 1);
-  FOLLOW = { ...QZ.like }; store.set('follow', FOLLOW);   // artistes choisis = artistes suivis (filtre « Mes artistes »)
+  FOLLOW = { ...QZ.like }; store.set('follow', FOLLOW);   // artistes choisis : base des recommandations
   S.cat = 'all';   // tout reste visible : ce qui sort de tes goûts passe dans « Hors de tes recommandations »
   S.metro = QZ.metro;
   RECO = null;
