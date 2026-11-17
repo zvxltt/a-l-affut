@@ -1719,7 +1719,7 @@ function loadArtists() {
     for (const a of ART.list) if (!ART.byNorm.has(a.k)) ART.byNorm.set(a.k, a);
   }).catch(() => {}).then(() => {
     ART.loaded = true; RECO = null;
-    if (QZ) paintQuiz(); else if (TASTE && ['semaine', 'parametres'].includes(S.view)) render();
+    if (QZ) paintQuiz(); else if (TASTE && ['semaine', 'a-venir', 'parametres'].includes(S.view)) { render(); restorePos(); }
   });
   return ART.p;
 }
@@ -2054,6 +2054,12 @@ function render() {
   paintToggle();
   $('#q').placeholder = S.view === 'concerts' ? 'Artiste, salle ou ville' : 'Artiste ou titre';
   $('#gear').classList.toggle('on', S.view === 'parametres');
+  // avec un profil, la semaine et À venir attendent les artistes (photos, voisins) : pas de version provisoire qui change ensuite
+  if (TASTE && !ART.loaded && (S.view === 'semaine' || S.view === 'a-venir') && DATA.items.length) {
+    $head.innerHTML = ''; $content.innerHTML = skeletonHtml(); paintStatus();
+    if (!ART.wait) ART.wait = setTimeout(() => { if (!ART.loaded) { ART.loaded = true; render(); } }, 3500);
+    return;
+  }
   if (S.view === 'a-venir') viewUpcoming(); else if (S.view === 'concerts') viewConcerts(); else if (S.view === 'abonnements') viewFeed(); else if (S.view === 'profil' || S.view === 'user') viewProfile(); else if (S.view === 'parametres') viewSettings(); else viewWeek();
   paintStatus();
 }
@@ -2542,7 +2548,10 @@ const HANDLE_RE = /^[a-z0-9_]{3,20}$/;
 let FB = null, fbLoading = null;
 const ME = { ready: !FB_CONFIG, user: null, profile: null, reviews: null, failed: false };
 // les recommandations vont avec le compte (dans la maquette sans comptes, un compte simulé)
-const acctActive = () => (FB_CONFIG ? !!ME.user : !!store.get('demoAcct', 0));
+// au rechargement, la connexion met un instant à revenir : on part du dernier compte connu sur l’appareil
+// (recommandations, avatar) pour ne pas afficher la version « non connecté » le temps de la vérification
+let ACCT_HINT = FB_CONFIG ? store.get('acct', null) : null;
+const acctActive = () => (FB_CONFIG ? (ME.ready ? !!ME.user : !!ACCT_HINT) : !!store.get('demoAcct', 0));
 function syncTaste() {
   const t = acctActive() ? MYTASTE : null;
   if (t !== TASTE) { TASTE = t; RECO = null; }
@@ -2679,6 +2688,8 @@ async function onUser(user) {
     } catch (e) { ME.failed = true; toast('La base des notes ne répond pas, réessaie dans un instant'); }
   }
   ME.ready = true;
+  if (user && !ME.failed) { ACCT_HINT = { p: ME.profile ? { n: ME.profile.n, h: ME.profile.h, ph: String(ME.profile.ph || '').length < 1500 ? ME.profile.ph || '' : '' } : null }; store.set('acct', ACCT_HINT); }
+  else if (!user) { ACCT_HINT = null; store.set('acct', null); }
   syncTaste();
   paintAcct();
   if (user) closeGate();
@@ -2697,7 +2708,7 @@ const BN_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 function paintBottomAcct() {
   const el = $('#bn-av');
   if (!el) return;
-  const p = ME.user ? ME.profile || { n: ME.user.displayName || '?', ph: ME.user.photoURL } : null;
+  const p = ME.user ? ME.profile || { n: ME.user.displayName || '?', ph: ME.user.photoURL } : !ME.ready && ACCT_HINT ? ACCT_HINT.p : null;
   el.innerHTML = p ? avatarHtml(p, 'xs') : BN_ICON;
   $('#bn-me').setAttribute('aria-label', ME.user ? 'Mon profil' : 'Profil, se connecter');
 }
@@ -2708,7 +2719,7 @@ function paintAcct() {
   b.hidden = !FB_CONFIG;
   if (!FB_CONFIG) return;
   b.classList.toggle('in', !!ME.user);
-  if (!ME.ready) { b.innerHTML = '<span class="av sm sk"></span>'; b.setAttribute('aria-label', 'Compte'); return; }
+  if (!ME.ready) { b.classList.toggle('in', !!ACCT_HINT); b.innerHTML = ACCT_HINT && ACCT_HINT.p ? avatarHtml(ACCT_HINT.p, 'sm') : '<span class="av sm sk"></span>'; b.setAttribute('aria-label', 'Compte'); return; }
   if (ME.user) {
     b.innerHTML = avatarHtml(ME.profile || { n: ME.user.displayName || '?', ph: ME.user.photoURL }, 'sm');
     b.setAttribute('aria-label', 'Mon profil');
@@ -4380,9 +4391,10 @@ const POS = (() => {
 if (POS) { S.week = Math.min(0, Math.max(-MAX_BACK, Number(POS.w) || 0)); (POS.o || []).forEach(k => S.open.add(k)); }
 // les listes se remplissent au fil du défilement : on insiste jusqu’à retrouver la position
 function restorePos() {
-  if (!POS || POS.v !== S.view || !(POS.y > 0)) return;
+  if (!POS || POS.done || POS.v !== S.view || !(POS.y > 0)) return;
+  if ($('#content .sk-card')) return;   // page pas encore dessinée : on reviendra
   const y = POS.y, end = Date.now() + 2500;
-  const step = () => { window.scrollTo(0, y); if (Math.abs(scrollY - y) > 4 && Date.now() < end) setTimeout(step, 120); };
+  const step = () => { window.scrollTo(0, y); if (Math.abs(scrollY - y) > 4 && Date.now() < end) setTimeout(step, 120); else POS.done = true; };
   requestAnimationFrame(step);
 }
 route();
